@@ -1,7 +1,7 @@
 kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
-  name: amt-arrangor
+  name: amt-aktivitetskort-publisher
   namespace: amt
   labels:
     team: amt
