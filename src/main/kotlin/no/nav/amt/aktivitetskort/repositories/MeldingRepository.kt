@@ -81,5 +81,4 @@ class MeldingRepository(
 		it.type = "json"
 		it.value = JsonUtils.objectMapper().writeValueAsString(this)
 	}
-
 }
