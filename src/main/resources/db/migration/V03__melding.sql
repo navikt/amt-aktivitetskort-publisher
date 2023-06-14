@@ -1,6 +1,6 @@
 CREATE TABLE melding
 (
-    id               uuid PRIMARY KEY,
+    deltaker_id      uuid PRIMARY KEY         NOT NULL,
     deltakerliste_id uuid                     NOT NULL references deltakerliste (id),
     arrangor_id      uuid                     NOT NULL references arrangor (id),
     melding          jsonb                    NOT NULL,
