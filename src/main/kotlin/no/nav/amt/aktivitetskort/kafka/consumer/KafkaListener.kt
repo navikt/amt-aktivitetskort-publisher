@@ -1,0 +1,38 @@
+package no.nav.amt.aktivitetskort.kafka.consumer
+
+import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJsonString
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.springframework.kafka.annotation.KafkaListener
+import org.springframework.kafka.support.Acknowledgment
+import org.springframework.stereotype.Component
+import java.util.UUID
+
+const val DELTAKER_TOPIC = "amt.deltaker-v2"
+const val ARRANGOR_TOPIC = "amt.arrangor-v1"
+const val DELTAKERLISTE_TOPIC = "amt.deltakerliste-v1"
+
+@Component
+class KafkaListener(
+	val consumerService: ConsumerService,
+) {
+
+	@KafkaListener(
+		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC],
+		containerFactory = "kafkaListenerContainerFactory"
+	)
+	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
+		when (record.topic()) {
+			ARRANGOR_TOPIC -> consumerService.consumeArrangor(
+				UUID.fromString(record.key()), record.value()?.let { fromJsonString(it) }
+			)
+			DELTAKERLISTE_TOPIC -> consumerService.consumeDeltakerliste(
+				UUID.fromString(record.key()), record.value()?.let { fromJsonString(it) }
+			)
+			DELTAKER_TOPIC -> consumerService.consumeDeltaker(
+				UUID.fromString(record.key()), record.value()?.let { fromJsonString(it) }
+			)
+		}
+
+		ack.acknowledge()
+	}
+}
