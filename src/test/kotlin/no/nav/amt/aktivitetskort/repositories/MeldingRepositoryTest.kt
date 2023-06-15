@@ -8,9 +8,10 @@ import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 import java.util.UUID
 
-class DeltakerlisteRepositoryTest : IntegrationTest() {
+class MeldingRepositoryTest : IntegrationTest() {
 
 	@Autowired
 	private lateinit var db: TestDatabaseService
@@ -22,26 +23,26 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 
 	@Test
 	fun `get - not exists - returns null`() {
-		db.deltakerlisteRepository.get(UUID.randomUUID()) shouldBe null
+		db.meldingRepository.getByDeltakerId(UUID.randomUUID()) shouldBe null
 	}
 
 	@Test
 	fun `insertOrUpdate - not exists - returns Created Result - exists in database`() {
-		val deltakerliste = db.deltakerliste()
-		when (val result = db.deltakerlisteRepository.insertOrUpdate(deltakerliste)) {
-			is RepositoryResult.Created -> result.data shouldBe deltakerliste
+		val melding = db.melding()
+		when (val result = db.meldingRepository.insertOrUpdate(melding)) {
+			is RepositoryResult.Created -> result.data shouldBe melding
 			else -> fail("Should be Created, was $result")
 		}
 
-		db.deltakerlisteRepository.get(deltakerliste.id) shouldBe deltakerliste
+		db.meldingRepository.getByDeltakerId(melding.deltakerId) shouldBe melding
 	}
 
 	@Test
 	fun `insertOrUpdate - exists - returns NoChange Result`() {
-		val deltakerliste = db.deltakerliste()
-			.also { db.deltakerlisteRepository.insertOrUpdate(it) }
+		val melding = db.melding()
+			.also { db.meldingRepository.insertOrUpdate(it) }
 
-		when (val result = db.deltakerlisteRepository.insertOrUpdate(deltakerliste)) {
+		when (val result = db.meldingRepository.insertOrUpdate(melding)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
@@ -50,18 +51,18 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 
 	@Test
 	fun `insertOrUpdate - modified - returns Modified Result and updates database`() {
-		val initialDeltakerliste = db.deltakerliste()
-			.also { db.deltakerlisteRepository.insertOrUpdate(it) }
+		val initialMelding = db.melding()
+			.also { db.meldingRepository.insertOrUpdate(it) }
 
-		val updatedDeltakerliste = initialDeltakerliste.copy(
-			navn = "UPDATED"
+		val updatedMelding = initialMelding.copy(
+			melding = initialMelding.melding.copy(sluttDato = LocalDate.now())
 		)
 
-		when (val result = db.deltakerlisteRepository.insertOrUpdate(updatedDeltakerliste)) {
-			is RepositoryResult.Modified -> result.data shouldBe updatedDeltakerliste
+		when (val result = db.meldingRepository.insertOrUpdate(updatedMelding)) {
+			is RepositoryResult.Modified -> result.data shouldBe updatedMelding
 			else -> fail("Should be Modified, was $result")
 		}
 
-		db.deltakerlisteRepository.get(initialDeltakerliste.id) shouldBe updatedDeltakerliste
+		db.meldingRepository.getByDeltakerId(initialMelding.deltakerId) shouldBe updatedMelding
 	}
 }
