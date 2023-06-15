@@ -21,14 +21,14 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `get - not exists - returns null`() {
+	fun `get - finnes ikke - returnerer null`() {
 		db.deltakerlisteRepository.get(UUID.randomUUID()) shouldBe null
 	}
 
 	@Test
-	fun `insertOrUpdate - not exists - returns Created Result - exists in database`() {
+	fun `upsert - finnes ikke - returnerer Created Result - finnes in database`() {
 		val deltakerliste = db.deltakerliste()
-		when (val result = db.deltakerlisteRepository.insertOrUpdate(deltakerliste)) {
+		when (val result = db.deltakerlisteRepository.upsert(deltakerliste)) {
 			is RepositoryResult.Created -> result.data shouldBe deltakerliste
 			else -> fail("Should be Created, was $result")
 		}
@@ -37,11 +37,11 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `insertOrUpdate - exists - returns NoChange Result`() {
+	fun `upsert - finnes - returnerer NoChange Result`() {
 		val deltakerliste = db.deltakerliste()
-			.also { db.deltakerlisteRepository.insertOrUpdate(it) }
+			.also { db.deltakerlisteRepository.upsert(it) }
 
-		when (val result = db.deltakerlisteRepository.insertOrUpdate(deltakerliste)) {
+		when (val result = db.deltakerlisteRepository.upsert(deltakerliste)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
@@ -49,15 +49,15 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `insertOrUpdate - modified - returns Modified Result and updates database`() {
+	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
 		val initialDeltakerliste = db.deltakerliste()
-			.also { db.deltakerlisteRepository.insertOrUpdate(it) }
+			.also { db.deltakerlisteRepository.upsert(it) }
 
 		val updatedDeltakerliste = initialDeltakerliste.copy(
 			navn = "UPDATED"
 		)
 
-		when (val result = db.deltakerlisteRepository.insertOrUpdate(updatedDeltakerliste)) {
+		when (val result = db.deltakerlisteRepository.upsert(updatedDeltakerliste)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedDeltakerliste
 			else -> fail("Should be Modified, was $result")
 		}

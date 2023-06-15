@@ -28,7 +28,7 @@ class MeldingRepository(
 		)
 	}
 
-	fun insertOrUpdate(melding: Melding): RepositoryResult<Melding> {
+	fun upsert(melding: Melding): RepositoryResult<Melding> {
 		val old = getByDeltakerId(melding.deltakerId)
 		if (old == melding) return RepositoryResult.NoChange()
 

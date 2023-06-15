@@ -21,14 +21,14 @@ class ArrangorRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `get - not exists - returns null`() {
+	fun `get - finnes ikke - returnerer null`() {
 		db.arrangorRepository.get(UUID.randomUUID()) shouldBe null
 	}
 
 	@Test
-	fun `insertOrUpdate - not exists - returns Created Result - exists in database`() {
+	fun `upsert - finnes ikke - returnerer Created Result - finnes in database`() {
 		val arrangor = db.arrangor()
-		when (val result = db.arrangorRepository.insertOrUpdate(arrangor)) {
+		when (val result = db.arrangorRepository.upsert(arrangor)) {
 			is RepositoryResult.Created -> result.data shouldBe arrangor
 			else -> fail("Should be Created, was $result")
 		}
@@ -37,11 +37,11 @@ class ArrangorRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `insertOrUpdate - exists - returns NoChange Result`() {
+	fun `upsert - finnes - returnerer NoChange Result`() {
 		val arrangor = db.arrangor()
-			.also { db.arrangorRepository.insertOrUpdate(it) }
+			.also { db.arrangorRepository.upsert(it) }
 
-		when (val result = db.arrangorRepository.insertOrUpdate(arrangor)) {
+		when (val result = db.arrangorRepository.upsert(arrangor)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
@@ -49,15 +49,15 @@ class ArrangorRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `insertOrUpdate - modified - returns Modified Result and updates database`() {
+	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
 		val initialArrangor = db.arrangor()
-			.also { db.arrangorRepository.insertOrUpdate(it) }
+			.also { db.arrangorRepository.upsert(it) }
 
 		val updatedArrangor = initialArrangor.copy(
 			navn = "UPDATED"
 		)
 
-		when (val result = db.arrangorRepository.insertOrUpdate(updatedArrangor)) {
+		when (val result = db.arrangorRepository.upsert(updatedArrangor)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedArrangor
 			else -> fail("Should be Modified, was $result")
 		}

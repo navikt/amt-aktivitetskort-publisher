@@ -78,14 +78,14 @@ class TestDatabaseService(
 	) = Deltakerliste(id, tiltakstype, navn)
 
 	private fun insertArrangor(arrangor: Arrangor = arrangor()) =
-		when (val result = arrangorRepository.insertOrUpdate(arrangor)) {
+		when (val result = arrangorRepository.upsert(arrangor)) {
 			is RepositoryResult.Created -> result.data
 			is RepositoryResult.Modified -> result.data
 			is RepositoryResult.NoChange -> arrangor
 		}
 
 	private fun insertDeltakerliste(deltakerliste: Deltakerliste = deltakerliste()) =
-		when (val result = deltakerlisteRepository.insertOrUpdate(deltakerliste)) {
+		when (val result = deltakerlisteRepository.upsert(deltakerliste)) {
 			is RepositoryResult.Created -> result.data
 			is RepositoryResult.Modified -> result.data
 			is RepositoryResult.NoChange -> deltakerliste

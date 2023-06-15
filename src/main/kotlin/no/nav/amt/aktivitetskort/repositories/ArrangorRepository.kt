@@ -20,7 +20,7 @@ class ArrangorRepository(
 		)
 	}
 
-	fun insertOrUpdate(arrangor: Arrangor): RepositoryResult<Arrangor> {
+	fun upsert(arrangor: Arrangor): RepositoryResult<Arrangor> {
 		val old = get(arrangor.id)
 
 		if (old == arrangor) return RepositoryResult.NoChange()

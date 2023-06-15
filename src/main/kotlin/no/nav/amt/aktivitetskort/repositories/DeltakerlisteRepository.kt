@@ -21,7 +21,7 @@ class DeltakerlisteRepository(
 		)
 	}
 
-	fun insertOrUpdate(deltakerliste: Deltakerliste): RepositoryResult<Deltakerliste> {
+	fun upsert(deltakerliste: Deltakerliste): RepositoryResult<Deltakerliste> {
 		val old = get(deltakerliste.id)
 
 		if (old == deltakerliste) return RepositoryResult.NoChange()

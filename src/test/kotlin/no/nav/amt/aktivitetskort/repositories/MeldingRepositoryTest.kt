@@ -22,14 +22,14 @@ class MeldingRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `get - not exists - returns null`() {
+	fun `get - finnes ikke - returnerer null`() {
 		db.meldingRepository.getByDeltakerId(UUID.randomUUID()) shouldBe null
 	}
 
 	@Test
-	fun `insertOrUpdate - not exists - returns Created Result - exists in database`() {
+	fun `upsert - finnes ikke - returnerer Created Result - finnes i database`() {
 		val melding = db.melding()
-		when (val result = db.meldingRepository.insertOrUpdate(melding)) {
+		when (val result = db.meldingRepository.upsert(melding)) {
 			is RepositoryResult.Created -> result.data shouldBe melding
 			else -> fail("Should be Created, was $result")
 		}
@@ -38,11 +38,11 @@ class MeldingRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `insertOrUpdate - exists - returns NoChange Result`() {
+	fun `upsert - finnes - returnerer NoChange Result`() {
 		val melding = db.melding()
-			.also { db.meldingRepository.insertOrUpdate(it) }
+			.also { db.meldingRepository.upsert(it) }
 
-		when (val result = db.meldingRepository.insertOrUpdate(melding)) {
+		when (val result = db.meldingRepository.upsert(melding)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
@@ -50,15 +50,15 @@ class MeldingRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `insertOrUpdate - modified - returns Modified Result and updates database`() {
+	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
 		val initialMelding = db.melding()
-			.also { db.meldingRepository.insertOrUpdate(it) }
+			.also { db.meldingRepository.upsert(it) }
 
 		val updatedMelding = initialMelding.copy(
 			melding = initialMelding.melding.copy(sluttDato = LocalDate.now())
 		)
 
-		when (val result = db.meldingRepository.insertOrUpdate(updatedMelding)) {
+		when (val result = db.meldingRepository.upsert(updatedMelding)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedMelding
 			else -> fail("Should be Modified, was $result")
 		}
