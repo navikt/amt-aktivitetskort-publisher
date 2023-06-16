@@ -5,5 +5,6 @@ import java.util.UUID
 data class Deltakerliste(
 	val id: UUID,
 	val tiltakstype: String,
-	val navn: String
+	val navn: String,
+	val arrangorId: UUID,
 )

@@ -1,6 +1,6 @@
 package no.nav.amt.aktivitetskort.kafka.consumer.dto
 
-import java.time.LocalDate
+import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import java.util.UUID
 
 data class DeltakerlisteDto(
@@ -19,7 +19,10 @@ data class DeltakerlisteDto(
 		val id: UUID,
 	)
 
-	enum class DeltakerlisteStatus {
-		APENT_FOR_INNSOK, GJENNOMFORES, AVSLUTTET
-	}
+	fun toModel() = Deltakerliste(
+		this.id,
+		this.tiltak.navn,
+		this.navn,
+		this.arrangor.id,
+	)
 }

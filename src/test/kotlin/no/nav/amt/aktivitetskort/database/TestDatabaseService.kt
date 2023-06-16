@@ -51,7 +51,7 @@ class TestDatabaseService(
 		etiketter: List<Etikett> = listOf()
 	) = Aktivitetskort(
 		id = id,
-		personIdent = personIdent,
+		personident = personIdent,
 		tittel = tittel,
 		aktivitetStatus = aktivitetStatus,
 		startDato = startDato,
@@ -74,20 +74,24 @@ class TestDatabaseService(
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
 		tiltakstype: String = "tiltakstype",
-		navn: String = "navn"
-	) = Deltakerliste(id, tiltakstype, navn)
+		navn: String = "navn",
+		arrangorId: UUID = UUID.randomUUID()
+	) = Deltakerliste(id, tiltakstype, navn, arrangorId)
 
-	private fun insertArrangor(arrangor: Arrangor = arrangor()) =
+	fun insertArrangor(arrangor: Arrangor = arrangor()) =
 		when (val result = arrangorRepository.upsert(arrangor)) {
 			is RepositoryResult.Created -> result.data
 			is RepositoryResult.Modified -> result.data
 			is RepositoryResult.NoChange -> arrangor
 		}
 
-	private fun insertDeltakerliste(deltakerliste: Deltakerliste = deltakerliste()) =
-		when (val result = deltakerlisteRepository.upsert(deltakerliste)) {
+	fun insertDeltakerliste(deltakerliste: Deltakerliste = deltakerliste()): Deltakerliste {
+		arrangorRepository.upsert(arrangor(id = deltakerliste.arrangorId))
+
+		return when (val result = deltakerlisteRepository.upsert(deltakerliste)) {
 			is RepositoryResult.Created -> result.data
 			is RepositoryResult.Modified -> result.data
 			is RepositoryResult.NoChange -> deltakerliste
 		}
+	}
 }

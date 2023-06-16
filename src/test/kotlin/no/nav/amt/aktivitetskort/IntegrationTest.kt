@@ -12,6 +12,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.utility.DockerImageName
 import java.time.Duration
 
 @ActiveProfiles("test")
@@ -39,6 +41,20 @@ class IntegrationTest {
 				registry.add("spring.datasource.password") { it.password }
 				registry.add("spring.datasource.hikari.maximum-pool-size") { 3 }
 			}
+
+			KafkaContainer(DockerImageName.parse(getKafkaImage())).apply {
+				start()
+				System.setProperty("KAFKA_BROKERS", bootstrapServers)
+			}
+		}
+
+		private fun getKafkaImage(): String {
+			val tag = when (System.getProperty("os.arch")) {
+				"aarch64" -> "7.2.2-1-ubi8.arm64"
+				else -> "7.2.2"
+			}
+
+			return "confluentinc/cp-kafka:$tag"
 		}
 	}
 
@@ -58,4 +74,6 @@ class IntegrationTest {
 
 		return client.newCall(reqBuilder.build()).execute()
 	}
+
+
 }

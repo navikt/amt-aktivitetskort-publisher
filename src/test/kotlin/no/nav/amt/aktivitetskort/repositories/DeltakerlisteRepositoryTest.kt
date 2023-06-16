@@ -28,6 +28,7 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 	@Test
 	fun `upsert - finnes ikke - returnerer Created Result - finnes in database`() {
 		val deltakerliste = db.deltakerliste()
+		db.insertArrangor(db.arrangor(deltakerliste.arrangorId))
 		when (val result = db.deltakerlisteRepository.upsert(deltakerliste)) {
 			is RepositoryResult.Created -> result.data shouldBe deltakerliste
 			else -> fail("Should be Created, was $result")
@@ -39,6 +40,7 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 	@Test
 	fun `upsert - finnes - returnerer NoChange Result`() {
 		val deltakerliste = db.deltakerliste()
+			.also { db.insertArrangor(db.arrangor(it.arrangorId)) }
 			.also { db.deltakerlisteRepository.upsert(it) }
 
 		when (val result = db.deltakerlisteRepository.upsert(deltakerliste)) {
@@ -51,6 +53,7 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 	@Test
 	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
 		val initialDeltakerliste = db.deltakerliste()
+			.also { db.insertArrangor(db.arrangor(it.arrangorId)) }
 			.also { db.deltakerlisteRepository.upsert(it) }
 
 		val updatedDeltakerliste = initialDeltakerliste.copy(

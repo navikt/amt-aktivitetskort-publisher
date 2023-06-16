@@ -22,7 +22,7 @@ class MeldingRepository(
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),
 			deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
-			melding = JsonUtils.fromJson(rs.getString("melding")),
+			aktivitetskort = JsonUtils.fromJson(rs.getString("melding")),
 			createdAt = rs.getZonedDateTime("created_at"),
 			modifiedAt = rs.getZonedDateTime("modified_at")
 		)
@@ -49,7 +49,7 @@ class MeldingRepository(
 				"deltaker_id" to melding.deltakerId,
 				"deltakerliste_id" to melding.deltakerlisteId,
 				"arrangor_id" to melding.arrangorId,
-				"melding" to melding.melding.toPGObject()
+				"melding" to melding.aktivitetskort.toPGObject()
 			),
 			rowMapper
 		).first()

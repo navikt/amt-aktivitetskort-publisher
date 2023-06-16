@@ -55,7 +55,7 @@ class MeldingRepositoryTest : IntegrationTest() {
 			.also { db.meldingRepository.upsert(it) }
 
 		val updatedMelding = initialMelding.copy(
-			melding = initialMelding.melding.copy(sluttDato = LocalDate.now())
+			aktivitetskort = initialMelding.aktivitetskort.copy(sluttDato = LocalDate.now())
 		)
 
 		when (val result = db.meldingRepository.upsert(updatedMelding)) {

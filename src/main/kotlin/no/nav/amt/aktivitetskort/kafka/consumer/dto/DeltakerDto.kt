@@ -1,5 +1,7 @@
 package no.nav.amt.aktivitetskort.kafka.consumer.dto
 
+import no.nav.amt.aktivitetskort.domain.Deltaker
+import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -14,7 +16,6 @@ data class DeltakerDto(
 	val prosentStilling: Double?,
 	val oppstartsdato: LocalDate?,
 	val sluttdato: LocalDate?,
-	val innsoktDato: LocalDate,
 	val deltarPaKurs: Boolean
 ) {
 	data class DeltakerPersonaliaDto(
@@ -23,12 +24,21 @@ data class DeltakerDto(
 
 	data class DeltakerStatusDto(
 		val type: DeltakerStatus,
-	) {
-		enum class DeltakerStatus {
-			VENTER_PA_OPPSTART, DELTAR, HAR_SLUTTET, IKKE_AKTUELL, FEILREGISTRERT,
-			SOKT_INN, VURDERES, VENTELISTE, AVBRUTT, // kursstatuser
-			PABEGYNT_REGISTRERING
-		}
-	}
+		val aarsak: DeltakerStatus.Aarsak,
+	)
+
+
+	fun toModel() = Deltaker(
+		id = id,
+		personident = personalia.personident,
+		deltakerlisteId = deltakerlisteId,
+		status = status.type,
+		dagerPerUke = dagerPerUke,
+		prosentStilling = prosentStilling,
+		oppstartsdato = oppstartsdato,
+		sluttdato = sluttdato,
+		deltarPaKurs = deltarPaKurs,
+	)
 
 }
+

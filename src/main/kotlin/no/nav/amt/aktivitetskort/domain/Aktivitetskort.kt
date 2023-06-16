@@ -6,11 +6,11 @@ import java.util.UUID
 
 data class Aktivitetskort(
 	val id: UUID,
-	val personIdent: String,
+	val personident: String,
 	val tittel: String,
 	val aktivitetStatus: AktivitetStatus,
-	val startDato: LocalDate,
-	val sluttDato: LocalDate,
+	val startDato: LocalDate?,
+	val sluttDato: LocalDate?,
 	val beskrivelse: String?,
 	val endretAv: EndretAv,
 	val endretTidspunkt: LocalDateTime,
@@ -22,8 +22,12 @@ data class Aktivitetskort(
 )
 
 data class Etikett(
-	val kode: String
-)
+	val kode: Kode
+) {
+	enum class Kode {
+		SOKT_INN, VURDERES, VENTER_PA_OPPSTART, VENTELISTE, IKKE_AKTUELL
+	}
+}
 
 data class Detalj(
 	val label: String,
@@ -66,12 +70,4 @@ enum class IdentType {
 	TILTAKSARRAGOER,
 	ARBEIDSGIVER,
 	SYSTEM
-}
-
-enum class AktivitetStatus {
-	FORSLAG,
-	PLANLAGT,
-	GJENNOMFORES,
-	FULLFORT,
-	AVBRUTT
 }

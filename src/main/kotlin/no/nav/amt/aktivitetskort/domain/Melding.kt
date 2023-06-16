@@ -7,7 +7,7 @@ data class Melding(
 	val deltakerId: UUID,
 	val deltakerlisteId: UUID,
 	val arrangorId: UUID,
-	val melding: Aktivitetskort,
+	val aktivitetskort: Aktivitetskort,
 	val createdAt: ZonedDateTime = ZonedDateTime.now(),
 	val modifiedAt: ZonedDateTime = ZonedDateTime.now()
 ) {
@@ -21,14 +21,14 @@ data class Melding(
 		if (deltakerId != other.deltakerId) return false
 		if (deltakerlisteId != other.deltakerlisteId) return false
 		if (arrangorId != other.arrangorId) return false
-		return melding == other.melding
+		return aktivitetskort == other.aktivitetskort
 	}
 
 	override fun hashCode(): Int {
 		var result = deltakerId.hashCode()
 		result = 31 * result + deltakerlisteId.hashCode()
 		result = 31 * result + arrangorId.hashCode()
-		result = 31 * result + melding.hashCode()
+		result = 31 * result + aktivitetskort.hashCode()
 		return result
 	}
 }

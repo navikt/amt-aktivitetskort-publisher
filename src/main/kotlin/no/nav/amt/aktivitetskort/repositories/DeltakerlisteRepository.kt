@@ -17,7 +17,8 @@ class DeltakerlisteRepository(
 		Deltakerliste(
 			id = UUID.fromString(rs.getString("id")),
 			tiltakstype = rs.getString("tiltakstype"),
-			navn = rs.getString("navn")
+			navn = rs.getString("navn"),
+			arrangorId = UUID.fromString(rs.getString("arrangor_id"))
 		)
 	}
 
@@ -28,10 +29,12 @@ class DeltakerlisteRepository(
 
 		val new = template.query(
 			"""
-			INSERT INTO deltakerliste(id, tiltakstype, navn)
+			INSERT INTO deltakerliste(id, tiltakstype, navn, arrangor_id)
 			VALUES (:id,
 					:tiltakstype,
-					:navn)
+					:navn,
+					:arrangor_id
+					)
 			ON CONFLICT (id) DO UPDATE SET tiltakstype = :tiltakstype,
 										   navn        = :navn
 			RETURNING *
@@ -39,7 +42,8 @@ class DeltakerlisteRepository(
 			sqlParameters(
 				"id" to deltakerliste.id,
 				"tiltakstype" to deltakerliste.tiltakstype,
-				"navn" to deltakerliste.navn
+				"navn" to deltakerliste.navn,
+				"arrangor_id" to deltakerliste.arrangorId,
 			),
 			rowMapper
 		).first()
