@@ -1,6 +1,7 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
 
+import no.nav.amt.aktivitetskort.service.HendelseService
 import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJson
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
@@ -14,7 +15,7 @@ const val DELTAKERLISTE_TOPIC = "amt.deltakerliste-v1"
 
 @Component
 class KafkaListener(
-	val consumerService: ConsumerService,
+	val hendelseService: HendelseService,
 ) {
 
 	@KafkaListener(
@@ -23,13 +24,13 @@ class KafkaListener(
 	)
 	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
 		when (record.topic()) {
-			ARRANGOR_TOPIC -> consumerService.consumeArrangor(
+			ARRANGOR_TOPIC -> hendelseService.arrangorHendelse(
 				UUID.fromString(record.key()), record.value()?.let { fromJson(it) }
 			)
-			DELTAKERLISTE_TOPIC -> consumerService.consumeDeltakerliste(
+			DELTAKERLISTE_TOPIC -> hendelseService.deltakerlisteHendelse(
 				UUID.fromString(record.key()), record.value()?.let { fromJson(it) }
 			)
-			DELTAKER_TOPIC -> consumerService.consumeDeltaker(
+			DELTAKER_TOPIC -> hendelseService.deltakerHendelse(
 				UUID.fromString(record.key()), record.value()?.let { fromJson(it) }
 			)
 		}
