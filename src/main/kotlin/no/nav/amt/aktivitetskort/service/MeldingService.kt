@@ -1,19 +1,18 @@
 package no.nav.amt.aktivitetskort.service
 
-import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
-import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.Detalj
 import no.nav.amt.aktivitetskort.domain.EndretAv
-import no.nav.amt.aktivitetskort.domain.Etikett
 import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
+import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivetStatus
+import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -93,7 +92,7 @@ class MeldingService(
 			id = id,
 			personident = deltaker.personident,
 			tittel = lagTittel(deltakerliste, arrangor),
-			aktivitetStatus = AktivitetStatus.from(deltaker.status.type),
+			aktivitetStatus = deltakerStatusTilAktivetStatus(deltaker.status.type),
 			startDato = deltaker.oppstartsdato,
 			sluttDato = deltaker.sluttdato,
 			beskrivelse = null,
@@ -107,27 +106,12 @@ class MeldingService(
 				deltaker.sluttdato?.let { Detalj("Sluttdato", formaterDato(it)) },
 				Detalj("Status for deltakelse", deltaker.status.display()),
 			),
-			etiketter = listOfNotNull(finnEtikett(deltaker.status)),
+			etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
 		)
 	}
 
 	private fun lagTittel(deltakerliste: Deltakerliste, arrangor: Arrangor) =
 		"${deltakerliste.tiltakstype} hos ${arrangor.navn}"
-
-	private fun finnEtikett(status: DeltakerStatus): Etikett? {
-		return when (status.type) {
-			DeltakerStatus.Type.VENTER_PA_OPPSTART -> Etikett(Etikett.Kode.VENTER_PA_OPPSTART)
-			DeltakerStatus.Type.SOKT_INN -> Etikett(Etikett.Kode.SOKT_INN)
-			DeltakerStatus.Type.VURDERES -> Etikett(Etikett.Kode.VURDERES)
-			DeltakerStatus.Type.VENTELISTE -> Etikett(Etikett.Kode.VENTELISTE)
-			DeltakerStatus.Type.IKKE_AKTUELL -> Etikett(Etikett.Kode.IKKE_AKTUELL)
-			DeltakerStatus.Type.DELTAR -> null
-			DeltakerStatus.Type.HAR_SLUTTET -> null
-			DeltakerStatus.Type.FEILREGISTRERT -> null
-			DeltakerStatus.Type.AVBRUTT -> null
-			DeltakerStatus.Type.PABEGYNT_REGISTRERING -> null
-		}
-	}
 
 	private fun formaterDato(oppstartsdato: LocalDate): String {
 		return oppstartsdato.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
