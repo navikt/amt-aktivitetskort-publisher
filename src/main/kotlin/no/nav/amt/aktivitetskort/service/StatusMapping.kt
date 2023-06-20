@@ -6,19 +6,18 @@ import no.nav.amt.aktivitetskort.domain.Etikett
 
 object StatusMapping {
 
-	 val PLANLEGGES_STATUS = listOf(
-		 DeltakerStatus.Type.SOKT_INN,
-		 DeltakerStatus.Type.VURDERES,
-		 DeltakerStatus.Type.VENTER_PA_OPPSTART,
-		 DeltakerStatus.Type.VENTELISTE,
-	 )
+	val PLANLEGGES_STATUS = listOf(
+		DeltakerStatus.Type.SOKT_INN,
+		DeltakerStatus.Type.VURDERES,
+		DeltakerStatus.Type.VENTER_PA_OPPSTART,
+		DeltakerStatus.Type.VENTELISTE,
+	)
 
-	 val GJENNOMFORER_STATUS = listOf(DeltakerStatus.Type.DELTAR)
+	val GJENNOMFORER_STATUS = listOf(DeltakerStatus.Type.DELTAR)
 
-	 val FULLFORT_STATUS = listOf(DeltakerStatus.Type.HAR_SLUTTET)
+	val FULLFORT_STATUS = listOf(DeltakerStatus.Type.HAR_SLUTTET)
 
-	 val AVBRUTT_STATUS = listOf(DeltakerStatus.Type.AVBRUTT, DeltakerStatus.Type.IKKE_AKTUELL)
-
+	val AVBRUTT_STATUS = listOf(DeltakerStatus.Type.AVBRUTT, DeltakerStatus.Type.IKKE_AKTUELL)
 
 	fun deltakerStatusTilAktivetStatus(deltakerStatus: DeltakerStatus.Type): AktivitetStatus {
 		return when (deltakerStatus) {

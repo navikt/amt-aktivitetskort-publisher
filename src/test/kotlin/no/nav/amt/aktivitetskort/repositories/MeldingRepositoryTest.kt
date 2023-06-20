@@ -1,10 +1,9 @@
 package no.nav.amt.aktivitetskort.repositories
 
-import io.kotest.assertions.fail
 import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.IntegrationTest
+import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestDatabaseService
-import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,42 +26,34 @@ class MeldingRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `upsert - finnes ikke - returnerer Created Result - finnes i database`() {
-		val melding = db.melding()
-		when (val result = db.meldingRepository.upsert(melding)) {
-			is RepositoryResult.Created -> result.data shouldBe melding
-			else -> fail("Should be Created, was $result")
-		}
-
-		db.meldingRepository.getByDeltakerId(melding.deltakerId) shouldBe melding
-	}
-
-	@Test
-	fun `upsert - finnes - returnerer NoChange Result`() {
-		val melding = db.melding()
+	fun `upsert - finnes ikke - oppretter ny melding`() {
+		val ctx = TestData.MockContext()
+		val melding = ctx.melding
+			.also { db.insertArrangor(ctx.arrangor) }
+			.also { db.insertDeltakerliste(ctx.deltakerliste) }
+			.also { db.insertDeltaker(ctx.deltaker) }
 			.also { db.meldingRepository.upsert(it) }
 
-		when (val result = db.meldingRepository.upsert(melding)) {
-			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
-			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
-			is RepositoryResult.NoChange -> {}
-		}
+		db.meldingRepository.getByDeltakerId(melding.deltakerId)!! shouldBe melding
 	}
 
 	@Test
-	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
-		val initialMelding = db.melding()
+	fun `upsert - melding er endret - oppdaterer melding`() {
+		val ctx = TestData.MockContext()
+		val initialMelding = ctx.melding
+			.also { db.insertArrangor(ctx.arrangor) }
+			.also { db.insertDeltakerliste(ctx.deltakerliste) }
+			.also { db.insertDeltaker(ctx.deltaker) }
 			.also { db.meldingRepository.upsert(it) }
 
 		val updatedMelding = initialMelding.copy(
 			aktivitetskort = initialMelding.aktivitetskort.copy(sluttDato = LocalDate.now()),
 		)
 
-		when (val result = db.meldingRepository.upsert(updatedMelding)) {
-			is RepositoryResult.Modified -> result.data shouldBe updatedMelding
-			else -> fail("Should be Modified, was $result")
-		}
+		db.meldingRepository.upsert(updatedMelding)
 
-		db.meldingRepository.getByDeltakerId(initialMelding.deltakerId) shouldBe updatedMelding
+		val melding = db.meldingRepository.getByDeltakerId(initialMelding.deltakerId)!!
+
+		melding.aktivitetskort shouldBe updatedMelding.aktivitetskort
 	}
 }

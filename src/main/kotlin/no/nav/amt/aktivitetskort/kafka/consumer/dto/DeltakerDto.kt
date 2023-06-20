@@ -21,15 +21,15 @@ data class DeltakerDto(
 	)
 
 	data class DeltakerStatusDto(
-		val type: DeltakerStatus,
-		val aarsak: DeltakerStatus.Aarsak,
+		val type: DeltakerStatus.Type,
+		val aarsak: DeltakerStatus.Aarsak?,
 	)
 
 	fun toModel() = Deltaker(
 		id = id,
 		personident = personalia.personident,
 		deltakerlisteId = deltakerlisteId,
-		status = status.type,
+		status = DeltakerStatus(status.type, status.aarsak),
 		dagerPerUke = dagerPerUke,
 		prosentStilling = prosentStilling,
 		oppstartsdato = oppstartsdato,

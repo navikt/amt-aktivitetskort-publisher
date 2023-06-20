@@ -21,6 +21,7 @@ val kafkaClientsVersion = "3.5.0"
 val kotestVersion = "5.6.2"
 val testcontainersVersion = "1.18.3"
 val klintVersion = "0.49.1"
+val mockkVersion = "1.13.5"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
@@ -55,6 +56,7 @@ dependencies {
 	testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
 	testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
 	testImplementation("org.testcontainers:kafka:$testcontainersVersion")
+	testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
 tasks.test {

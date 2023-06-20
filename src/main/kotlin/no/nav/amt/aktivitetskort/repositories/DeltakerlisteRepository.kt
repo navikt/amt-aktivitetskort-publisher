@@ -16,7 +16,7 @@ class DeltakerlisteRepository(
 	private val rowMapper = RowMapper { rs, _ ->
 		Deltakerliste(
 			id = UUID.fromString(rs.getString("id")),
-			tiltakstype = rs.getString("tiltakstype"),
+			tiltaksnavn = rs.getString("tiltakstype"),
 			navn = rs.getString("navn"),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 		)
@@ -41,7 +41,7 @@ class DeltakerlisteRepository(
 			""".trimIndent(),
 			sqlParameters(
 				"id" to deltakerliste.id,
-				"tiltakstype" to deltakerliste.tiltakstype,
+				"tiltakstype" to deltakerliste.tiltaksnavn,
 				"navn" to deltakerliste.navn,
 				"arrangor_id" to deltakerliste.arrangorId,
 			),

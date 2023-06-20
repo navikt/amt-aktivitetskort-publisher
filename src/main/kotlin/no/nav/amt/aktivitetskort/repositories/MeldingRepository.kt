@@ -3,7 +3,6 @@ package no.nav.amt.aktivitetskort.repositories
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.utils.JsonUtils
-import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.aktivitetskort.utils.getZonedDateTime
 import no.nav.amt.aktivitetskort.utils.sqlParameters
 import org.postgresql.util.PGobject
@@ -28,11 +27,8 @@ class MeldingRepository(
 		)
 	}
 
-	fun upsert(melding: Melding): RepositoryResult<Melding> {
-		val old = getByDeltakerId(melding.deltakerId)
-		if (old == melding) return RepositoryResult.NoChange()
-
-		val new = template.query(
+	fun upsert(melding: Melding) {
+		template.update(
 			"""
 			INSERT INTO melding(deltaker_id, deltakerliste_id, arrangor_id, melding)
 			VALUES (:deltaker_id,
@@ -43,7 +39,6 @@ class MeldingRepository(
 													deltakerliste_id = :deltakerliste_id,
 													arrangor_id      = :arrangor_id,
 													modified_at      = current_timestamp
-			RETURNING *
 			""".trimIndent(),
 			sqlParameters(
 				"deltaker_id" to melding.deltakerId,
@@ -51,12 +46,7 @@ class MeldingRepository(
 				"arrangor_id" to melding.arrangorId,
 				"melding" to melding.aktivitetskort.toPGObject(),
 			),
-			rowMapper,
-		).first()
-
-		if (old == null) return RepositoryResult.Created(new)
-
-		return RepositoryResult.Modified(new)
+		)
 	}
 
 	fun getByDeltakerId(deltakerId: UUID): Melding? = template.query(
