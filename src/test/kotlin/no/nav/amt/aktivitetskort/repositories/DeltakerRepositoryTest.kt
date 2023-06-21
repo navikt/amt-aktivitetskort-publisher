@@ -6,7 +6,6 @@ import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestDatabaseService
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.UUID
@@ -15,11 +14,6 @@ class DeltakerRepositoryTest : IntegrationTest() {
 
 	@Autowired
 	private lateinit var db: TestDatabaseService
-
-	@AfterEach
-	fun tearDown() {
-		db.clean()
-	}
 
 	@Test
 	fun `get - finnes ikke - returnerer null`() {

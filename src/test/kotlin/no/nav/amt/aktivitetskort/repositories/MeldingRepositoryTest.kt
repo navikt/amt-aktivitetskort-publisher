@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestDatabaseService
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
@@ -14,11 +13,6 @@ class MeldingRepositoryTest : IntegrationTest() {
 
 	@Autowired
 	private lateinit var db: TestDatabaseService
-
-	@AfterEach
-	fun tearDown() {
-		db.clean()
-	}
 
 	@Test
 	fun `get - finnes ikke - returnerer null`() {

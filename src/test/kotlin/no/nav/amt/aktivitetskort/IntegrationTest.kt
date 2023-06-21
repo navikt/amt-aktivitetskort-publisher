@@ -1,10 +1,12 @@
 package no.nav.amt.aktivitetskort
 
+import no.nav.amt.aktivitetskort.database.DbTestDataUtils
 import no.nav.amt.aktivitetskort.database.SingletonPostgresContainer
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -31,6 +33,11 @@ class IntegrationTest {
 		.build()
 
 	companion object {
+		@JvmStatic
+		@AfterAll
+		fun tearDown() {
+			DbTestDataUtils.cleanDatabase(SingletonPostgresContainer.getDataSource())
+		}
 
 		@JvmStatic
 		@DynamicPropertySource
