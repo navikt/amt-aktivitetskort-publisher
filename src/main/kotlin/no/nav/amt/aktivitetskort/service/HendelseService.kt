@@ -1,8 +1,6 @@
 package no.nav.amt.aktivitetskort.service
 
-import no.nav.amt.aktivitetskort.domain.Arrangor
-import no.nav.amt.aktivitetskort.domain.Deltaker
-import no.nav.amt.aktivitetskort.domain.Deltakerliste
+import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
@@ -27,11 +25,9 @@ class HendelseService(
 	fun deltakerHendelse(id: UUID, deltaker: DeltakerDto?) {
 		if (deltaker == null) return
 
-		val result = deltakerRepository.upsert(deltaker.toModel())
-
-		when (result) {
-			is RepositoryResult.Modified -> publiserMeldinger(result.data)
-			is RepositoryResult.Created -> publiserMeldinger(result.data)
+		when (val result = deltakerRepository.upsert(deltaker.toModel())) {
+			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
+			is RepositoryResult.Created -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltaker ${deltaker.id}: Ingen endring")
 		}
 		log.info("Konsumerte melding med deltaker $id")
@@ -40,10 +36,8 @@ class HendelseService(
 	fun deltakerlisteHendelse(id: UUID, deltakerliste: DeltakerlisteDto?) {
 		if (deltakerliste == null) return
 
-		val result = deltakerlisteRepository.upsert(deltakerliste.toModel())
-
-		when (result) {
-			is RepositoryResult.Modified -> publiserMeldinger(result.data)
+		when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel())) {
+			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.Created -> log.info("Ny hendelse deltakerliste ${deltakerliste.id}: Opprettet deltakerliste")
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Ingen endring")
 		}
@@ -53,23 +47,18 @@ class HendelseService(
 	fun arrangorHendelse(id: UUID, arrangor: ArrangorDto?) {
 		if (arrangor == null) return
 
-		val result = arrangorRepository.upsert(arrangor.toModel())
-
-		when (result) {
-			is RepositoryResult.Modified -> publiserMeldinger(result.data)
+		when (val result = arrangorRepository.upsert(arrangor.toModel())) {
+			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.Created -> log.info("Ny hendelse arrangør ${arrangor.id}: Opprettet arrangør")
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for arrangør ${arrangor.id}: Ingen endring")
 		}
 		log.info("Konsumerte melding med arrangør $id")
 	}
 
-	fun <T> publiserMeldinger(data: T) {
-		val kort = when (data) {
-			is Deltaker -> aktivitetskortService.lagAktivitetskort(data)
-			is Deltakerliste -> aktivitetskortService.lagAktivitetskort(data)
-			is Arrangor -> aktivitetskortService.lagAktivitetskort(data)
-			else -> throw RuntimeException()
-		}
-		// kafkaproducer.sendAktivitetskort(kort)
+	private fun send(aktivitetskort: Aktivitetskort) = send(listOf(aktivitetskort))
+
+	private fun send(aktivitetskort: List<Aktivitetskort>) {
+		// kafkaproducer.send(aktivitetskort)
+		log.info("Sender aktivtetskort til aktivitetsplanen: ${aktivitetskort.map { it.id }}")
 	}
 }

@@ -33,7 +33,7 @@ class AktivitetskortServiceTest {
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 
-		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker).first()
+		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
 
@@ -59,7 +59,7 @@ class AktivitetskortServiceTest {
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 
-		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker).first()
+		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
 
