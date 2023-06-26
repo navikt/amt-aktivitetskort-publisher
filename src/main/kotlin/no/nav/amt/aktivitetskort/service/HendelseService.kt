@@ -59,6 +59,6 @@ class HendelseService(
 
 	private fun send(aktivitetskort: List<Aktivitetskort>) {
 		// kafkaproducer.send(aktivitetskort)
-		log.info("Sender aktivtetskort til aktivitetsplanen: ${aktivitetskort.map { it.id }}")
+		log.info("Sendte aktivtetskort til aktivitetsplanen: ${aktivitetskort.joinToString { it.id.toString() }}")
 	}
 }

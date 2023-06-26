@@ -14,6 +14,7 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.UUID
@@ -26,22 +27,27 @@ class AktivitetskortService(
 	private val deltakerRepository: DeltakerRepository,
 ) {
 
+	private val log = LoggerFactory.getLogger(javaClass)
+
 	fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort {
 		val melding = meldingRepository
 			.getByDeltakerId(deltaker.id)
 			?.let { opprettMelding(deltaker, it.aktivitetskort.id) }
 			?: opprettMelding(deltaker, UUID.randomUUID())
 
+		log.info("Opprettet nytt aktivitets kort: ${melding.aktivitetskort.id} for deltaker: ${deltaker.id}")
 		return melding.aktivitetskort
 	}
 
 	fun lagAktivitetskort(deltakerliste: Deltakerliste) = meldingRepository
 		.getByDeltakerlisteId(deltakerliste.id)
 		.map { opprettMelding(it.deltakerId, it.aktivitetskort.id).aktivitetskort }
+		.also { log.info("Opprettet nye aktivitetskort for deltakerliste: ${deltakerliste.id}") }
 
 	fun lagAktivitetskort(arrangor: Arrangor) = meldingRepository
 		.getByArrangorId(arrangor.id)
 		.map { opprettMelding(it.deltakerId, it.aktivitetskort.id).aktivitetskort }
+		.also { log.info("Opprettet nye aktivitetskort for arrangør: ${arrangor.id}") }
 
 	private fun opprettMelding(deltakerId: UUID, aktivitetskortId: UUID) = deltakerRepository.get(deltakerId)
 		?.let { opprettMelding(it, aktivitetskortId) }
