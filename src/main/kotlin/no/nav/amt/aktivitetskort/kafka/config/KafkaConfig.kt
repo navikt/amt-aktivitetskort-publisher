@@ -22,13 +22,13 @@ class KafkaConfig(
 	@Value("\${KAFKA_TRUSTSTORE_PATH}") private val kafkaTruststorePath: String,
 	@Value("\${KAFKA_CREDSTORE_PASSWORD}") private val kafkaCredstorePassword: String,
 	@Value("\${KAFKA_KEYSTORE_PATH}") private val kafkaKeystorePath: String,
-	@Value("\${kafka.auto-offset-reset}") private val kafkaAutoOffsetReset: String
+	@Value("\${kafka.auto-offset-reset}") private val kafkaAutoOffsetReset: String,
 ) {
 	private val JAVA_KEYSTORE = "JKS"
 	private val PKCS12 = "PKCS12"
 
 	fun commonConfig() = mapOf(
-		BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers
+		BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
 	) + securityConfig()
 
 	private fun securityConfig() = mapOf(
@@ -40,12 +40,12 @@ class KafkaConfig(
 		SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG to kafkaCredstorePassword,
 		SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG to kafkaKeystorePath,
 		SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG to kafkaCredstorePassword,
-		SslConfigs.SSL_KEY_PASSWORD_CONFIG to kafkaCredstorePassword
+		SslConfigs.SSL_KEY_PASSWORD_CONFIG to kafkaCredstorePassword,
 	)
 
 	@Bean
 	fun kafkaListenerContainerFactory(
-		kafkaErrorHandler: KafkaErrorHandler
+		kafkaErrorHandler: KafkaErrorHandler,
 	): ConcurrentKafkaListenerContainerFactory<String, String> {
 		val config = mapOf(
 			ConsumerConfig.GROUP_ID_CONFIG to "amt-aktivitetskort-publisher-consumer",
@@ -53,7 +53,7 @@ class KafkaConfig(
 			ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
 			ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
 			ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
-			ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1"
+			ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
 		) + commonConfig()
 		val consumerFactory = DefaultKafkaConsumerFactory<String, String>(config)
 

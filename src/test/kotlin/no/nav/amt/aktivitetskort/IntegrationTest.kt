@@ -62,7 +62,7 @@ class IntegrationTest {
 		method: String,
 		path: String,
 		body: RequestBody? = null,
-		headers: Map<String, String> = emptyMap()
+		headers: Map<String, String> = emptyMap(),
 	): Response {
 		val reqBuilder = Request.Builder()
 			.url("${serverUrl()}$path")
@@ -74,6 +74,4 @@ class IntegrationTest {
 
 		return client.newCall(reqBuilder.build()).execute()
 	}
-
-
 }

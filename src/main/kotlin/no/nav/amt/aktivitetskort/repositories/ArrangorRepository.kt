@@ -10,13 +10,13 @@ import java.util.UUID
 
 @Repository
 class ArrangorRepository(
-	private val template: NamedParameterJdbcTemplate
+	private val template: NamedParameterJdbcTemplate,
 ) {
 
 	private val rowMapper = RowMapper { rs, _ ->
 		Arrangor(
 			id = UUID.fromString(rs.getString("id")),
-			navn = rs.getString("navn")
+			navn = rs.getString("navn"),
 		)
 	}
 
@@ -35,9 +35,9 @@ class ArrangorRepository(
 			""".trimIndent(),
 			sqlParameters(
 				"id" to arrangor.id,
-				"navn" to arrangor.navn
+				"navn" to arrangor.navn,
 			),
-			rowMapper
+			rowMapper,
 		).first()
 
 		if (old == null) return RepositoryResult.Created(new)
@@ -48,6 +48,6 @@ class ArrangorRepository(
 	fun get(id: UUID): Arrangor? = template.query(
 		"SELECT * from arrangor where id = :id",
 		sqlParameters("id" to id),
-		rowMapper
+		rowMapper,
 	).firstOrNull()
 }

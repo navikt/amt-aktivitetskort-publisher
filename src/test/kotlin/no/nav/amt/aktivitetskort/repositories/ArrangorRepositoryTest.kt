@@ -54,7 +54,7 @@ class ArrangorRepositoryTest : IntegrationTest() {
 			.also { db.arrangorRepository.upsert(it) }
 
 		val updatedArrangor = initialArrangor.copy(
-			navn = "UPDATED"
+			navn = "UPDATED",
 		)
 
 		when (val result = db.arrangorRepository.upsert(updatedArrangor)) {

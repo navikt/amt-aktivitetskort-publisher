@@ -1,6 +1,5 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
-
 import no.nav.amt.aktivitetskort.service.HendelseService
 import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJson
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -20,18 +19,21 @@ class KafkaListener(
 
 	@KafkaListener(
 		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC],
-		containerFactory = "kafkaListenerContainerFactory"
+		containerFactory = "kafkaListenerContainerFactory",
 	)
 	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
 		when (record.topic()) {
 			ARRANGOR_TOPIC -> hendelseService.arrangorHendelse(
-				UUID.fromString(record.key()), record.value()?.let { fromJson(it) }
+				UUID.fromString(record.key()),
+				record.value()?.let { fromJson(it) },
 			)
 			DELTAKERLISTE_TOPIC -> hendelseService.deltakerlisteHendelse(
-				UUID.fromString(record.key()), record.value()?.let { fromJson(it) }
+				UUID.fromString(record.key()),
+				record.value()?.let { fromJson(it) },
 			)
 			DELTAKER_TOPIC -> hendelseService.deltakerHendelse(
-				UUID.fromString(record.key()), record.value()?.let { fromJson(it) }
+				UUID.fromString(record.key()),
+				record.value()?.let { fromJson(it) },
 			)
 		}
 

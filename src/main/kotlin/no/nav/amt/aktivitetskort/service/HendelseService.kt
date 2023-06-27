@@ -1,8 +1,5 @@
 package no.nav.amt.aktivitetskort.service
 
-import no.nav.amt.aktivitetskort.domain.Arrangor
-import no.nav.amt.aktivitetskort.domain.Deltaker
-import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto

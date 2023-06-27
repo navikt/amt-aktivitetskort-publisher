@@ -9,7 +9,7 @@ data class Melding(
 	val arrangorId: UUID,
 	val aktivitetskort: Aktivitetskort,
 	val createdAt: ZonedDateTime = ZonedDateTime.now(),
-	val modifiedAt: ZonedDateTime = ZonedDateTime.now()
+	val modifiedAt: ZonedDateTime = ZonedDateTime.now(),
 ) {
 
 	override fun equals(other: Any?): Boolean {

@@ -3,9 +3,7 @@ package no.nav.amt.aktivitetskort.kafka.consumer.dto
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
-
 
 data class DeltakerDto(
 	val id: UUID,
@@ -16,7 +14,7 @@ data class DeltakerDto(
 	val prosentStilling: Double?,
 	val oppstartsdato: LocalDate?,
 	val sluttdato: LocalDate?,
-	val deltarPaKurs: Boolean
+	val deltarPaKurs: Boolean,
 ) {
 	data class DeltakerPersonaliaDto(
 		val personident: String,
@@ -26,7 +24,6 @@ data class DeltakerDto(
 		val type: DeltakerStatus,
 		val aarsak: DeltakerStatus.Aarsak,
 	)
-
 
 	fun toModel() = Deltaker(
 		id = id,
@@ -39,6 +36,4 @@ data class DeltakerDto(
 		sluttdato = sluttdato,
 		deltarPaKurs = deltarPaKurs,
 	)
-
 }
-

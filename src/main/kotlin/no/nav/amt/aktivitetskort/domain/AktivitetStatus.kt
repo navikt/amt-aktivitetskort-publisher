@@ -5,14 +5,15 @@ enum class AktivitetStatus {
 	PLANLAGT,
 	GJENNOMFORES,
 	FULLFORT,
-	AVBRUTT;
+	AVBRUTT,
+	;
 
 	companion object {
 		val planleggesStatus = listOf(
 			DeltakerStatus.Type.SOKT_INN,
 			DeltakerStatus.Type.VURDERES,
 			DeltakerStatus.Type.VENTER_PA_OPPSTART,
-			DeltakerStatus.Type.VENTELISTE
+			DeltakerStatus.Type.VENTELISTE,
 		)
 
 		val gjennomforerStatus = listOf(DeltakerStatus.Type.DELTAR)

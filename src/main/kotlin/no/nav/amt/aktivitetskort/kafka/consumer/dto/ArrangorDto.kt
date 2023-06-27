@@ -12,5 +12,3 @@ data class ArrangorDto(
 		this.navn,
 	)
 }
-
-

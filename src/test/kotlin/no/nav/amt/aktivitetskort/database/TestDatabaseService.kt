@@ -24,7 +24,7 @@ class TestDatabaseService(
 	val meldingRepository: MeldingRepository,
 	val arrangorRepository: ArrangorRepository,
 	val deltakerlisteRepository: DeltakerlisteRepository,
-	private val datasource: DataSource
+	private val datasource: DataSource,
 ) {
 
 	fun clean() = DbTestDataUtils.cleanDatabase(datasource)
@@ -33,7 +33,7 @@ class TestDatabaseService(
 		deltakerId: UUID = UUID.randomUUID(),
 		deltakerlisteId: UUID = insertDeltakerliste(deltakerliste()).id,
 		arrangorId: UUID = insertArrangor(arrangor()).id,
-		melding: Aktivitetskort = aktivitetskort()
+		melding: Aktivitetskort = aktivitetskort(),
 	) = Melding(deltakerId, deltakerlisteId, arrangorId, melding)
 
 	fun aktivitetskort(
@@ -48,7 +48,7 @@ class TestDatabaseService(
 		endretAvTidspunkt: LocalDateTime = LocalDateTime.now(),
 		avtaltMedNav: Boolean = true,
 		detaljer: List<Detalj> = listOf(Detalj("Label", "Verdi")),
-		etiketter: List<Etikett> = listOf()
+		etiketter: List<Etikett> = listOf(),
 	) = Aktivitetskort(
 		id = id,
 		personident = personIdent,
@@ -63,19 +63,19 @@ class TestDatabaseService(
 		oppgave = null,
 		handlinger = null,
 		detaljer = detaljer,
-		etiketter = etiketter
+		etiketter = etiketter,
 	)
 
 	fun arrangor(
 		id: UUID = UUID.randomUUID(),
-		navn: String = "navn"
+		navn: String = "navn",
 	) = Arrangor(id, navn)
 
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
 		tiltakstype: String = "tiltakstype",
 		navn: String = "navn",
-		arrangorId: UUID = UUID.randomUUID()
+		arrangorId: UUID = UUID.randomUUID(),
 	) = Deltakerliste(id, tiltakstype, navn, arrangorId)
 
 	fun insertArrangor(arrangor: Arrangor = arrangor()) =

@@ -8,11 +8,11 @@ data class DeltakerlisteDto(
 	val navn: String,
 	val arrangor: DeltakerlisteArrangorDto,
 	val tiltak: TiltakDto,
-	val erKurs: Boolean
+	val erKurs: Boolean,
 ) {
 	data class TiltakDto(
 		val navn: String,
-		val type: String
+		val type: String,
 	)
 
 	data class DeltakerlisteArrangorDto(

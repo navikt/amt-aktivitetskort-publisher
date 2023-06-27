@@ -22,7 +22,8 @@ data class DeltakerStatus(
 	enum class Type {
 		VENTER_PA_OPPSTART, DELTAR, HAR_SLUTTET, IKKE_AKTUELL, FEILREGISTRERT,
 		SOKT_INN, VURDERES, VENTELISTE, AVBRUTT, // kursstatuser
-		PABEGYNT_REGISTRERING;
+		PABEGYNT_REGISTRERING,
+		;
 
 		fun display() = when (this) {
 			VENTER_PA_OPPSTART -> "Venter på oppstart"
@@ -50,7 +51,6 @@ data class DeltakerStatus(
 			ANNET -> "Annet"
 			AVLYST_KONTRAKT -> "Avlyst kontrakt"
 		}
-
 	}
 
 	fun display(): String {

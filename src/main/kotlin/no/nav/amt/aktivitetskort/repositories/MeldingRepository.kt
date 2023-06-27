@@ -14,7 +14,7 @@ import java.util.UUID
 
 @Repository
 class MeldingRepository(
-	private val template: NamedParameterJdbcTemplate
+	private val template: NamedParameterJdbcTemplate,
 ) {
 
 	private val rowMapper = RowMapper { rs, _ ->
@@ -24,7 +24,7 @@ class MeldingRepository(
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 			aktivitetskort = JsonUtils.fromJson(rs.getString("melding")),
 			createdAt = rs.getZonedDateTime("created_at"),
-			modifiedAt = rs.getZonedDateTime("modified_at")
+			modifiedAt = rs.getZonedDateTime("modified_at"),
 		)
 	}
 
@@ -49,9 +49,9 @@ class MeldingRepository(
 				"deltaker_id" to melding.deltakerId,
 				"deltakerliste_id" to melding.deltakerlisteId,
 				"arrangor_id" to melding.arrangorId,
-				"melding" to melding.aktivitetskort.toPGObject()
+				"melding" to melding.aktivitetskort.toPGObject(),
 			),
-			rowMapper
+			rowMapper,
 		).first()
 
 		if (old == null) return RepositoryResult.Created(new)
@@ -62,19 +62,19 @@ class MeldingRepository(
 	fun getByDeltakerId(deltakerId: UUID): Melding? = template.query(
 		"SELECT * FROM melding where deltaker_id = :deltaker_id",
 		sqlParameters("deltaker_id" to deltakerId),
-		rowMapper
+		rowMapper,
 	).firstOrNull()
 
 	fun getByDeltakerlisteId(deltakerlisteId: UUID): List<Melding> = template.query(
 		"SELECT * FROM melding where deltakerliste_id = :deltakerliste_id",
 		sqlParameters("deltakerliste_id" to deltakerlisteId),
-		rowMapper
+		rowMapper,
 	)
 
 	fun getByArrangorId(arrangorId: UUID): List<Melding> = template.query(
 		"SELECT * FROM melding where arrangor_id = :arrangor_id",
 		sqlParameters("arrangor_id" to arrangorId),
-		rowMapper
+		rowMapper,
 	)
 
 	fun Aktivitetskort.toPGObject() = PGobject().also {

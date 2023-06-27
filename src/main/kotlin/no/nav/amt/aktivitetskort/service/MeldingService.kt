@@ -44,7 +44,7 @@ class MeldingService(
 			?: throw RuntimeException("Kunne ikke oppdatere melding: Arrangør ${deltakerliste.arrangorId} finnes ikke")
 
 		val oppdaterteMeldinger = gammleMeldinger.map { oppdaterTittel(it, lagTittel(deltakerliste, arrangor)) }
-		//publiserEndringer(oppdaterteMeldinger))
+		// publiserEndringer(oppdaterteMeldinger))
 	}
 
 	private fun oppdaterTittel(melding: Melding, tittel: String): Melding {
@@ -55,7 +55,7 @@ class MeldingService(
 	fun publiserEndring(arrangor: Arrangor) {
 		val gammleMeldinger = meldingRepository.getByArrangorId(arrangor.id)
 		val oppdaterteMeldinger = gammleMeldinger.map { oppdaterArrangor(it, arrangor.navn) }
-		//publiserEndringer(oppdaterteMeldinger))
+		// publiserEndringer(oppdaterteMeldinger))
 	}
 
 	private fun oppdaterArrangor(melding: Melding, arrangorNavn: String): Melding {
@@ -81,11 +81,11 @@ class MeldingService(
 		val aktivitetskort = nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor)
 
 		return Melding(
-				deltakerId = deltaker.id,
-				deltakerlisteId = deltakerliste.id,
-				arrangorId = arrangor.id,
-				aktivitetskort = aktivitetskort,
-			)
+			deltakerId = deltaker.id,
+			deltakerlisteId = deltakerliste.id,
+			arrangorId = arrangor.id,
+			aktivitetskort = aktivitetskort,
+		)
 	}
 
 	private fun nyttAktivitetskort(id: UUID, deltaker: Deltaker, deltakerliste: Deltakerliste, arrangor: Arrangor): Aktivitetskort {
@@ -105,15 +105,14 @@ class MeldingService(
 			detaljer = listOfNotNull(
 				deltaker.oppstartsdato?.let { Detalj("Oppstart", formaterDato(it)) },
 				deltaker.sluttdato?.let { Detalj("Sluttdato", formaterDato(it)) },
-				Detalj("Status for deltakelse", deltaker.status.display())
+				Detalj("Status for deltakelse", deltaker.status.display()),
 			),
-			etiketter = listOfNotNull(finnEtikett(deltaker.status))
+			etiketter = listOfNotNull(finnEtikett(deltaker.status)),
 		)
 	}
 
 	private fun lagTittel(deltakerliste: Deltakerliste, arrangor: Arrangor) =
 		"${deltakerliste.tiltakstype} hos ${arrangor.navn}"
-
 
 	private fun finnEtikett(status: DeltakerStatus): Etikett? {
 		return when (status.type) {
@@ -137,5 +136,4 @@ class MeldingService(
 	fun upsert(melding: Melding): RepositoryResult<Melding> {
 		return meldingRepository.upsert(melding)
 	}
-
 }

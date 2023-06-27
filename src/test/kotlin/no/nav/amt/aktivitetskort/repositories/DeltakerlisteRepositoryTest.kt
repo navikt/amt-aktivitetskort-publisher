@@ -57,7 +57,7 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 			.also { db.deltakerlisteRepository.upsert(it) }
 
 		val updatedDeltakerliste = initialDeltakerliste.copy(
-			navn = "UPDATED"
+			navn = "UPDATED",
 		)
 
 		when (val result = db.deltakerlisteRepository.upsert(updatedDeltakerliste)) {

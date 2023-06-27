@@ -10,7 +10,7 @@ import java.util.UUID
 
 @Repository
 class DeltakerlisteRepository(
-	private val template: NamedParameterJdbcTemplate
+	private val template: NamedParameterJdbcTemplate,
 ) {
 
 	private val rowMapper = RowMapper { rs, _ ->
@@ -18,7 +18,7 @@ class DeltakerlisteRepository(
 			id = UUID.fromString(rs.getString("id")),
 			tiltakstype = rs.getString("tiltakstype"),
 			navn = rs.getString("navn"),
-			arrangorId = UUID.fromString(rs.getString("arrangor_id"))
+			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 		)
 	}
 
@@ -45,7 +45,7 @@ class DeltakerlisteRepository(
 				"navn" to deltakerliste.navn,
 				"arrangor_id" to deltakerliste.arrangorId,
 			),
-			rowMapper
+			rowMapper,
 		).first()
 
 		if (old == null) return RepositoryResult.Created(new)
@@ -56,6 +56,6 @@ class DeltakerlisteRepository(
 	fun get(id: UUID): Deltakerliste? = template.query(
 		"SELECT * from deltakerliste where id = :id",
 		sqlParameters("id" to id),
-		rowMapper
+		rowMapper,
 	).firstOrNull()
 }

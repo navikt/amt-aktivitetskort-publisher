@@ -18,11 +18,11 @@ data class Aktivitetskort(
 	val oppgave: OppgaveWrapper? = null,
 	val handlinger: List<Handling>? = null,
 	val detaljer: List<Detalj>,
-	val etiketter: List<Etikett>
+	val etiketter: List<Etikett>,
 )
 
 data class Etikett(
-	val kode: Kode
+	val kode: Kode,
 ) {
 	enum class Kode {
 		SOKT_INN, VURDERES, VENTER_PA_OPPSTART, VENTELISTE, IKKE_AKTUELL
@@ -31,36 +31,36 @@ data class Etikett(
 
 data class Detalj(
 	val label: String,
-	val verdi: String
+	val verdi: String,
 )
 
 data class Handling(
 	val tekst: String,
 	val subtekst: String,
 	val url: String,
-	val lenkeType: LenkeType
+	val lenkeType: LenkeType,
 )
 
 enum class LenkeType {
 	EKSTERN,
 	INTERN,
-	FELLES
+	FELLES,
 }
 
 data class OppgaveWrapper(
 	val ekstern: Oppgave?,
-	val intern: Oppgave?
+	val intern: Oppgave?,
 )
 
 data class Oppgave(
 	val tekst: String,
 	val subtekst: String,
-	val url: String
+	val url: String,
 )
 
 data class EndretAv(
 	val ident: String,
-	val identType: IdentType
+	val identType: IdentType,
 )
 
 enum class IdentType {
@@ -69,5 +69,5 @@ enum class IdentType {
 	PERSONBRUKER,
 	TILTAKSARRAGOER,
 	ARBEIDSGIVER,
-	SYSTEM
+	SYSTEM,
 }
