@@ -7,6 +7,7 @@ import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
+import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivetStatus
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -24,6 +25,11 @@ class HendelseService(
 
 	fun deltakerHendelse(id: UUID, deltaker: DeltakerDto?) {
 		if (deltaker == null) return
+
+		if (deltakerStatusTilAktivetStatus(deltaker.status.type).isFailure) {
+			log.info("Kan ikke lage aktivitetskkort for deltaker ${deltaker.id} med status ${deltaker.status.type}")
+			return
+		}
 
 		when (val result = deltakerRepository.upsert(deltaker.toModel())) {
 			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))

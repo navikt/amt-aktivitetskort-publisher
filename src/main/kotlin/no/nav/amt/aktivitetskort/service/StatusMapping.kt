@@ -19,13 +19,13 @@ object StatusMapping {
 
 	val AVBRUTT_STATUS = listOf(DeltakerStatus.Type.AVBRUTT, DeltakerStatus.Type.IKKE_AKTUELL)
 
-	fun deltakerStatusTilAktivetStatus(deltakerStatus: DeltakerStatus.Type): AktivitetStatus {
+	fun deltakerStatusTilAktivetStatus(deltakerStatus: DeltakerStatus.Type): Result<AktivitetStatus> {
 		return when (deltakerStatus) {
-			in PLANLEGGES_STATUS -> AktivitetStatus.PLANLAGT
-			in FULLFORT_STATUS -> AktivitetStatus.FULLFORT
-			in GJENNOMFORER_STATUS -> AktivitetStatus.GJENNOMFORES
-			in AVBRUTT_STATUS -> AktivitetStatus.AVBRUTT
-			else -> throw RuntimeException("Deltakerstatus ${deltakerStatus.name} kunne ikke mappes til aktivitetsstatus")
+			in PLANLEGGES_STATUS -> Result.success(AktivitetStatus.PLANLAGT)
+			in FULLFORT_STATUS -> Result.success(AktivitetStatus.FULLFORT)
+			in GJENNOMFORER_STATUS -> Result.success(AktivitetStatus.GJENNOMFORES)
+			in AVBRUTT_STATUS -> Result.success(AktivitetStatus.AVBRUTT)
+			else -> Result.failure(RuntimeException("Deltakerstatus ${deltakerStatus.name} kunne ikke mappes til aktivitetsstatus"))
 		}
 	}
 
