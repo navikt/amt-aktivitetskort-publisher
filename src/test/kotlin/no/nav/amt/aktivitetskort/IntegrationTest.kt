@@ -1,10 +1,12 @@
 package no.nav.amt.aktivitetskort
 
+import no.nav.amt.aktivitetskort.database.DbTestDataUtils
 import no.nav.amt.aktivitetskort.database.SingletonPostgresContainer
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -12,6 +14,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.utility.DockerImageName
 import java.time.Duration
 
 @ActiveProfiles("test")
@@ -29,6 +33,11 @@ class IntegrationTest {
 		.build()
 
 	companion object {
+		@JvmStatic
+		@AfterAll
+		fun tearDown() {
+			DbTestDataUtils.cleanDatabase(SingletonPostgresContainer.getDataSource())
+		}
 
 		@JvmStatic
 		@DynamicPropertySource
@@ -39,6 +48,20 @@ class IntegrationTest {
 				registry.add("spring.datasource.password") { it.password }
 				registry.add("spring.datasource.hikari.maximum-pool-size") { 3 }
 			}
+
+			KafkaContainer(DockerImageName.parse(getKafkaImage())).apply {
+				start()
+				System.setProperty("KAFKA_BROKERS", bootstrapServers)
+			}
+		}
+
+		private fun getKafkaImage(): String {
+			val tag = when (System.getProperty("os.arch")) {
+				"aarch64" -> "7.2.2-1-ubi8.arm64"
+				else -> "7.2.2"
+			}
+
+			return "confluentinc/cp-kafka:$tag"
 		}
 	}
 
@@ -46,7 +69,7 @@ class IntegrationTest {
 		method: String,
 		path: String,
 		body: RequestBody? = null,
-		headers: Map<String, String> = emptyMap()
+		headers: Map<String, String> = emptyMap(),
 	): Response {
 		val reqBuilder = Request.Builder()
 			.url("${serverUrl()}$path")

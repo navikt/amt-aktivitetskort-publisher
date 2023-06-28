@@ -22,4 +22,8 @@ object JsonUtils {
 	inline fun <reified T> fromJson(jsonStr: String): T {
 		return mapper.readValue(jsonStr)
 	}
+
+	fun toJsonString(any: Any): String {
+		return mapper.writeValueAsString(any)
+	}
 }

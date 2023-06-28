@@ -10,33 +10,35 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.UUID
 
-class ArrangorRepositoryTest : IntegrationTest() {
+class DeltakerRepositoryTest : IntegrationTest() {
 
 	@Autowired
 	private lateinit var db: TestDatabaseService
 
 	@Test
 	fun `get - finnes ikke - returnerer null`() {
-		db.arrangorRepository.get(UUID.randomUUID()) shouldBe null
+		db.deltakerRepository.get(UUID.randomUUID()) shouldBe null
 	}
 
 	@Test
 	fun `upsert - finnes ikke - returnerer Created Result - finnes in database`() {
-		val arrangor = TestData.arrangor()
-		when (val result = db.arrangorRepository.upsert(arrangor)) {
-			is RepositoryResult.Created -> result.data shouldBe arrangor
+		val deltaker = TestData.deltaker()
+			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
+		when (val result = db.deltakerRepository.upsert(deltaker)) {
+			is RepositoryResult.Created -> result.data shouldBe deltaker
 			else -> fail("Should be Created, was $result")
 		}
 
-		db.arrangorRepository.get(arrangor.id) shouldBe arrangor
+		db.deltakerRepository.get(deltaker.id) shouldBe deltaker
 	}
 
 	@Test
 	fun `upsert - finnes - returnerer NoChange Result`() {
-		val arrangor = TestData.arrangor()
-			.also { db.arrangorRepository.upsert(it) }
+		val deltaker = TestData.deltaker()
+			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
+			.also { db.deltakerRepository.upsert(it) }
 
-		when (val result = db.arrangorRepository.upsert(arrangor)) {
+		when (val result = db.deltakerRepository.upsert(deltaker)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
@@ -45,18 +47,19 @@ class ArrangorRepositoryTest : IntegrationTest() {
 
 	@Test
 	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
-		val initialArrangor = TestData.arrangor()
-			.also { db.arrangorRepository.upsert(it) }
+		val initialDeltaker = TestData.deltaker()
+			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
+			.also { db.deltakerRepository.upsert(it) }
 
-		val updatedArrangor = initialArrangor.copy(
-			navn = "UPDATED",
+		val updatedDeltaker = initialDeltaker.copy(
+			personident = "UPDATED",
 		)
 
-		when (val result = db.arrangorRepository.upsert(updatedArrangor)) {
-			is RepositoryResult.Modified -> result.data shouldBe updatedArrangor
+		when (val result = db.deltakerRepository.upsert(updatedDeltaker)) {
+			is RepositoryResult.Modified -> result.data shouldBe updatedDeltaker
 			else -> fail("Should be Modified, was $result")
 		}
 
-		db.arrangorRepository.get(initialArrangor.id) shouldBe updatedArrangor
+		db.deltakerRepository.get(initialDeltaker.id) shouldBe updatedDeltaker
 	}
 }

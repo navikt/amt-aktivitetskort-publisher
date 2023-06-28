@@ -10,14 +10,15 @@ import java.util.UUID
 
 @Repository
 class DeltakerlisteRepository(
-	private val template: NamedParameterJdbcTemplate
+	private val template: NamedParameterJdbcTemplate,
 ) {
 
 	private val rowMapper = RowMapper { rs, _ ->
 		Deltakerliste(
 			id = UUID.fromString(rs.getString("id")),
-			tiltakstype = rs.getString("tiltakstype"),
-			navn = rs.getString("navn")
+			tiltaksnavn = rs.getString("tiltakstype"),
+			navn = rs.getString("navn"),
+			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 		)
 	}
 
@@ -28,20 +29,23 @@ class DeltakerlisteRepository(
 
 		val new = template.query(
 			"""
-			INSERT INTO deltakerliste(id, tiltakstype, navn)
+			INSERT INTO deltakerliste(id, tiltakstype, navn, arrangor_id)
 			VALUES (:id,
 					:tiltakstype,
-					:navn)
+					:navn,
+					:arrangor_id
+					)
 			ON CONFLICT (id) DO UPDATE SET tiltakstype = :tiltakstype,
 										   navn        = :navn
 			RETURNING *
 			""".trimIndent(),
 			sqlParameters(
 				"id" to deltakerliste.id,
-				"tiltakstype" to deltakerliste.tiltakstype,
-				"navn" to deltakerliste.navn
+				"tiltakstype" to deltakerliste.tiltaksnavn,
+				"navn" to deltakerliste.navn,
+				"arrangor_id" to deltakerliste.arrangorId,
 			),
-			rowMapper
+			rowMapper,
 		).first()
 
 		if (old == null) return RepositoryResult.Created(new)
@@ -52,6 +56,6 @@ class DeltakerlisteRepository(
 	fun get(id: UUID): Deltakerliste? = template.query(
 		"SELECT * from deltakerliste where id = :id",
 		sqlParameters("id" to id),
-		rowMapper
+		rowMapper,
 	).firstOrNull()
 }

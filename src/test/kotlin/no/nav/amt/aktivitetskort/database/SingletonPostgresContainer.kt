@@ -78,7 +78,7 @@ object SingletonPostgresContainer {
 			Thread {
 				log.info("Shutting down postgres database...")
 				postgresContainer?.stop()
-			}
+			},
 		)
 	}
 }

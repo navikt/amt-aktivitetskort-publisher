@@ -9,7 +9,7 @@ class ApplicationSetupTest : IntegrationTest() {
 	fun `Applcation starts and answers`() {
 		sendRequest(
 			"GET",
-			"/internal/health/readiness"
+			"/internal/health/readiness",
 		)
 			.also { it.code shouldBe 200 }
 	}
