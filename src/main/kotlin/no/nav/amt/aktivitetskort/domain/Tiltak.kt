@@ -34,6 +34,5 @@ fun cleanTiltaksnavn(navn: String) = when (navn) {
 	"Arbeidsrettet rehabilitering (dag)" -> "Arbeidsrettet rehabilitering"
 	"Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)" -> "Digitalt oppfølgingstiltak"
 	"Gruppe AMO" -> "Arbeidsmarkedsopplæring"
-	"Varig tilrettelagt arbeid i skjermet virksomhet" -> "Varig tilrettelagt arbeid"
 	else -> navn
 }
