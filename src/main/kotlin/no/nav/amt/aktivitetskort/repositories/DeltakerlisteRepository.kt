@@ -1,6 +1,7 @@
 package no.nav.amt.aktivitetskort.repositories
 
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
+import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.aktivitetskort.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
@@ -16,7 +17,10 @@ class DeltakerlisteRepository(
 	private val rowMapper = RowMapper { rs, _ ->
 		Deltakerliste(
 			id = UUID.fromString(rs.getString("id")),
-			tiltaksnavn = rs.getString("tiltakstype"),
+			tiltak = Tiltak(
+				navn = rs.getString("tiltaksnavn"),
+				type = Tiltak.Type.valueOf(rs.getString("tiltakstype")),
+			),
 			navn = rs.getString("navn"),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 		)
@@ -29,19 +33,23 @@ class DeltakerlisteRepository(
 
 		val new = template.query(
 			"""
-			INSERT INTO deltakerliste(id, tiltakstype, navn, arrangor_id)
+			INSERT INTO deltakerliste(id, tiltaksnavn, tiltakstype, navn, arrangor_id)
 			VALUES (:id,
+					:tiltaksnavn,
 					:tiltakstype,
 					:navn,
 					:arrangor_id
 					)
-			ON CONFLICT (id) DO UPDATE SET tiltakstype = :tiltakstype,
-										   navn        = :navn
+			ON CONFLICT (id) DO UPDATE SET
+				tiltaksnavn = :tiltaksnavn,
+				tiltakstype = :tiltakstype,
+			    navn = :navn
 			RETURNING *
 			""".trimIndent(),
 			sqlParameters(
 				"id" to deltakerliste.id,
-				"tiltakstype" to deltakerliste.tiltaksnavn,
+				"tiltaksnavn" to deltakerliste.tiltak.navn,
+				"tiltakstype" to deltakerliste.tiltak.type.name,
 				"navn" to deltakerliste.navn,
 				"arrangor_id" to deltakerliste.arrangorId,
 			),

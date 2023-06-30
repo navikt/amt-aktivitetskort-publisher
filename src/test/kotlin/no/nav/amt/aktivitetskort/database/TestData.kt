@@ -11,6 +11,7 @@ import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.Etikett
 import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Melding
+import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
@@ -62,7 +63,7 @@ object TestData {
 		Aktivitetskort(
 			id = id,
 			personident = deltaker.personident,
-			tittel = Aktivitetskort.lagTittel(deltakerliste.tiltaksnavn, arrangor.navn),
+			tittel = Aktivitetskort.lagTittel(deltakerliste.tiltak.navn, arrangor.navn),
 			aktivitetStatus = deltakerStatusTilAktivetStatus(deltaker.status.type).getOrThrow(),
 			startDato = deltaker.oppstartsdato,
 			sluttDato = deltaker.sluttdato,
@@ -108,10 +109,10 @@ object TestData {
 
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
-		tiltakstype: String = "tiltakstype",
+		tiltak: Tiltak = Tiltak("Oppfølging", Tiltak.Type.OPPFOELGING),
 		navn: String = "navn",
 		arrangorId: UUID = UUID.randomUUID(),
-	) = Deltakerliste(id, tiltakstype, navn, arrangorId)
+	) = Deltakerliste(id, tiltak, navn, arrangorId)
 
 	data class MockContext(
 		val deltaker: Deltaker = deltaker(),
@@ -141,8 +142,32 @@ object TestData {
 
 	fun Deltakerliste.toDto() = DeltakerlisteDto(
 		id = this.id,
-		tiltak = DeltakerlisteDto.TiltakDto(this.tiltaksnavn),
+		tiltak = this.tiltak.toDto(),
 		navn = this.navn,
 		arrangor = DeltakerlisteDto.DeltakerlisteArrangorDto(id = this.arrangorId),
 	)
+
+	fun Tiltak.toDto(): DeltakerlisteDto.TiltakDto {
+		val type = when (this.type) {
+			Tiltak.Type.OPPFOELGING -> "INDOPPFAG"
+			Tiltak.Type.VARIG_TILRETTELAGT_ARBEID -> "VASV"
+			Tiltak.Type.AVKLARING -> "AVKLARAG"
+			Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING -> "ARBFORB"
+			Tiltak.Type.ARBEIDSRETTET_REHABILITERING -> "ARBRRHDAG"
+			Tiltak.Type.ARBEIDSMARKEDSOPPLAERING -> "GRUPPEAMO"
+			Tiltak.Type.DIGITALT_OPPFOELGINGSTILTAK -> "DIGIOPPARB"
+			Tiltak.Type.JOBBKLUBB -> "JOBBK"
+			else -> "ANNETTILTAK"
+		}
+
+		val navn = when (this.navn) {
+			"Arbeidsforberedende trening" -> "Arbeidsforberedende trening (AFT)"
+			"Varig tilrettelagt arbeid" -> "Varig tilrettelagt arbeid i skjermet virksomhet"
+			"Arbeidsmarkedsopplæring" -> "Gruppe AMO"
+			"Arbeidsrettet rehabilitering" -> "Arbeidsrettet rehabilitering (dag)"
+			"Digitalt oppfølgingstiltak" -> "Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)"
+			else -> this.navn
+		}
+		return DeltakerlisteDto.TiltakDto(navn, type)
+	}
 }

@@ -76,7 +76,7 @@ class AktivitetskortService(
 	private fun nyttAktivitetskort(id: UUID, deltaker: Deltaker, deltakerliste: Deltakerliste, arrangor: Arrangor) = Aktivitetskort(
 		id = id,
 		personident = deltaker.personident,
-		tittel = Aktivitetskort.lagTittel(deltakerliste.tiltaksnavn, arrangor.navn),
+		tittel = Aktivitetskort.lagTittel(deltakerliste.tiltak.navn, arrangor.navn),
 		aktivitetStatus = deltakerStatusTilAktivetStatus(deltaker.status.type).getOrThrow(),
 		startDato = deltaker.oppstartsdato,
 		sluttDato = deltaker.sluttdato,
