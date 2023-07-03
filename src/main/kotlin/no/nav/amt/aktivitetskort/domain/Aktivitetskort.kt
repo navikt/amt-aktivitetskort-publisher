@@ -60,7 +60,12 @@ data class Aktivitetskort(
 	}
 
 	companion object {
-		fun lagTittel(tiltakstype: String, arrangorNavn: String) = "$tiltakstype hos $arrangorNavn"
+		fun lagTittel(deltakerliste: Deltakerliste, arrangor: Arrangor) = when (deltakerliste.tiltak.type) {
+			Tiltak.Type.DIGITALT_OPPFOELGINGSTILTAK -> "Digital oppfølging hos ${arrangor.navn}"
+			Tiltak.Type.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
+			Tiltak.Type.ARBEIDSMARKEDSOPPLAERING -> "Kurs: ${deltakerliste.navn}"
+			else -> "${deltakerliste.tiltak.type} hos ${arrangor.navn}"
+		}
 	}
 }
 
