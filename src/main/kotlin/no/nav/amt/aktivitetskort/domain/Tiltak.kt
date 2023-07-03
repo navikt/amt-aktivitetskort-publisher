@@ -36,3 +36,9 @@ fun cleanTiltaksnavn(navn: String) = when (navn) {
 	"Gruppe AMO" -> "Arbeidsmarkedsopplæring"
 	else -> navn
 }
+
+fun erTiltakmedDeltakelsesmendge(type: Tiltak.Type) = when (type) {
+	Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING -> true
+	Tiltak.Type.VARIG_TILRETTELAGT_ARBEID -> true
+	else -> false
+}

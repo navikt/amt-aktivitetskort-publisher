@@ -4,7 +4,6 @@ import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
-import no.nav.amt.aktivitetskort.domain.Detalj
 import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Melding
@@ -86,10 +85,7 @@ class AktivitetskortService(
 		avtaltMedNav = true,
 		oppgave = null,
 		handlinger = null,
-		detaljer = listOfNotNull(
-			Detalj("Status for deltakelse", deltaker.status.display()),
-			Detalj("Arrangør", arrangor.navn),
-		),
+		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
 	)
 }
