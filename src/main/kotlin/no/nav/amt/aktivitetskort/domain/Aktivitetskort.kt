@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.domain
 
+import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Objects
@@ -65,6 +66,35 @@ data class Aktivitetskort(
 			Tiltak.Type.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
 			Tiltak.Type.ARBEIDSMARKEDSOPPLAERING -> "Kurs: ${deltakerliste.navn}"
 			else -> "${deltakerliste.tiltak.type} hos ${arrangor.navn}"
+		}
+
+		fun lagDetaljer(deltaker: Deltaker, deltakerliste: Deltakerliste, arrangor: Arrangor): List<Detalj> {
+			val detaljer = mutableListOf<Detalj>()
+
+			detaljer.add(Detalj("Status for deltakelse", deltaker.status.display()))
+
+			if (erTiltakmedDeltakelsesmendge(deltakerliste.tiltak.type)) {
+				deltakelseMengdeDetalj(deltaker)?.let { detaljer.add(it) }
+			}
+
+			detaljer.add(Detalj("Arrangør", arrangor.navn))
+
+			return detaljer
+		}
+
+		private fun deltakelseMengdeDetalj(deltaker: Deltaker): Detalj? {
+			if (deltaker.prosentStilling == null && (deltaker.dagerPerUke == null || deltaker.dagerPerUke !in 1..5)) {
+				return null
+			}
+
+			val label = "Deltakelsesmengde"
+			val stillingsProsent = "${DecimalFormat("#.#").format(deltaker.prosentStilling)}%"
+
+			return if (deltaker.prosentStilling == 100.0) {
+				Detalj(label, stillingsProsent)
+			} else {
+				Detalj(label, "$stillingsProsent ${deltaker.dagerPerUke} dager i uka")
+			}
 		}
 	}
 }
