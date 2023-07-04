@@ -83,17 +83,22 @@ data class Aktivitetskort(
 		}
 
 		private fun deltakelseMengdeDetalj(deltaker: Deltaker): Detalj? {
-			if (deltaker.prosentStilling == null && (deltaker.dagerPerUke == null || deltaker.dagerPerUke !in 1..5)) {
-				return null
-			}
+			val harDagerPerUke = deltaker.dagerPerUke?.let { it in 1..5 } == true
+			val harProsentStilling = deltaker.prosentStilling?.let { it in 1.0..100.0 } == true
 
 			val label = "Deltakelsesmengde"
-			val stillingsProsent = "${DecimalFormat("#.#").format(deltaker.prosentStilling)}%"
 
-			return if (deltaker.prosentStilling == 100.0) {
-				Detalj(label, stillingsProsent)
-			} else {
-				Detalj(label, "$stillingsProsent ${deltaker.dagerPerUke} dager i uka")
+			fun fmtProsent(pct: Double) = "${DecimalFormat("#.#").format(pct)}%"
+			fun fmtDager(antall: Int) = "$antall ${if (antall == 1) "dag" else "dager"} i uka"
+
+			return when {
+				!harProsentStilling && !harDagerPerUke -> null
+				deltaker.prosentStilling == 100.0 || !harDagerPerUke ->
+					deltaker.prosentStilling?.let { Detalj(label, fmtProsent(it)) }
+				!harProsentStilling ->
+					deltaker.dagerPerUke?.let { Detalj(label, fmtDager(it)) }
+				else ->
+					Detalj(label, "${fmtProsent(deltaker.prosentStilling!!)} ${fmtDager(deltaker.dagerPerUke!!)}")
 			}
 		}
 	}
