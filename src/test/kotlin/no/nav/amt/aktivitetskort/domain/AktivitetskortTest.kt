@@ -51,6 +51,56 @@ class AktivitetskortTest {
 	}
 
 	@Test
+	fun `lagDetaljer - deltaker ikke 100% deltakelsesmengde og uten dager per uke - lager detalj med prosent`() {
+		val deltakerliste = TestData.deltakerliste(
+			tiltak = Tiltak("AFT 50%", Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING),
+		)
+		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
+
+		val deltaker1 = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = 0, deltakerlisteId = deltakerliste.id)
+		val deltaker2 = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = null, deltakerlisteId = deltakerliste.id)
+
+		val detaljer1 = Aktivitetskort.lagDetaljer(deltaker1, deltakerliste, arrangor)
+		val detaljer2 = Aktivitetskort.lagDetaljer(deltaker2, deltakerliste, arrangor)
+
+		detaljer1.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "50%")
+		detaljer2.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "50%")
+	}
+
+	@Test
+	fun `lagDetaljer - deltaker uten prosentstilling - lager detalj med dager per uke`() {
+		val deltakerliste = TestData.deltakerliste(
+			tiltak = Tiltak("AFT noen dager", Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING),
+		)
+		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
+
+		val deltaker1 = TestData.deltaker(prosentStilling = 0.0, dagerPerUke = 5, deltakerlisteId = deltakerliste.id)
+		val deltaker2 = TestData.deltaker(prosentStilling = null, dagerPerUke = 1, deltakerlisteId = deltakerliste.id)
+
+		val detaljer1 = Aktivitetskort.lagDetaljer(deltaker1, deltakerliste, arrangor)
+		val detaljer2 = Aktivitetskort.lagDetaljer(deltaker2, deltakerliste, arrangor)
+
+		detaljer1.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "5 dager i uka")
+		detaljer2.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "1 dag i uka")
+	}
+
+	@Test
+	fun `lagDetaljer - deltaker med 0% og 0 dager - lager ikke detalj med deltakelsesmengde`() {
+		val deltakerliste = TestData.deltakerliste(
+			tiltak = Tiltak("AFT", Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING),
+		)
+		val deltaker1 = TestData.deltaker(dagerPerUke = 0, prosentStilling = 0.0)
+		val deltaker2 = TestData.deltaker(dagerPerUke = null, prosentStilling = null)
+		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
+
+		val detaljer1 = Aktivitetskort.lagDetaljer(deltaker1, deltakerliste, arrangor)
+		val detaljer2 = Aktivitetskort.lagDetaljer(deltaker2, deltakerliste, arrangor)
+
+		detaljer1.find { it.label == "Deltakelsesmengde" } shouldBe null
+		detaljer2.find { it.label == "Deltakelsesmengde" } shouldBe null
+	}
+
+	@Test
 	fun `lagDetaljer - tiltak uten deltakelsesmengde - lager ikke detalj med deltakelsesmengde`() {
 		val deltakerliste = TestData.deltakerliste(
 			tiltak = Tiltak("Oppfølgingstiltak", Tiltak.Type.OPPFOELGING),
