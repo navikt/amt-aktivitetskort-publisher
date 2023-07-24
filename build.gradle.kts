@@ -1,9 +1,9 @@
 plugins {
-	id("org.springframework.boot") version "3.1.1"
-	id("io.spring.dependency-management") version "1.1.0"
-	id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
-	kotlin("jvm") version "1.8.22"
-	kotlin("plugin.spring") version "1.8.22"
+	id("org.springframework.boot") version "3.1.2"
+	id("io.spring.dependency-management") version "1.1.2"
+	id("org.jlleitschuh.gradle.ktlint") version "11.5.0"
+	kotlin("jvm") version "1.9.0"
+	kotlin("plugin.spring") version "1.9.0"
 }
 
 group = "org.example"
@@ -17,7 +17,7 @@ repositories {
 
 val logstashEncoderVersion = "7.4"
 val okHttpVersion = "4.11.0"
-val kafkaClientsVersion = "3.5.0"
+val kafkaClientsVersion = "3.5.1"
 val kotestVersion = "5.6.2"
 val testcontainersVersion = "1.18.3"
 val klintVersion = "0.49.1"
