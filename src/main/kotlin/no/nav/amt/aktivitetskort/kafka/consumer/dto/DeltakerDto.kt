@@ -10,7 +10,7 @@ data class DeltakerDto(
 	val personalia: DeltakerPersonaliaDto,
 	val deltakerlisteId: UUID,
 	val status: DeltakerStatusDto,
-	val dagerPerUke: Int?,
+	val dagerPerUke: Float?,
 	val prosentStilling: Double?,
 	val oppstartsdato: LocalDate?,
 	val sluttdato: LocalDate?,

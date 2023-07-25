@@ -85,7 +85,7 @@ object TestData {
 		personident: String = "fnr",
 		deltakerlisteId: UUID = UUID.randomUUID(),
 		status: DeltakerStatus = DeltakerStatus(DeltakerStatus.Type.DELTAR, null),
-		dagerPerUke: Int? = 5,
+		dagerPerUke: Float? = 5.0f,
 		prosentStilling: Double? = 100.0,
 		oppstartsdato: LocalDate? = LocalDate.now().minusWeeks(4),
 		sluttdato: LocalDate? = LocalDate.now().plusWeeks(4),

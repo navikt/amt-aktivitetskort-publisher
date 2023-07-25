@@ -83,20 +83,23 @@ data class Aktivitetskort(
 		}
 
 		private fun deltakelseMengdeDetalj(deltaker: Deltaker): Detalj? {
-			val harDagerPerUke = deltaker.dagerPerUke?.let { it in 1..5 } == true
+			val harDagerPerUke = deltaker.dagerPerUke?.let { it in 1.0f..5.0f } == true
 			val harProsentStilling = deltaker.prosentStilling?.let { it in 1.0..100.0 } == true
 
 			val label = "Deltakelsesmengde"
 
 			fun fmtProsent(pct: Double) = "${DecimalFormat("#.#").format(pct)}%"
-			fun fmtDager(antall: Int) = "$antall ${if (antall == 1) "dag" else "dager"} i uka"
+			fun removeUnnessesaryDecimals(f: Float): String = if (f.rem(1) == 0.0f) f.toInt().toString() else f.toString()
+			fun fmtDager(antall: Float) = "${removeUnnessesaryDecimals(antall)} ${if (antall == 1.0f) "dag" else "dager"} i uka"
 
 			return when {
 				!harProsentStilling && !harDagerPerUke -> null
 				deltaker.prosentStilling == 100.0 || !harDagerPerUke ->
 					deltaker.prosentStilling?.let { Detalj(label, fmtProsent(it)) }
+
 				!harProsentStilling ->
 					deltaker.dagerPerUke?.let { Detalj(label, fmtDager(it)) }
+
 				else ->
 					Detalj(label, "${fmtProsent(deltaker.prosentStilling!!)} ${fmtDager(deltaker.dagerPerUke!!)}")
 			}
