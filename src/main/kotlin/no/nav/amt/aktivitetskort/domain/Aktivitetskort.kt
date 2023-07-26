@@ -89,8 +89,7 @@ data class Aktivitetskort(
 			val label = "Deltakelsesmengde"
 
 			fun fmtProsent(pct: Double) = "${DecimalFormat("#.#").format(pct)}%"
-			fun removeUnnessesaryDecimals(f: Float): String = if (f.rem(1) == 0.0f) f.toInt().toString() else f.toString()
-			fun fmtDager(antall: Float) = "${removeUnnessesaryDecimals(antall)} ${if (antall == 1.0f) "dag" else "dager"} i uka"
+			fun fmtDager(antall: Float) = "${DecimalFormat("#.#").format(antall)} ${if (antall == 1.0f) "dag" else "dager"} i uka"
 
 			return when {
 				!harProsentStilling && !harDagerPerUke -> null
