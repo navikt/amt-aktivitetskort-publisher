@@ -27,7 +27,7 @@ class AktivitetskortTest {
 		val deltakerliste = TestData.deltakerliste(
 			tiltak = Tiltak("VTA 100%", Tiltak.Type.VARIG_TILRETTELAGT_ARBEID),
 		)
-		val deltaker = TestData.deltaker(prosentStilling = 100.0, dagerPerUke = 5, deltakerlisteId = deltakerliste.id)
+		val deltaker = TestData.deltaker(prosentStilling = 100.0, dagerPerUke = 2.5f, deltakerlisteId = deltakerliste.id)
 		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
 
 		val detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor)
@@ -38,11 +38,11 @@ class AktivitetskortTest {
 	}
 
 	@Test
-	fun `lagDetaljer - deltaker ikke 100% deltakelsesmengde - lager detalj med antall dager i uken`() {
+	fun `lagDetaljer - deltaker ikke 100 prosent deltakelsesmengde - lager detalj med antall dager i uken`() {
 		val deltakerliste = TestData.deltakerliste(
 			tiltak = Tiltak("AFT 50% 2 dager i uken", Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING),
 		)
-		val deltaker = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = 2, deltakerlisteId = deltakerliste.id)
+		val deltaker = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = 2.0f, deltakerlisteId = deltakerliste.id)
 		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
 
 		val detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor)
@@ -51,13 +51,13 @@ class AktivitetskortTest {
 	}
 
 	@Test
-	fun `lagDetaljer - deltaker ikke 100% deltakelsesmengde og uten dager per uke - lager detalj med prosent`() {
+	fun `lagDetaljer - deltaker ikke 100 prosent deltakelsesmengde og uten dager per uke - lager detalj med prosent`() {
 		val deltakerliste = TestData.deltakerliste(
 			tiltak = Tiltak("AFT 50%", Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING),
 		)
 		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
 
-		val deltaker1 = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = 0, deltakerlisteId = deltakerliste.id)
+		val deltaker1 = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = 0.0f, deltakerlisteId = deltakerliste.id)
 		val deltaker2 = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = null, deltakerlisteId = deltakerliste.id)
 
 		val detaljer1 = Aktivitetskort.lagDetaljer(deltaker1, deltakerliste, arrangor)
@@ -74,8 +74,8 @@ class AktivitetskortTest {
 		)
 		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
 
-		val deltaker1 = TestData.deltaker(prosentStilling = 0.0, dagerPerUke = 5, deltakerlisteId = deltakerliste.id)
-		val deltaker2 = TestData.deltaker(prosentStilling = null, dagerPerUke = 1, deltakerlisteId = deltakerliste.id)
+		val deltaker1 = TestData.deltaker(prosentStilling = 0.0, dagerPerUke = 5f, deltakerlisteId = deltakerliste.id)
+		val deltaker2 = TestData.deltaker(prosentStilling = null, dagerPerUke = 1f, deltakerlisteId = deltakerliste.id)
 
 		val detaljer1 = Aktivitetskort.lagDetaljer(deltaker1, deltakerliste, arrangor)
 		val detaljer2 = Aktivitetskort.lagDetaljer(deltaker2, deltakerliste, arrangor)
@@ -85,11 +85,11 @@ class AktivitetskortTest {
 	}
 
 	@Test
-	fun `lagDetaljer - deltaker med 0% og 0 dager - lager ikke detalj med deltakelsesmengde`() {
+	fun `lagDetaljer - deltaker med 0 prosent og 0 dager - lager ikke detalj med deltakelsesmengde`() {
 		val deltakerliste = TestData.deltakerliste(
 			tiltak = Tiltak("AFT", Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING),
 		)
-		val deltaker1 = TestData.deltaker(dagerPerUke = 0, prosentStilling = 0.0)
+		val deltaker1 = TestData.deltaker(dagerPerUke = 0f, prosentStilling = 0.0)
 		val deltaker2 = TestData.deltaker(dagerPerUke = null, prosentStilling = null)
 		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
 

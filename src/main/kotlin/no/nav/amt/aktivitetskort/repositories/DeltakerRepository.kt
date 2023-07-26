@@ -23,7 +23,7 @@ class DeltakerRepository(
 				type = DeltakerStatus.Type.valueOf(rs.getString("deltaker_status_type")),
 				aarsak = rs.getString("deltaker_status_arsak")?.let { DeltakerStatus.Aarsak.valueOf(it) },
 			),
-			dagerPerUke = rs.getInt("dager_per_uke"),
+			dagerPerUke = rs.getFloat("dager_per_uke"),
 			prosentStilling = rs.getDouble("prosent_stilling"),
 			oppstartsdato = rs.getDate("start_dato")?.toLocalDate(),
 			sluttdato = rs.getDate("slutt_dato")?.toLocalDate(),
