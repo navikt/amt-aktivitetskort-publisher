@@ -21,7 +21,7 @@ val kafkaClientsVersion = "3.5.1"
 val kotestVersion = "5.6.2"
 val testcontainersVersion = "1.18.3"
 val klintVersion = "0.49.1"
-val mockkVersion = "1.13.5"
+val mockkVersion = "1.13.7"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
