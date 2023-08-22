@@ -16,6 +16,7 @@ class ArrangorRepository(
 	private val rowMapper = RowMapper { rs, _ ->
 		Arrangor(
 			id = UUID.fromString(rs.getString("id")),
+			organisasjonsnummer = rs.getString("organisasjonsnummer"),
 			navn = rs.getString("navn"),
 		)
 	}
@@ -27,8 +28,9 @@ class ArrangorRepository(
 
 		val new = template.query(
 			"""
-			INSERT INTO arrangor(id, navn)
+			INSERT INTO arrangor(id, organisasjonsnummer, navn)
 			VALUES (:id,
+					:organisasjonsnummer,
 					:navn)
 			ON CONFLICT (id) DO UPDATE SET navn        = :navn
 			RETURNING *
@@ -36,6 +38,7 @@ class ArrangorRepository(
 			sqlParameters(
 				"id" to arrangor.id,
 				"navn" to arrangor.navn,
+				"organisasjonsnummer" to arrangor.organisasjonsnummer,
 			),
 			rowMapper,
 		).first()

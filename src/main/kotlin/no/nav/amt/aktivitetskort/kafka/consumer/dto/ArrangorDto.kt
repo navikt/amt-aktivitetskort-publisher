@@ -5,10 +5,12 @@ import java.util.UUID
 
 data class ArrangorDto(
 	val id: UUID,
+	val organisasjonsnummer: String,
 	val navn: String,
 ) {
 	fun toModel() = Arrangor(
 		this.id,
+		this.organisasjonsnummer,
 		this.navn,
 	)
 }

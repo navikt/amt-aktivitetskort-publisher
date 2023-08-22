@@ -104,8 +104,9 @@ object TestData {
 
 	fun arrangor(
 		id: UUID = UUID.randomUUID(),
+		organisasjonsnummer: String = "999888777",
 		navn: String = "navn",
-	) = Arrangor(id, navn)
+	) = Arrangor(id, organisasjonsnummer, navn)
 
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
@@ -137,6 +138,7 @@ object TestData {
 
 	fun Arrangor.toDto() = ArrangorDto(
 		id = this.id,
+		organisasjonsnummer = this.organisasjonsnummer,
 		navn = this.navn,
 	)
 
