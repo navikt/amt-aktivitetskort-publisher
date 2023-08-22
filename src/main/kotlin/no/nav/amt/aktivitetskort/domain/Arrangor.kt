@@ -4,5 +4,6 @@ import java.util.UUID
 
 data class Arrangor(
 	val id: UUID,
+	val organisasjonsnummer: String,
 	val navn: String,
 )
