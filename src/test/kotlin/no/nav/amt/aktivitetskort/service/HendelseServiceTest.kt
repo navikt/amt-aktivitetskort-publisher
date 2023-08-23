@@ -66,10 +66,12 @@ class HendelseServiceTest {
 	fun `deltakerlisteHendelse - deltakerliste modifisert - publiser melding`() {
 		val ctx = TestData.MockContext()
 
+		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
 		every { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
-		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerliste.toDto())
+
+		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
@@ -79,9 +81,10 @@ class HendelseServiceTest {
 	fun `deltakerlisteHendelse - deltakerliste lagd - ikke publiser melding`() {
 		val ctx = TestData.MockContext()
 
+		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 
-		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerliste.toDto())
+		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
@@ -91,9 +94,10 @@ class HendelseServiceTest {
 	fun `deltakerlisteHendelse - deltakerliste har ingen forandring - ikke publiser melding`() {
 		val ctx = TestData.MockContext()
 
+		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
 
-		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerliste.toDto())
+		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }

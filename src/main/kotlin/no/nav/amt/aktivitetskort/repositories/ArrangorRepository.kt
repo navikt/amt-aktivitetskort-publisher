@@ -55,4 +55,10 @@ class ArrangorRepository(
 		sqlParameters("id" to id),
 		rowMapper,
 	).firstOrNull()
+
+	fun get(organisasjonsnummer: String) = template.query(
+		"SELECT * from arrangor where organisasjonsnummer = :organisasjonsnummer",
+		sqlParameters("organisasjonsnummer" to organisasjonsnummer),
+		rowMapper,
+	).firstOrNull()
 }

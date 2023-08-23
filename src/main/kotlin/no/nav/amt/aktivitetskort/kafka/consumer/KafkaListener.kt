@@ -10,7 +10,7 @@ import java.util.UUID
 
 const val DELTAKER_TOPIC = "amt.deltaker-v2"
 const val ARRANGOR_TOPIC = "amt.arrangor-v1"
-const val DELTAKERLISTE_TOPIC = "amt.deltakerliste-v1"
+const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
 
 @Component
 class KafkaListener(

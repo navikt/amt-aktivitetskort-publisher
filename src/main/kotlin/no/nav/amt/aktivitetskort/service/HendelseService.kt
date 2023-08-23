@@ -42,7 +42,10 @@ class HendelseService(
 	fun deltakerlisteHendelse(id: UUID, deltakerliste: DeltakerlisteDto?) {
 		if (deltakerliste == null) return
 
-		when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel())) {
+		val arrangor = arrangorRepository.get(deltakerliste.virksomhetsnummer)
+			?: throw NoSuchElementException("Fant ikke arrangør med organisasjonsnummer ${deltakerliste.virksomhetsnummer}")
+
+		when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel(arrangor.id))) {
 			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.Created -> log.info("Ny hendelse deltakerliste ${deltakerliste.id}: Opprettet deltakerliste")
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Ingen endring")

@@ -9,27 +9,23 @@ import java.util.UUID
 data class DeltakerlisteDto(
 	val id: UUID,
 	val navn: String,
-	val arrangor: DeltakerlisteArrangorDto,
-	val tiltak: TiltakDto,
+	val tiltakstype: Tiltakstype,
+	val virksomhetsnummer: String,
 ) {
-	data class TiltakDto(
+	data class Tiltakstype(
 		val navn: String,
-		val type: String,
+		val arenaKode: String
 	) {
 		fun toModel() = Tiltak(
 			cleanTiltaksnavn(this.navn),
-			arenaKodeTilTiltakstype(this.type),
+			arenaKodeTilTiltakstype(this.arenaKode),
 		)
 	}
 
-	data class DeltakerlisteArrangorDto(
-		val id: UUID,
-	)
-
-	fun toModel() = Deltakerliste(
-		this.id,
-		this.tiltak.toModel(),
-		this.navn,
-		this.arrangor.id,
+	fun toModel(arrangorId: UUID) = Deltakerliste(
+		id = this.id,
+		tiltak = this.tiltakstype.toModel(),
+		navn = this.navn,
+		arrangorId = arrangorId,
 	)
 }

@@ -104,7 +104,7 @@ object TestData {
 
 	fun arrangor(
 		id: UUID = UUID.randomUUID(),
-		organisasjonsnummer: String = "999888777",
+		organisasjonsnummer: String = (100_000_000 .. 900_000_000).random().toString(),
 		navn: String = "navn",
 	) = Arrangor(id, organisasjonsnummer, navn)
 
@@ -122,7 +122,14 @@ object TestData {
 		val aktivitetskortId: UUID = UUID.randomUUID(),
 		val aktivitetskort: Aktivitetskort = aktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor),
 		val melding: Melding = melding(deltaker.id, deltakerliste.id, arrangor.id, aktivitetskort),
-	)
+	) {
+		fun deltakerlisteDto() = DeltakerlisteDto(
+			id = this.deltakerliste.id,
+			tiltakstype = this.deltakerliste.tiltak.toDto(),
+			navn = this.deltakerliste.navn,
+			virksomhetsnummer = this@MockContext.arrangor.organisasjonsnummer,
+		)
+	}
 
 	fun Deltaker.toDto() = DeltakerDto(
 		id = this.id,
@@ -142,14 +149,7 @@ object TestData {
 		navn = this.navn,
 	)
 
-	fun Deltakerliste.toDto() = DeltakerlisteDto(
-		id = this.id,
-		tiltak = this.tiltak.toDto(),
-		navn = this.navn,
-		arrangor = DeltakerlisteDto.DeltakerlisteArrangorDto(id = this.arrangorId),
-	)
-
-	fun Tiltak.toDto(): DeltakerlisteDto.TiltakDto {
+	fun Tiltak.toDto(): DeltakerlisteDto.Tiltakstype {
 		val type = when (this.type) {
 			Tiltak.Type.OPPFOELGING -> "INDOPPFAG"
 			Tiltak.Type.VARIG_TILRETTELAGT_ARBEID -> "VASV"
@@ -170,6 +170,6 @@ object TestData {
 			"Digitalt oppfølgingstiltak" -> "Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)"
 			else -> this.navn
 		}
-		return DeltakerlisteDto.TiltakDto(navn, type)
+		return DeltakerlisteDto.Tiltakstype(navn, type)
 	}
 }
