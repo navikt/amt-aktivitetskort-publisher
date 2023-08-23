@@ -42,6 +42,8 @@ class HendelseService(
 	fun deltakerlisteHendelse(id: UUID, deltakerliste: DeltakerlisteDto?) {
 		if (deltakerliste == null) return
 
+		if (!deltakerliste.tiltakstype.erStottet()) return
+
 		val arrangor = arrangorRepository.get(deltakerliste.virksomhetsnummer)
 			?: throw NoSuchElementException("Fant ikke arrangør med organisasjonsnummer ${deltakerliste.virksomhetsnummer}")
 

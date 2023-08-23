@@ -20,6 +20,18 @@ data class DeltakerlisteDto(
 			cleanTiltaksnavn(this.navn),
 			arenaKodeTilTiltakstype(this.arenaKode),
 		)
+
+		fun erStottet() = this.arenaKode in setOf(
+			"INDOPPFAG",
+			"ARBFORB",
+			"AVKLARAG",
+			"VASV",
+			"ARBRRHDAG",
+			"DIGIOPPARB",
+			"JOBBK",
+			"GRUPPEAMO",
+			"GRUFAGYRKE",
+		)
 	}
 
 	fun toModel(arrangorId: UUID) = Deltakerliste(

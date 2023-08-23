@@ -131,6 +131,13 @@ object TestData {
 		)
 	}
 
+	fun Deltakerliste.toDto(arrangor: Arrangor) = DeltakerlisteDto(
+		id = this.id,
+		tiltakstype = this.tiltak.toDto(),
+		navn = this.navn,
+		virksomhetsnummer = arrangor.organisasjonsnummer,
+	)
+
 	fun Deltaker.toDto() = DeltakerDto(
 		id = this.id,
 		personalia = DeltakerDto.DeltakerPersonaliaDto(this.personident),
@@ -159,7 +166,7 @@ object TestData {
 			Tiltak.Type.ARBEIDSMARKEDSOPPLAERING -> "GRUPPEAMO"
 			Tiltak.Type.DIGITALT_OPPFOELGINGSTILTAK -> "DIGIOPPARB"
 			Tiltak.Type.JOBBKLUBB -> "JOBBK"
-			else -> "ANNETTILTAK"
+			else -> "IKKE_STOTTET_TILTAK"
 		}
 
 		val navn = when (this.navn) {
