@@ -32,7 +32,9 @@ class ArrangorRepository(
 			VALUES (:id,
 					:organisasjonsnummer,
 					:navn)
-			ON CONFLICT (id) DO UPDATE SET navn        = :navn
+			ON CONFLICT (id) DO UPDATE SET
+				navn = :navn,
+				organisasjonsnummer = :organisasjonsnummer
 			RETURNING *
 			""".trimIndent(),
 			sqlParameters(
