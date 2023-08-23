@@ -14,7 +14,7 @@ data class DeltakerlisteDto(
 ) {
 	data class Tiltakstype(
 		val navn: String,
-		val arenaKode: String
+		val arenaKode: String,
 	) {
 		fun toModel() = Tiltak(
 			cleanTiltaksnavn(this.navn),

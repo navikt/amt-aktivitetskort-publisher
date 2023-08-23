@@ -70,7 +70,6 @@ class HendelseServiceTest {
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
 		every { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
-
 		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
