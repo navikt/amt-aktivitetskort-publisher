@@ -22,6 +22,9 @@ val kotestVersion = "5.6.2"
 val testcontainersVersion = "1.19.0"
 val klintVersion = "0.49.1"
 val mockkVersion = "1.13.7"
+val commonVersion = "3.2023.07.07_09.10-85326e9557f0"
+val tokenSupportVersion = "3.1.2"
+val mockOauth2ServerVersion = "1.0.0"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
@@ -47,6 +50,9 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus")
 	implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
+	implementation("com.github.navikt.common-java-modules:token-client:$commonVersion")
+	implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
+
 	testImplementation(kotlin("test"))
 	testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
@@ -57,6 +63,8 @@ dependencies {
 	testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
 	testImplementation("org.testcontainers:kafka:$testcontainersVersion")
 	testImplementation("io.mockk:mockk:$mockkVersion")
+	testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
+	testImplementation("no.nav.security:mock-oauth2-server:$mockOauth2ServerVersion")
 }
 
 tasks.test {

@@ -2,5 +2,5 @@
 
 Leser inn data fra amt-domenet og publiserer til AKaaS for å generere og oppdatere aktivitetskort
 
-Codestyle fix: `./gradlew ktlintFormat build`
+Codestyle fix: `./gradlew clean ktlintFormat build`
 Build: `./gradlew build`
