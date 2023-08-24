@@ -3,6 +3,7 @@ package no.nav.amt.aktivitetskort.kafka.consumer
 import no.nav.amt.aktivitetskort.service.HendelseService
 import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJson
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
@@ -17,11 +18,14 @@ class KafkaListener(
 	val hendelseService: HendelseService,
 ) {
 
+	val logger = LoggerFactory.getLogger(javaClass)
+
 	@KafkaListener(
 		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC],
 		containerFactory = "kafkaListenerContainerFactory",
 	)
 	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
+		logger.info("HERE, topic: ${record.topic()}, record: $record")
 		when (record.topic()) {
 			ARRANGOR_TOPIC -> hendelseService.arrangorHendelse(
 				UUID.fromString(record.key()),
