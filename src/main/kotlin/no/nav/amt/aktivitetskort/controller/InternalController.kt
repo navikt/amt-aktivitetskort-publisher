@@ -2,6 +2,7 @@ package no.nav.amt.aktivitetskort.controller
 
 import jakarta.servlet.http.HttpServletRequest
 import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
+import no.nav.security.token.support.core.api.Unprotected
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -16,6 +17,7 @@ class InternalController(
 	private val amtArenaAclClient: AmtArenaAclClient,
 ) {
 
+	@Unprotected
 	@GetMapping("/arenaId/{amtId}")
 	fun getArenaIdForAmtId(
 		servlet: HttpServletRequest,
