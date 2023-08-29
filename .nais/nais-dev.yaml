@@ -53,6 +53,11 @@ spec:
     enabled: true
   kafka:
     pool: nav-dev
+  accessPolicy:
+    outbound:
+      rules:
+        - application: amt-arena-acl
+          cluster: dev-gcp
   env:
     - name: AMT_ARENA_ACL_URL
       value: http://amt-arena-acl.amt.svc.cluster.local
