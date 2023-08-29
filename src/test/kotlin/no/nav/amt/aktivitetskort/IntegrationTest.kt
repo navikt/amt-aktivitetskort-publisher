@@ -64,10 +64,12 @@ class IntegrationTest {
 */
 
 			registry.add("nais.env.azureOpenIdConfigTokenEndpoint") { "" }
-			registry.add("amt.arena-acl.url") { "" }
 
+			registry.add("amt.arena-acl.url") { "" }
 			registry.add("amt.arena-acl.scope") { "test.amt-arena-acl" }
-			registry.add("dab.arena-acl.scope") { "test.dab-arena-acl" }
+
+			registry.add("aktivitet.arena-acl.url") { "" }
+			registry.add("aktivitet.arena-acl.scope") { "test.dab-arena-acl" }
 		}
 
 		private fun getKafkaImage(): String {
