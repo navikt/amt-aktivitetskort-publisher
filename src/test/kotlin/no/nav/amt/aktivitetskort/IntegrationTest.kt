@@ -57,12 +57,6 @@ class IntegrationTest {
 				System.setProperty("KAFKA_BROKERS", bootstrapServers)
 			}
 
-/*			mockMachineToMachineHttpServer.start()
-			registry.add("nais.env.azureOpenIdConfigTokenEndpoint") {
-				mockMachineToMachineHttpServer.serverUrl() + MockMachineToMachineHttpServer.tokenPath
-			}
-*/
-
 			registry.add("nais.env.azureOpenIdConfigTokenEndpoint") { "" }
 
 			registry.add("amt.arena-acl.url") { "" }
