@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.client.configuration
 
+import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.common.token_client.client.MachineToMachineTokenClient
 import no.nav.security.token.support.spring.api.EnableJwtTokenValidation
@@ -16,6 +17,7 @@ import java.util.concurrent.TimeUnit
 @EnableJwtTokenValidation
 class RestClientConfiguration(
 	@Value("\${amt.arena-acl.url}") private val arenaAclUrl: String,
+	@Value("\${amt.arena-acl.scope}") private val arenaAclscope: String,
 ) {
 
 	@Bean
@@ -32,28 +34,8 @@ class RestClientConfiguration(
 	}
 
 	@Bean
-	fun amtArenaAclClientOkHttpClient(
-		machineToMachineTokenClient: MachineToMachineTokenClient,
-		@Value("\${amt.arena-acl.scope}") scope: String,
-	): OkHttpClient {
-		return OkHttpClient.Builder()
-			.connectTimeout(5, TimeUnit.SECONDS)
-			.readTimeout(5, TimeUnit.SECONDS)
-			.followRedirects(false)
-			.addInterceptor(tokenInterceptor { machineToMachineTokenClient.createMachineToMachineToken(scope) })
-			.build()
-	}
-
-	private fun tokenInterceptor(
-		tokenProvider: () -> String,
-	): Interceptor {
-		return Interceptor { chain ->
-			val request = chain.request()
-			val newRequest = request.newBuilder()
-				.addHeader("Authorization", "Bearer ${tokenProvider()}")
-				.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-				.build()
-			chain.proceed(newRequest)
-		}
-	}
+	fun amtArenaAclClient(machineToMachineTokenClient: MachineToMachineTokenClient) = AmtArenaAclClient(
+		baseUrl = arenaAclUrl,
+		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(arenaAclscope) }
+	)
 }
