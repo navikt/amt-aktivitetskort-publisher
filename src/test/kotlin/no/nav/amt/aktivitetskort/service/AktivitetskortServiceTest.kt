@@ -15,7 +15,7 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 class AktivitetskortServiceTest {
 	private val meldingRepository = mockk<MeldingRepository>(relaxUnitFun = true)
