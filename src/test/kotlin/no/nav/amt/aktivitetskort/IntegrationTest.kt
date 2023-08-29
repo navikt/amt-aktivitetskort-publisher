@@ -2,7 +2,6 @@ package no.nav.amt.aktivitetskort
 
 import no.nav.amt.aktivitetskort.database.DbTestDataUtils
 import no.nav.amt.aktivitetskort.database.SingletonPostgresContainer
-import no.nav.amt.aktivitetskort.mock.servers.MockMachineToMachineHttpServer
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -34,7 +33,6 @@ class IntegrationTest {
 		.build()
 
 	companion object {
-		val mockMachineToMachineHttpServer = MockMachineToMachineHttpServer()
 
 		@JvmStatic
 		@AfterAll
