@@ -51,6 +51,8 @@ dependencies {
 	implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
 	implementation("com.github.navikt.common-java-modules:token-client:$commonVersion")
+	implementation("com.github.navikt.common-java-modules:rest:$commonVersion")
+
 	implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
 
 	testImplementation(kotlin("test"))
