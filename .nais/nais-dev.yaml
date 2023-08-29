@@ -60,6 +60,6 @@ spec:
           cluster: dev-gcp
   env:
     - name: AMT_ARENA_ACL_URL
-      value: http://amt-arena-acl.amt.svc.cluster.local
+      value: https://amt-arena-acl.amt.svc.cluster.local
     - name: AMT_ARENA_ACL_SCOPE
       value: api://dev-gcp.amt.amt-arena-acl/.default
