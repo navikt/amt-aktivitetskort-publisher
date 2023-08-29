@@ -22,7 +22,7 @@ class InternalController(
 	fun getArenaIdForAmtId(
 		servlet: HttpServletRequest,
 		@PathVariable("amtId") amtId: UUID,
-	): String {
+	): Long? {
 		if (isInternal(servlet)) {
 			return amtArenaAclClient.getArenaIdForAmtId(amtId)
 		}
