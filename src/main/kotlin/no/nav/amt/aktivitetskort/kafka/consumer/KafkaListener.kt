@@ -27,10 +27,12 @@ class KafkaListener(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },
 			)
+
 			DELTAKERLISTE_TOPIC -> hendelseService.deltakerlisteHendelse(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },
 			)
+
 			DELTAKER_TOPIC -> hendelseService.deltakerHendelse(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },

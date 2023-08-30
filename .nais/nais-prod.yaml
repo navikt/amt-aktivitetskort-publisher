@@ -47,7 +47,28 @@ spec:
     requests:
       cpu: 250m
       memory: 512Mi
+  azure:
+    application:
+      enabled: true
   secureLogs:
     enabled: true
   kafka:
     pool: nav-prod
+  accessPolicy:
+    outbound:
+      rules:
+        - application: amt-arena-acl
+          namespace: amt
+          cluster: prod-gcp
+        - application: aktivitet-arena-acl
+          namespace: dab
+          cluster: prod-gcp
+  env:
+    - name: AMT_ARENA_ACL_URL
+      value: http://amt-arena-acl.amt.svc.cluster.local
+    - name: AMT_ARENA_ACL_SCOPE
+      value: api://prod-gcp.amt.amt-arena-acl/.default
+    - name: AKTIVITET_ARENA_ACL_URL
+      value: http://aktivitet-arena-acl.dab.svc.cluster.local
+    - name: AMT_ARENA_ACL_SCOPE
+      value: api://prod-gcp.dab.aktivitet-arena-acl/.default

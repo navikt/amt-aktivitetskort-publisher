@@ -33,6 +33,7 @@ class IntegrationTest {
 		.build()
 
 	companion object {
+
 		@JvmStatic
 		@AfterAll
 		fun tearDown() {
@@ -53,6 +54,14 @@ class IntegrationTest {
 				start()
 				System.setProperty("KAFKA_BROKERS", bootstrapServers)
 			}
+
+			registry.add("nais.env.azureOpenIdConfigTokenEndpoint") { "" }
+
+			registry.add("amt.arena-acl.url") { "" }
+			registry.add("amt.arena-acl.scope") { "test.amt-arena-acl" }
+
+			registry.add("aktivitet.arena-acl.url") { "" }
+			registry.add("aktivitet.arena-acl.scope") { "test.dab-arena-acl" }
 		}
 
 		private fun getKafkaImage(): String {
