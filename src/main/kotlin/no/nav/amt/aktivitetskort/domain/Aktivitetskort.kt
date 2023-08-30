@@ -65,7 +65,7 @@ data class Aktivitetskort(
 			Tiltak.Type.DIGITALT_OPPFOELGINGSTILTAK -> "Digital oppfølging hos ${arrangor.navn}"
 			Tiltak.Type.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
 			Tiltak.Type.ARBEIDSMARKEDSOPPLAERING -> "Kurs: ${deltakerliste.navn}"
-			else -> "${deltakerliste.tiltak.type} hos ${arrangor.navn}"
+			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 
 		fun lagDetaljer(deltaker: Deltaker, deltakerliste: Deltakerliste, arrangor: Arrangor): List<Detalj> {

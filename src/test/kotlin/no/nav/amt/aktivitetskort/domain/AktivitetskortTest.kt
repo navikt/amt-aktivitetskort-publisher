@@ -9,7 +9,20 @@ class AktivitetskortTest {
 	fun `lagTittel - deltakerliste og arrangor - lager riktig tittel basert på type tiltak`() {
 		val arrangor = TestData.arrangor()
 		val deltakerlister =
-			Tiltak.Type.values().map { TestData.deltakerliste(tiltak = Tiltak(it.name, it), arrangorId = arrangor.id) }
+			Tiltak.Type.values().map {
+				val tiltaksnavn = when (it) {
+					Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING -> "Arbforb Tiltak"
+					Tiltak.Type.ARBEIDSRETTET_REHABILITERING -> "ARR"
+					Tiltak.Type.AVKLARING -> "Avklaringstiltaket"
+					Tiltak.Type.DIGITALT_OPPFOELGINGSTILTAK -> "Digi. Oppfølging"
+					Tiltak.Type.ARBEIDSMARKEDSOPPLAERING -> "Grupper AMO"
+					Tiltak.Type.JOBBKLUBB -> "Jobbklubben"
+					Tiltak.Type.OPPFOELGING -> "Oppfølgingstiltak"
+					Tiltak.Type.VARIG_TILRETTELAGT_ARBEID -> "VTA"
+					Tiltak.Type.UKJENT -> "Ukjent tiltak"
+				}
+				TestData.deltakerliste(tiltak = Tiltak(tiltaksnavn, it), arrangorId = arrangor.id)
+			}
 
 		deltakerlister.forEach {
 			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor)
@@ -17,7 +30,7 @@ class AktivitetskortTest {
 				Tiltak.Type.DIGITALT_OPPFOELGINGSTILTAK -> aktivitetskortTittel shouldBe "Digital oppfølging hos ${arrangor.navn}"
 				Tiltak.Type.JOBBKLUBB -> aktivitetskortTittel shouldBe "Jobbsøkerkurs hos ${arrangor.navn}"
 				Tiltak.Type.ARBEIDSMARKEDSOPPLAERING -> aktivitetskortTittel shouldBe "Kurs: ${it.navn}"
-				else -> aktivitetskortTittel shouldBe "${it.tiltak.type} hos ${arrangor.navn}"
+				else -> aktivitetskortTittel shouldBe "${it.tiltak.navn} hos ${arrangor.navn}"
 			}
 		}
 	}
