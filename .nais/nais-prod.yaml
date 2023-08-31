@@ -58,8 +58,7 @@ spec:
     outbound:
       rules:
         - application: amt-arena-acl
-          namespace: amt
-          cluster: prod-gcp
+        - application: amt-arrangor
         - application: aktivitet-arena-acl
           namespace: dab
           cluster: prod-gcp
