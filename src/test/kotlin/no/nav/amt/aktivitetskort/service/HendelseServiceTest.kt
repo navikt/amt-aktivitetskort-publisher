@@ -3,6 +3,7 @@ package no.nav.amt.aktivitetskort.service
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
 import no.nav.amt.aktivitetskort.domain.Tiltak
@@ -17,12 +18,14 @@ class HendelseServiceTest {
 	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val aktivitetskortService = mockk<AktivitetskortService>()
+	private val amtArrangorClient = mockk<AmtArrangorClient>()
 
 	private val hendelseService = HendelseService(
 		arrangorRepository = arrangorRepository,
 		deltakerlisteRepository = deltakerlisteRepository,
 		deltakerRepository = deltakerRepository,
 		aktivitetskortService = aktivitetskortService,
+		amtArrangorClient = amtArrangorClient,
 	)
 
 	@Test
@@ -113,6 +116,23 @@ class HendelseServiceTest {
 
 		verify(exactly = 0) { arrangorRepository.get(arrangor.organisasjonsnummer) }
 		verify(exactly = 0) { deltakerlisteRepository.upsert(deltakerliste) }
+	}
+
+	@Test
+	fun `deltakerlisteHendelse - arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
+		val arrangor = TestData.arrangor()
+		val deltakerliste =
+			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltak.Type.OPPFOELGING), arrangorId = arrangor.id)
+
+		every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null
+		every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns arrangor
+		every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
+
+		hendelseService.deltakerlisteHendelse(deltakerliste.id, deltakerliste.toDto(arrangor))
+
+		verify(exactly = 1) { arrangorRepository.get(arrangor.organisasjonsnummer) }
+		verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) }
+		verify(exactly = 1) { deltakerlisteRepository.upsert(deltakerliste) }
 	}
 
 	@Test
