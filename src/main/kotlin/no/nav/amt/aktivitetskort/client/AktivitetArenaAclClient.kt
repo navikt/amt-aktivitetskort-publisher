@@ -2,10 +2,11 @@ package no.nav.amt.aktivitetskort.client
 
 import no.nav.amt.aktivitetskort.utils.JsonUtils
 import no.nav.common.rest.client.RestClient
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.springframework.http.MediaType
-import java.util.*
+import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
+import java.util.UUID
 import java.util.function.Supplier
 
 /**
@@ -22,13 +23,16 @@ class AktivitetArenaAclClient(
 	fun getAktivitetIdForArenaId(arenaId: Long): UUID? {
 		val request = okhttp3.Request.Builder()
 			.url("$baseUrl/api/translation/arenaid")
-			.header("Accept", MediaType.APPLICATION_JSON_VALUE)
+			.header("Accept", APPLICATION_JSON_VALUE)
 			.header("Authorization", "Bearer " + tokenProvider.get())
+			.header("Content-Type", APPLICATION_JSON_VALUE)
 			.post(HentAktivitetIdRequest(arenaId).toRequest())
 			.build()
 
 		httpClient.newCall(request).execute().use { response ->
-			if (response.code == 404) { return null }
+			if (response.code == 404) {
+				return null
+			}
 			if (!response.isSuccessful) {
 				error("Klarte ikke å hente aktivitetId for ArenaId. Status: ${response.code}")
 			}
@@ -41,6 +45,6 @@ class AktivitetArenaAclClient(
 		val arenaId: Long,
 		val aktivitetKategori: String = "TILTAKSAKTIVITET",
 	) {
-		fun toRequest() = JsonUtils.toJsonString(this).toRequestBody()
+		fun toRequest() = JsonUtils.toJsonString(this).toRequestBody(APPLICATION_JSON_VALUE.toMediaType())
 	}
 }
