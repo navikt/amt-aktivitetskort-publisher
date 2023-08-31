@@ -67,6 +67,10 @@ spec:
       value: http://amt-arena-acl.amt.svc.cluster.local
     - name: AMT_ARENA_ACL_SCOPE
       value: api://dev-gcp.amt.amt-arena-acl/.default
+    - name: AMT_ARRANGOR_SCOPE
+      value: api://dev-gcp.amt.amt-arrangor/.default
+    - name: AMT_ARRANGOR_URL
+      value: http://amt-arrangor
     - name: AKTIVITET_ARENA_ACL_URL
       value: http://aktivitet-arena-acl.dab.svc.cluster.local
     - name: AKTIVITET_ARENA_ACL_SCOPE
