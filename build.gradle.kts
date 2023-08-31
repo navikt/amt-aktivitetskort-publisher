@@ -23,7 +23,7 @@ val testcontainersVersion = "1.19.0"
 val klintVersion = "0.49.1"
 val mockkVersion = "1.13.7"
 val commonVersion = "3.2023.07.07_09.10-85326e9557f0"
-val tokenSupportVersion = "3.1.2"
+val tokenSupportVersion = "3.1.5"
 val mockOauth2ServerVersion = "1.0.0"
 
 dependencies {
