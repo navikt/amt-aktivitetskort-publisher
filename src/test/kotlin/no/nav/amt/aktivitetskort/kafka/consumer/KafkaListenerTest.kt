@@ -46,7 +46,7 @@ class KafkaListenerTest : IntegrationTest() {
 			ProducerRecord(
 				DELTAKERLISTE_TOPIC,
 				ctx.deltakerliste.id.toString(),
-				JsonUtils.toJsonString(ctx.deltakerliste.toDto()),
+				JsonUtils.toJsonString(ctx.deltakerlisteDto()),
 			),
 		)
 

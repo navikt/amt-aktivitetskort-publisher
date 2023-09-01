@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.service
 
+import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
@@ -19,6 +20,7 @@ class HendelseService(
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val aktivitetskortService: AktivitetskortService,
+	private val amtArrangorClient: AmtArrangorClient,
 ) {
 
 	private val log = LoggerFactory.getLogger(javaClass)
@@ -42,7 +44,12 @@ class HendelseService(
 	fun deltakerlisteHendelse(id: UUID, deltakerliste: DeltakerlisteDto?) {
 		if (deltakerliste == null) return
 
-		when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel())) {
+		if (!deltakerliste.tiltakstype.erStottet()) return
+
+		val arrangor = arrangorRepository.get(deltakerliste.virksomhetsnummer)
+			?: amtArrangorClient.hentArrangor(deltakerliste.virksomhetsnummer)
+
+		when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel(arrangor.id))) {
 			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.Created -> log.info("Ny hendelse deltakerliste ${deltakerliste.id}: Opprettet deltakerliste")
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Ingen endring")

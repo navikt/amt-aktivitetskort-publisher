@@ -3,8 +3,10 @@ package no.nav.amt.aktivitetskort.service
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
+import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
@@ -16,12 +18,14 @@ class HendelseServiceTest {
 	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val aktivitetskortService = mockk<AktivitetskortService>()
+	private val amtArrangorClient = mockk<AmtArrangorClient>()
 
 	private val hendelseService = HendelseService(
 		arrangorRepository = arrangorRepository,
 		deltakerlisteRepository = deltakerlisteRepository,
 		deltakerRepository = deltakerRepository,
 		aktivitetskortService = aktivitetskortService,
+		amtArrangorClient = amtArrangorClient,
 	)
 
 	@Test
@@ -66,10 +70,11 @@ class HendelseServiceTest {
 	fun `deltakerlisteHendelse - deltakerliste modifisert - publiser melding`() {
 		val ctx = TestData.MockContext()
 
+		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
 		every { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
-		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerliste.toDto())
+		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
@@ -79,9 +84,10 @@ class HendelseServiceTest {
 	fun `deltakerlisteHendelse - deltakerliste lagd - ikke publiser melding`() {
 		val ctx = TestData.MockContext()
 
+		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 
-		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerliste.toDto())
+		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
@@ -91,12 +97,42 @@ class HendelseServiceTest {
 	fun `deltakerlisteHendelse - deltakerliste har ingen forandring - ikke publiser melding`() {
 		val ctx = TestData.MockContext()
 
+		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
 
-		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerliste.toDto())
+		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
+	}
+
+	@Test
+	fun `deltakerlisteHendelse - tiltak er ikke støttet - skal ikke lagre deltakerliste`() {
+		val arrangor = TestData.arrangor()
+		val deltakerliste =
+			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltak.Type.UKJENT), arrangorId = arrangor.id)
+
+		hendelseService.deltakerlisteHendelse(deltakerliste.id, deltakerliste.toDto(arrangor))
+
+		verify(exactly = 0) { arrangorRepository.get(arrangor.organisasjonsnummer) }
+		verify(exactly = 0) { deltakerlisteRepository.upsert(deltakerliste) }
+	}
+
+	@Test
+	fun `deltakerlisteHendelse - arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
+		val arrangor = TestData.arrangor()
+		val deltakerliste =
+			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltak.Type.OPPFOELGING), arrangorId = arrangor.id)
+
+		every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null
+		every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns arrangor
+		every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
+
+		hendelseService.deltakerlisteHendelse(deltakerliste.id, deltakerliste.toDto(arrangor))
+
+		verify(exactly = 1) { arrangorRepository.get(arrangor.organisasjonsnummer) }
+		verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) }
+		verify(exactly = 1) { deltakerlisteRepository.upsert(deltakerliste) }
 	}
 
 	@Test

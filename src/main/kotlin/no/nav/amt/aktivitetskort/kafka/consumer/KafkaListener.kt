@@ -10,7 +10,7 @@ import java.util.UUID
 
 const val DELTAKER_TOPIC = "amt.deltaker-v2"
 const val ARRANGOR_TOPIC = "amt.arrangor-v1"
-const val DELTAKERLISTE_TOPIC = "amt.deltakerliste-v1"
+const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
 
 @Component
 class KafkaListener(
@@ -27,10 +27,12 @@ class KafkaListener(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },
 			)
+
 			DELTAKERLISTE_TOPIC -> hendelseService.deltakerlisteHendelse(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },
 			)
+
 			DELTAKER_TOPIC -> hendelseService.deltakerHendelse(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },

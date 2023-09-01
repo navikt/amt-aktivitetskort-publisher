@@ -16,8 +16,27 @@ class ArrangorRepositoryTest : IntegrationTest() {
 	private lateinit var db: TestDatabaseService
 
 	@Test
-	fun `get - finnes ikke - returnerer null`() {
+	fun `get(uuid) - finnes - returnerer arrangor`() {
+		val arrangor = TestData.arrangor()
+		db.insertArrangor(arrangor)
+		db.arrangorRepository.get(arrangor.id) shouldBe arrangor
+	}
+
+	@Test
+	fun `get(uuid) - finnes ikke - returnerer null`() {
 		db.arrangorRepository.get(UUID.randomUUID()) shouldBe null
+	}
+
+	@Test
+	fun `get(orgnr) - finnes - returnerer arrangor`() {
+		val arrangor = TestData.arrangor()
+		db.insertArrangor(arrangor)
+		db.arrangorRepository.get(arrangor.organisasjonsnummer) shouldBe arrangor
+	}
+
+	@Test
+	fun `get(orgnr) - finnes ikke - returnerer null`() {
+		db.arrangorRepository.get("foobar") shouldBe null
 	}
 
 	@Test
