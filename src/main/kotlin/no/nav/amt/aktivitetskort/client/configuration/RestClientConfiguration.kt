@@ -2,6 +2,7 @@ package no.nav.amt.aktivitetskort.client.configuration
 
 import no.nav.amt.aktivitetskort.client.AktivitetArenaAclClient
 import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
+import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
 import no.nav.common.token_client.client.MachineToMachineTokenClient
 import no.nav.security.token.support.spring.api.EnableJwtTokenValidation
@@ -13,9 +14,11 @@ import org.springframework.context.annotation.Configuration
 @EnableJwtTokenValidation
 class RestClientConfiguration(
 	@Value("\${amt.arena-acl.url}") private val amtArenaAclUrl: String,
-	@Value("\${amt.arena-acl.scope}") private val amtArenaAclscope: String,
+	@Value("\${amt.arena-acl.scope}") private val amtArenaAclScope: String,
+	@Value("\${amt.arrangor.url}") private val amtArrangorUrl: String,
+	@Value("\${amt.arrangor.scope}") private val amtArrangorScope: String,
 	@Value("\${aktivitet.arena-acl.url}") private val aktivitetArenaAclUrl: String,
-	@Value("\${aktivitet.arena-acl.scope}") private val aktivitetArenaAclscope: String,
+	@Value("\${aktivitet.arena-acl.scope}") private val aktivitetArenaAclScope: String,
 ) {
 
 	@Bean
@@ -34,12 +37,18 @@ class RestClientConfiguration(
 	@Bean
 	fun amtArenaAclClient(machineToMachineTokenClient: MachineToMachineTokenClient) = AmtArenaAclClient(
 		baseUrl = amtArenaAclUrl,
-		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(amtArenaAclscope) },
+		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(amtArenaAclScope) },
+	)
+
+	@Bean
+	fun amtArrangorClient(machineToMachineTokenClient: MachineToMachineTokenClient) = AmtArrangorClient(
+		baseUrl = amtArrangorUrl,
+		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(amtArrangorScope) },
 	)
 
 	@Bean
 	fun aktivitetArenaAclClient(machineToMachineTokenClient: MachineToMachineTokenClient) = AktivitetArenaAclClient(
 		baseUrl = aktivitetArenaAclUrl,
-		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(aktivitetArenaAclscope) },
+		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(aktivitetArenaAclScope) },
 	)
 }

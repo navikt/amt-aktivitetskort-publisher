@@ -13,6 +13,7 @@ data class Tiltak(
 		JOBBKLUBB,
 		OPPFOELGING,
 		VARIG_TILRETTELAGT_ARBEID,
+		GRUPPE_FAG_OG_YRKE,
 		UKJENT,
 	}
 }
@@ -26,6 +27,7 @@ fun arenaKodeTilTiltakstype(type: String?) = when (type) {
 	"INDOPPFAG" -> Tiltak.Type.OPPFOELGING
 	"JOBBK" -> Tiltak.Type.JOBBKLUBB
 	"VASV" -> Tiltak.Type.VARIG_TILRETTELAGT_ARBEID
+	"GRUFAGYRKE" -> Tiltak.Type.GRUPPE_FAG_OG_YRKE
 	else -> Tiltak.Type.UKJENT
 }
 

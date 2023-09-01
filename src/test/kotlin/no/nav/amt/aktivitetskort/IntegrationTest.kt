@@ -60,6 +60,9 @@ class IntegrationTest {
 			registry.add("amt.arena-acl.url") { "" }
 			registry.add("amt.arena-acl.scope") { "test.amt-arena-acl" }
 
+			registry.add("amt.arrangor.url") { "" }
+			registry.add("amt.arrangor.scope") { "test.amt-arrangor" }
+
 			registry.add("aktivitet.arena-acl.url") { "" }
 			registry.add("aktivitet.arena-acl.scope") { "test.dab-arena-acl" }
 		}

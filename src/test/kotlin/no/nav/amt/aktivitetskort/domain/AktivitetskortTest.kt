@@ -19,6 +19,7 @@ class AktivitetskortTest {
 					Tiltak.Type.JOBBKLUBB -> "Jobbklubben"
 					Tiltak.Type.OPPFOELGING -> "Oppfølgingstiltak"
 					Tiltak.Type.VARIG_TILRETTELAGT_ARBEID -> "VTA"
+					Tiltak.Type.GRUPPE_FAG_OG_YRKE -> "Gruppe yrkesfaglig utanning"
 					Tiltak.Type.UKJENT -> "Ukjent tiltak"
 				}
 				TestData.deltakerliste(tiltak = Tiltak(tiltaksnavn, it), arrangorId = arrangor.id)
