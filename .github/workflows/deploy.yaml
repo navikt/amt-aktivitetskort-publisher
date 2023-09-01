@@ -61,6 +61,8 @@ jobs:
   deploy-prod:
     name: Deploy application to prod
     needs: [ test-build-and-push, deploy-dev ]
+    permissions:
+      contents: "write"
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
