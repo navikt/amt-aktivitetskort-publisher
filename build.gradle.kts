@@ -11,7 +11,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
 	mavenCentral()
-	maven { setUrl("https://jitpack.io") }
+	maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 	maven { setUrl("https://packages.confluent.io/maven/") }
 }
 
@@ -22,7 +22,7 @@ val kotestVersion = "5.7.2"
 val testcontainersVersion = "1.19.0"
 val klintVersion = "0.49.1"
 val mockkVersion = "1.13.7"
-val commonVersion = "3.2023.07.07_09.10-85326e9557f0"
+val commonVersion = "3.2023.09.13_04.55-a8ff452fbd94"
 val tokenSupportVersion = "3.1.5"
 val mockOauth2ServerVersion = "1.0.0"
 
@@ -50,8 +50,8 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus")
 	implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
-	implementation("com.github.navikt.common-java-modules:token-client:$commonVersion")
-	implementation("com.github.navikt.common-java-modules:rest:$commonVersion")
+	implementation("no.nav.common:token-client:$commonVersion")
+	implementation("no.nav.common:rest:$commonVersion")
 
 	implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
 
