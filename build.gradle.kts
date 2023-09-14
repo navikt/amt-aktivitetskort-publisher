@@ -24,7 +24,6 @@ val klintVersion = "0.49.1"
 val mockkVersion = "1.13.7"
 val commonVersion = "3.2023.09.13_04.55-a8ff452fbd94"
 val tokenSupportVersion = "3.1.5"
-val mockOauth2ServerVersion = "1.0.0"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
@@ -66,7 +65,6 @@ dependencies {
 	testImplementation("org.testcontainers:kafka:$testcontainersVersion")
 	testImplementation("io.mockk:mockk:$mockkVersion")
 	testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
-	testImplementation("no.nav.security:mock-oauth2-server:$mockOauth2ServerVersion")
 }
 
 tasks.test {
