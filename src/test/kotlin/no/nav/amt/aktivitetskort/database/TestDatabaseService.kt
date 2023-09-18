@@ -11,7 +11,10 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import no.nav.amt.aktivitetskort.utils.sqlParameters
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
+import java.util.UUID
 import javax.sql.DataSource
 
 @Service
@@ -21,6 +24,7 @@ class TestDatabaseService(
 	val deltakerlisteRepository: DeltakerlisteRepository,
 	val deltakerRepository: DeltakerRepository,
 	private val datasource: DataSource,
+	private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
 ) {
 
 	fun clean() = DbTestDataUtils.cleanDatabase(datasource)
@@ -49,5 +53,13 @@ class TestDatabaseService(
 			is RepositoryResult.Modified -> result.data
 			is RepositoryResult.NoChange -> deltakerliste
 		}
+	}
+
+	fun feilmeldingErLagret(key: UUID): Boolean {
+		return namedParameterJdbcTemplate.queryForObject(
+			"SELECT exists(SELECT 1 from feilmelding where key = :key)",
+			sqlParameters("key" to key),
+			Boolean::class.java,
+		) ?: false
 	}
 }

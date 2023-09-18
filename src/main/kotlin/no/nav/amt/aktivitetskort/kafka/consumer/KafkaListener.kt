@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
+import no.nav.amt.aktivitetskort.service.FeilmeldingService
 import no.nav.amt.aktivitetskort.service.HendelseService
 import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJson
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -11,14 +12,18 @@ import java.util.UUID
 const val DELTAKER_TOPIC = "amt.deltaker-v2"
 const val ARRANGOR_TOPIC = "amt.arrangor-v1"
 const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
+const val FEILTOPIC = "dab.aktivitetskort-feil-v1"
+
+const val SOURCE = "TEAM_KOMET"
 
 @Component
 class KafkaListener(
 	val hendelseService: HendelseService,
+	val feilmeldingService: FeilmeldingService,
 ) {
 
 	@KafkaListener(
-		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC],
+		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC, FEILTOPIC],
 		containerFactory = "kafkaListenerContainerFactory",
 	)
 	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
@@ -34,6 +39,11 @@ class KafkaListener(
 			)
 
 			DELTAKER_TOPIC -> hendelseService.deltakerHendelse(
+				UUID.fromString(record.key()),
+				record.value()?.let { fromJson(it) },
+			)
+
+			FEILTOPIC -> feilmeldingService.handleFeilmelding(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },
 			)
