@@ -27,7 +27,7 @@ class FeilmeldingRepository(
 				"errorMessage" to feilmelding.errorMessage,
 				"errorType" to feilmelding.errorType,
 				"failingMessage" to feilmelding.failingMessage,
-				"timestamp" to feilmelding.timestamp,
+				"timestamp" to feilmelding.timestamp.toOffsetDateTime(),
 			),
 		)
 	}
