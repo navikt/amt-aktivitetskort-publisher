@@ -51,6 +51,7 @@ dependencies {
 
 	implementation("no.nav.common:token-client:$commonVersion")
 	implementation("no.nav.common:rest:$commonVersion")
+	implementation("no.nav.common:log:$commonVersion")
 
 	implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
 
