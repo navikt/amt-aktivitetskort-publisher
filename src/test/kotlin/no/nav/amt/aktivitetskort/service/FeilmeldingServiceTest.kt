@@ -7,7 +7,7 @@ import no.nav.amt.aktivitetskort.kafka.consumer.SOURCE
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.AktivitetskortFeilmelding
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class FeilmeldingServiceTest : IntegrationTest() {
@@ -23,7 +23,7 @@ class FeilmeldingServiceTest : IntegrationTest() {
 		val feilmelding = AktivitetskortFeilmelding(
 			key = key,
 			source = SOURCE,
-			timestamp = LocalDateTime.now(),
+			timestamp = ZonedDateTime.now(),
 			failingMessage = "melding som feiler",
 			errorMessage = "DeserialiseringsFeil Meldingspayload er ikke gyldig json",
 			errorType = "DESERIALISERINGSFEIL",
@@ -40,7 +40,7 @@ class FeilmeldingServiceTest : IntegrationTest() {
 		val feilmelding = AktivitetskortFeilmelding(
 			key = key,
 			source = "TEAM_TILTAK",
-			timestamp = LocalDateTime.now(),
+			timestamp = ZonedDateTime.now(),
 			failingMessage = "melding som feiler",
 			errorMessage = "DeserialiseringsFeil Meldingspayload er ikke gyldig json",
 			errorType = "DESERIALISERINGSFEIL",
