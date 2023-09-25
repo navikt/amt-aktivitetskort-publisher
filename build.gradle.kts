@@ -21,7 +21,7 @@ val kafkaClientsVersion = "3.5.1"
 val kotestVersion = "5.7.2"
 val testcontainersVersion = "1.19.0"
 val klintVersion = "0.49.1"
-val mockkVersion = "1.13.7"
+val mockkVersion = "1.13.8"
 val commonVersion = "3.2023.09.13_04.55-a8ff452fbd94"
 val tokenSupportVersion = "3.1.5"
 
