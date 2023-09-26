@@ -1,6 +1,7 @@
 package no.nav.amt.aktivitetskort.kafka.consumer.dto
 
 import no.nav.amt.aktivitetskort.domain.Arrangor
+import no.nav.amt.aktivitetskort.utils.toTitleCase
 import java.util.UUID
 
 data class ArrangorDto(
@@ -11,6 +12,6 @@ data class ArrangorDto(
 	fun toModel() = Arrangor(
 		this.id,
 		this.organisasjonsnummer,
-		this.navn,
+		toTitleCase(navn),
 	)
 }

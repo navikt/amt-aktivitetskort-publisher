@@ -105,7 +105,7 @@ object TestData {
 	fun arrangor(
 		id: UUID = UUID.randomUUID(),
 		organisasjonsnummer: String = (100_000_000..900_000_000).random().toString(),
-		navn: String = "navn",
+		navn: String = "Navn",
 	) = Arrangor(id, organisasjonsnummer, navn)
 
 	fun deltakerliste(
