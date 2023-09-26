@@ -38,4 +38,18 @@ class StringUtilsKtTest {
 
 		toTitleCase(storeBokstaver) shouldBe "Arrangør i Bergen"
 	}
+
+	@Test
+	fun `toTitleCase - med slash, bare store bokstaver - skal formatteres riktig`() {
+		val storeBokstaver = "ARRANGØR A/S"
+
+		toTitleCase(storeBokstaver) shouldBe "Arrangør A/S"
+	}
+
+	@Test
+	fun `toTitleCase - med fnutt, bare store bokstaver - skal formatteres riktig`() {
+		val storeBokstaver = "O'ARRANGØR"
+
+		toTitleCase(storeBokstaver) shouldBe "O'Arrangør"
+	}
 }
