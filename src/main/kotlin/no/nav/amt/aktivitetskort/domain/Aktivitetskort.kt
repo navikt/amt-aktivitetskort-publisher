@@ -104,6 +104,10 @@ data class Aktivitetskort(
 			}
 		}
 	}
+
+	fun erAktivDeltaker(): Boolean {
+		return sluttDato != null && sluttDato.isBefore(LocalDate.now().minusWeeks(2))
+	}
 }
 
 data class Etikett(
