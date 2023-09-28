@@ -6,6 +6,8 @@ import io.mockk.verify
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
+import no.nav.amt.aktivitetskort.domain.AktivitetStatus
+import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -64,6 +66,33 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
+	}
+
+	@Test
+	fun `deltakerHendelse - deltaker finnes ikke, status feilregistrert - publiserer ikke melding`() {
+		val ctx = TestData.MockContext()
+		val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
+
+		every { deltakerRepository.upsert(mockDeltaker) } returns RepositoryResult.NoChange()
+
+		hendelseService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto())
+
+		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker) }
+		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
+	}
+
+	@Test
+	fun `deltakerHendelse - deltaker finnes, status feilregistrert - publiserer melding`() {
+		val ctx = TestData.MockContext()
+		val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
+
+		every { deltakerRepository.upsert(mockDeltaker) } returns RepositoryResult.Modified(mockDeltaker)
+		every { aktivitetskortService.lagAktivitetskort(mockDeltaker) } returns ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
+
+		hendelseService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto())
+
+		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker) }
+		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
 	}
 
 	@Test
