@@ -15,6 +15,7 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.util.UUID
 
 class AktivitetskortServiceTest {
@@ -133,11 +134,13 @@ class AktivitetskortServiceTest {
 	}
 
 	@Test
-	fun `lagAktivitetskort(arrangor) - meldinger finnes - lager nye aktivitetskort`() {
+	fun `lagAktivitetskort(arrangor) - meldinger finnes, deltaker er aktiv - lager nye aktivitetskort`() {
 		val ctx = TestData.MockContext()
+		val deltakerSluttdato = LocalDate.now().plusWeeks(3)
+		val mockAktivitetskort = ctx.aktivitetskort.copy(sluttDato = deltakerSluttdato)
 
-		every { meldingRepository.getByArrangorId(ctx.arrangor.id) } returns listOf(ctx.melding)
-		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker
+		every { meldingRepository.getByArrangorId(ctx.arrangor.id) } returns listOf(ctx.melding.copy(aktivitetskort = mockAktivitetskort))
+		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 
@@ -147,6 +150,24 @@ class AktivitetskortServiceTest {
 
 		aktivitetskort shouldHaveSize 1
 
-		aktivitetskort.first() shouldBe ctx.aktivitetskort
+		aktivitetskort.first() shouldBe mockAktivitetskort
+	}
+
+	@Test
+	fun `lagAktivitetskort(arrangor) - meldinger finnes, deltaker er ikke aktiv - lager ikke nye aktivitetskort`() {
+		val ctx = TestData.MockContext()
+		val deltakerSluttdato = LocalDate.now().minusWeeks(3)
+		val mockAktivitetskort = ctx.aktivitetskort.copy(sluttDato = deltakerSluttdato)
+
+		every { meldingRepository.getByArrangorId(ctx.arrangor.id) } returns listOf(ctx.melding.copy(aktivitetskort = mockAktivitetskort))
+		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
+		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
+		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+
+		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
+
+		verify(exactly = 0) { meldingRepository.upsert(any()) }
+
+		aktivitetskort shouldHaveSize 0
 	}
 }
