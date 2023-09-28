@@ -61,7 +61,7 @@ class HendelseService(
 		if (arrangor == null) return
 
 		when (val result = arrangorRepository.upsert(arrangor.toModel())) {
-			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data).filter { it.erAktivDeltaker() })
+			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.Created -> log.info("Ny hendelse arrangør ${arrangor.id}: Opprettet arrangør")
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for arrangør ${arrangor.id}: Ingen endring")
 		}
