@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestDatabaseService
+import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -53,6 +54,36 @@ class DeltakerRepositoryTest : IntegrationTest() {
 
 		val updatedDeltaker = initialDeltaker.copy(
 			personident = "UPDATED",
+		)
+
+		when (val result = db.deltakerRepository.upsert(updatedDeltaker)) {
+			is RepositoryResult.Modified -> result.data shouldBe updatedDeltaker
+			else -> fail("Should be Modified, was $result")
+		}
+
+		db.deltakerRepository.get(initialDeltaker.id) shouldBe updatedDeltaker
+	}
+
+	@Test
+	fun `upsert - finnes ikke, status feilregistrert - returnerer NoChange Result, lagres ikke`() {
+		val deltaker = TestData.deltaker().copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
+			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
+		when (val result = db.deltakerRepository.upsert(deltaker)) {
+			is RepositoryResult.NoChange -> {}
+			else -> fail("Should be NoChange, was $result")
+		}
+
+		db.deltakerRepository.get(deltaker.id) shouldBe null
+	}
+
+	@Test
+	fun `upsert - finnes, status feilregistrert - returnerer Modified Result og oppdaterer database`() {
+		val initialDeltaker = TestData.deltaker()
+			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
+			.also { db.deltakerRepository.upsert(it) }
+
+		val updatedDeltaker = initialDeltaker.copy(
+			status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null),
 		)
 
 		when (val result = db.deltakerRepository.upsert(updatedDeltaker)) {

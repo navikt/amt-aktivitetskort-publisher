@@ -35,6 +35,10 @@ class DeltakerRepository(
 		val old = get(deltaker.id)
 		if (deltaker == old) return RepositoryResult.NoChange()
 
+		if (old == null && deltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
+			return RepositoryResult.NoChange()
+		}
+
 		val sql = """
 			insert into deltaker(
 				id,
