@@ -50,6 +50,7 @@ class AktivitetskortService(
 
 	fun lagAktivitetskort(arrangor: Arrangor) = meldingRepository
 		.getByArrangorId(arrangor.id)
+		.filter { it.aktivitetskort.erAktivDeltaker() }
 		.map { opprettMelding(it.deltakerId, it.aktivitetskort.id).aktivitetskort }
 		.also { log.info("Opprettet nye aktivitetskort for arrangør: ${arrangor.id}") }
 
