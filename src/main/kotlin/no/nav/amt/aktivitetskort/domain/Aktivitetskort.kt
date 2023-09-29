@@ -20,7 +20,7 @@ data class Aktivitetskort(
 	val oppgave: OppgaveWrapper? = null,
 	val handlinger: List<Handling>? = null,
 	val detaljer: List<Detalj>,
-	val etiketter: List<Etikett>,
+	val etiketter: List<Tag>,
 ) {
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
@@ -110,11 +110,17 @@ data class Aktivitetskort(
 	}
 }
 
-data class Etikett(
+data class Tag(
+	val tekst: String,
+	val sentiment: Sentiment,
 	val kode: Kode,
 ) {
 	enum class Kode {
 		SOKT_INN, VURDERES, VENTER_PA_OPPSTART, VENTELISTE, IKKE_AKTUELL
+	}
+
+	enum class Sentiment {
+		POSITIVE, NEGATIVE, NEUTRAL, WAITING
 	}
 }
 

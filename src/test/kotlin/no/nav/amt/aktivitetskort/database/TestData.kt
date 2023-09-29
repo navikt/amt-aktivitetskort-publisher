@@ -8,9 +8,9 @@ import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.Detalj
 import no.nav.amt.aktivitetskort.domain.EndretAv
-import no.nav.amt.aktivitetskort.domain.Etikett
 import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Melding
+import no.nav.amt.aktivitetskort.domain.Tag
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
@@ -41,7 +41,7 @@ object TestData {
 		endretAvTidspunkt: LocalDateTime = LocalDateTime.now(),
 		avtaltMedNav: Boolean = true,
 		detaljer: List<Detalj> = listOf(Detalj("Label", "Verdi")),
-		etiketter: List<Etikett> = listOf(),
+		etiketter: List<Tag> = listOf(),
 	) = Aktivitetskort(
 		id = id,
 		personident = personIdent,
