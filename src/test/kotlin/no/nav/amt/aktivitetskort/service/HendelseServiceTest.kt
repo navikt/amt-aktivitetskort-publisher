@@ -9,11 +9,14 @@ import no.nav.amt.aktivitetskort.database.TestData.toDto
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tiltak
+import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.junit.jupiter.api.Test
+import org.springframework.kafka.core.KafkaTemplate
+import java.util.UUID
 
 class HendelseServiceTest {
 	private val arrangorRepository = mockk<ArrangorRepository>()
@@ -21,6 +24,7 @@ class HendelseServiceTest {
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val aktivitetskortService = mockk<AktivitetskortService>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
+	private val template = mockk<KafkaTemplate<String, String>>(relaxed = true)
 
 	private val hendelseService = HendelseService(
 		arrangorRepository = arrangorRepository,
@@ -28,6 +32,7 @@ class HendelseServiceTest {
 		deltakerRepository = deltakerRepository,
 		aktivitetskortService = aktivitetskortService,
 		amtArrangorClient = amtArrangorClient,
+		template = template,
 	)
 
 	@Test
@@ -138,20 +143,24 @@ class HendelseServiceTest {
 	@Test
 	fun `deltakerlisteHendelse - tiltak er ikke støttet - skal ikke lagre deltakerliste`() {
 		val arrangor = TestData.arrangor()
-		val deltakerliste =
-			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltak.Type.UKJENT), arrangorId = arrangor.id)
+		val deltakerlisteDto = DeltakerlisteDto(
+			id = UUID.randomUUID(),
+			navn = "navn",
+			tiltakstype = DeltakerlisteDto.Tiltakstype("Ukjent", "UKJENT"),
+			virksomhetsnummer = arrangor.organisasjonsnummer,
+		)
 
-		hendelseService.deltakerlisteHendelse(deltakerliste.id, deltakerliste.toDto(arrangor))
+		hendelseService.deltakerlisteHendelse(deltakerlisteDto.id, deltakerlisteDto)
 
 		verify(exactly = 0) { arrangorRepository.get(arrangor.organisasjonsnummer) }
-		verify(exactly = 0) { deltakerlisteRepository.upsert(deltakerliste) }
+		verify(exactly = 0) { deltakerlisteRepository.upsert(any()) }
 	}
 
 	@Test
 	fun `deltakerlisteHendelse - arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
 		val arrangor = TestData.arrangor()
 		val deltakerliste =
-			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltak.Type.OPPFOELGING), arrangorId = arrangor.id)
+			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltak.Type.INDOPPFAG), arrangorId = arrangor.id)
 
 		every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null
 		every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns arrangor

@@ -42,6 +42,7 @@ object TestData {
 		avtaltMedNav: Boolean = true,
 		detaljer: List<Detalj> = listOf(Detalj("Label", "Verdi")),
 		etiketter: List<Tag> = listOf(),
+		tiltakstype: Tiltak.Type = Tiltak.Type.INDOPPFAG,
 	) = Aktivitetskort(
 		id = id,
 		personident = personIdent,
@@ -57,6 +58,7 @@ object TestData {
 		handlinger = null,
 		detaljer = detaljer,
 		etiketter = etiketter,
+		tiltakstype = tiltakstype,
 	)
 
 	fun aktivitetskort(id: UUID, deltaker: Deltaker, deltakerliste: Deltakerliste, arrangor: Arrangor) =
@@ -78,6 +80,7 @@ object TestData {
 				Detalj("Arrangør", arrangor.navn),
 			),
 			etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
+			tiltakstype = deltakerliste.tiltak.type,
 		)
 
 	fun deltaker(
@@ -110,7 +113,7 @@ object TestData {
 
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
-		tiltak: Tiltak = Tiltak("Oppfølging", Tiltak.Type.OPPFOELGING),
+		tiltak: Tiltak = Tiltak("Oppfølging", Tiltak.Type.INDOPPFAG),
 		navn: String = "navn",
 		arrangorId: UUID = UUID.randomUUID(),
 	) = Deltakerliste(id, tiltak, navn, arrangorId)
@@ -157,18 +160,6 @@ object TestData {
 	)
 
 	fun Tiltak.toDto(): DeltakerlisteDto.Tiltakstype {
-		val type = when (this.type) {
-			Tiltak.Type.OPPFOELGING -> "INDOPPFAG"
-			Tiltak.Type.VARIG_TILRETTELAGT_ARBEID -> "VASV"
-			Tiltak.Type.AVKLARING -> "AVKLARAG"
-			Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING -> "ARBFORB"
-			Tiltak.Type.ARBEIDSRETTET_REHABILITERING -> "ARBRRHDAG"
-			Tiltak.Type.ARBEIDSMARKEDSOPPLAERING -> "GRUPPEAMO"
-			Tiltak.Type.DIGITALT_OPPFOELGINGSTILTAK -> "DIGIOPPARB"
-			Tiltak.Type.JOBBKLUBB -> "JOBBK"
-			else -> "IKKE_STOTTET_TILTAK"
-		}
-
 		val navn = when (this.navn) {
 			"Arbeidsforberedende trening" -> "Arbeidsforberedende trening (AFT)"
 			"Varig tilrettelagt arbeid" -> "Varig tilrettelagt arbeid i skjermet virksomhet"
@@ -177,6 +168,6 @@ object TestData {
 			"Digitalt oppfølgingstiltak" -> "Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)"
 			else -> this.navn
 		}
-		return DeltakerlisteDto.Tiltakstype(navn, type)
+		return DeltakerlisteDto.Tiltakstype(navn, type.name)
 	}
 }

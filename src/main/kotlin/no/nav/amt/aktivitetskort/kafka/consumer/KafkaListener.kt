@@ -13,6 +13,7 @@ const val DELTAKER_TOPIC = "amt.deltaker-v2"
 const val ARRANGOR_TOPIC = "amt.arrangor-v1"
 const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
 const val FEILTOPIC = "dab.aktivitetskort-feil-v1"
+const val AKTIVITETSKORT_TOPIC = "dab.aktivitetskort-v1.1"
 
 const val SOURCE = "TEAM_KOMET"
 

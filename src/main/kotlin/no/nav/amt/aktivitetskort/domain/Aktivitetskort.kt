@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.domain
 
+import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortDto
 import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -21,7 +22,27 @@ data class Aktivitetskort(
 	val handlinger: List<Handling>? = null,
 	val detaljer: List<Detalj>,
 	val etiketter: List<Tag>,
+	val tiltakstype: Tiltak.Type,
 ) {
+	fun toAktivitetskortDto(): AktivitetskortDto {
+		return AktivitetskortDto(
+			id = id,
+			personident = personident,
+			tittel = tittel,
+			aktivitetStatus = aktivitetStatus,
+			startDato = startDato,
+			sluttDato = sluttDato,
+			beskrivelse = beskrivelse,
+			endretAv = endretAv,
+			endretTidspunkt = endretTidspunkt,
+			avtaltMedNav = avtaltMedNav,
+			oppgave = oppgave,
+			handlinger = handlinger,
+			detaljer = detaljer,
+			etiketter = etiketter,
+		)
+	}
+
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
 		if (other !is Aktivitetskort) return false
@@ -62,9 +83,9 @@ data class Aktivitetskort(
 
 	companion object {
 		fun lagTittel(deltakerliste: Deltakerliste, arrangor: Arrangor) = when (deltakerliste.tiltak.type) {
-			Tiltak.Type.DIGITALT_OPPFOELGINGSTILTAK -> "Digital oppfølging hos ${arrangor.navn}"
-			Tiltak.Type.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
-			Tiltak.Type.ARBEIDSMARKEDSOPPLAERING -> "Kurs: ${deltakerliste.navn}"
+			Tiltak.Type.DIGIOPPARB -> "Digital oppfølging hos ${arrangor.navn}"
+			Tiltak.Type.JOBBK -> "Jobbsøkerkurs hos ${arrangor.navn}"
+			Tiltak.Type.GRUPPEAMO -> "Kurs: ${deltakerliste.navn}"
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 
