@@ -24,7 +24,7 @@ class KafkaListener(
 ) {
 
 	@KafkaListener(
-		topics = [ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC, FEILTOPIC],
+		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC, FEILTOPIC],
 		containerFactory = "kafkaListenerContainerFactory",
 	)
 	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
