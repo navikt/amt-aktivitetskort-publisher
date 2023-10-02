@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.service
 
+import io.getunleash.DefaultUnleash
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.kafka.consumer.AKTIVITETSKORT_TOPIC
@@ -27,6 +28,7 @@ class HendelseService(
 	private val aktivitetskortService: AktivitetskortService,
 	private val amtArrangorClient: AmtArrangorClient,
 	private val template: KafkaTemplate<String, String>,
+	private val unleash: DefaultUnleash,
 ) {
 
 	private val log = LoggerFactory.getLogger(javaClass)
@@ -77,15 +79,19 @@ class HendelseService(
 	private fun send(aktivitetskort: Aktivitetskort) = send(listOf(aktivitetskort))
 
 	private fun send(aktivitetskort: List<Aktivitetskort>) {
-		aktivitetskort.forEach {
-			val payload = AktivitetskortPayload(
-				messageId = UUID.randomUUID(),
-				sendt = ZonedDateTime.now(),
-				aktivitetskortType = it.tiltakstype,
-				aktivitetskort = it.toAktivitetskortDto(),
-			)
-			template.send(AKTIVITETSKORT_TOPIC, it.id.toString(), JsonUtils.toJsonString(payload)).get()
+		if (unleash.isEnabled("amt.send-aktivitetskort")) {
+			aktivitetskort.forEach {
+				val payload = AktivitetskortPayload(
+					messageId = UUID.randomUUID(),
+					sendt = ZonedDateTime.now(),
+					aktivitetskortType = it.tiltakstype,
+					aktivitetskort = it.toAktivitetskortDto(),
+				)
+				template.send(AKTIVITETSKORT_TOPIC, it.id.toString(), JsonUtils.toJsonString(payload)).get()
+			}
+			log.info("Sendte aktivtetskort til aktivitetsplanen: ${aktivitetskort.joinToString { it.id.toString() }}")
+		} else {
+			log.info("Sender ikke aktivitetskort fordi funksjonaliteten er togglet av")
 		}
-		log.info("Sendte aktivtetskort til aktivitetsplanen: ${aktivitetskort.joinToString { it.id.toString() }}")
 	}
 }

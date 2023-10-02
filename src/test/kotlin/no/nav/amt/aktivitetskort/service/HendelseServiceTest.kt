@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.service
 
+import io.getunleash.DefaultUnleash
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -14,6 +15,7 @@ import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.kafka.core.KafkaTemplate
 import java.util.UUID
@@ -25,6 +27,7 @@ class HendelseServiceTest {
 	private val aktivitetskortService = mockk<AktivitetskortService>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val template = mockk<KafkaTemplate<String, String>>(relaxed = true)
+	private val unleash = mockk<DefaultUnleash>()
 
 	private val hendelseService = HendelseService(
 		arrangorRepository = arrangorRepository,
@@ -33,7 +36,13 @@ class HendelseServiceTest {
 		aktivitetskortService = aktivitetskortService,
 		amtArrangorClient = amtArrangorClient,
 		template = template,
+		unleash = unleash,
 	)
+
+	@BeforeEach
+	fun setup() {
+		every { unleash.isEnabled(any()) } returns true
+	}
 
 	@Test
 	fun `deltakerHendelse - deltaker modifisert - publiser melding`() {

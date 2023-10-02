@@ -61,6 +61,10 @@ spec:
         - application: aktivitet-arena-acl
           namespace: dab
           cluster: dev-gcp
+      external:
+        - host: amt-unleash-api.nav.cloud.nais.io
+  envFrom:
+    - secret: amt-aktivitetskort-publisher-unleash-api-token
   env:
     - name: AMT_ARENA_ACL_URL
       value: http://amt-arena-acl.amt.svc.cluster.local
