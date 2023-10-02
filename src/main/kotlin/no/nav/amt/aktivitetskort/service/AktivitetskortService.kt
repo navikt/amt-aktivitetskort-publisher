@@ -98,5 +98,6 @@ class AktivitetskortService(
 			handlinger = null,
 			detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 			etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
+			tiltakstype = deltakerliste.tiltak.type,
 		)
 }

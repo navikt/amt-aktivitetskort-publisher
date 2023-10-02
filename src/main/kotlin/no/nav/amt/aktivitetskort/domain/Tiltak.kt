@@ -5,30 +5,29 @@ data class Tiltak(
 	val type: Type,
 ) {
 	enum class Type {
-		ARBEIDSFORBEREDENDE_TRENING,
-		ARBEIDSRETTET_REHABILITERING,
-		AVKLARING,
-		DIGITALT_OPPFOELGINGSTILTAK,
-		ARBEIDSMARKEDSOPPLAERING,
-		JOBBKLUBB,
-		OPPFOELGING,
-		VARIG_TILRETTELAGT_ARBEID,
-		GRUPPE_FAG_OG_YRKE,
-		UKJENT,
+		INDOPPFAG,
+		ARBFORB,
+		AVKLARAG,
+		VASV,
+		ARBRRHDAG,
+		DIGIOPPARB,
+		JOBBK,
+		GRUPPEAMO,
+		GRUFAGYRKE,
 	}
 }
 
 fun arenaKodeTilTiltakstype(type: String?) = when (type) {
-	"ARBFORB" -> Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING
-	"ARBRRHDAG" -> Tiltak.Type.ARBEIDSRETTET_REHABILITERING
-	"AVKLARAG" -> Tiltak.Type.AVKLARING
-	"DIGIOPPARB" -> Tiltak.Type.DIGITALT_OPPFOELGINGSTILTAK
-	"GRUPPEAMO" -> Tiltak.Type.ARBEIDSMARKEDSOPPLAERING
-	"INDOPPFAG" -> Tiltak.Type.OPPFOELGING
-	"JOBBK" -> Tiltak.Type.JOBBKLUBB
-	"VASV" -> Tiltak.Type.VARIG_TILRETTELAGT_ARBEID
-	"GRUFAGYRKE" -> Tiltak.Type.GRUPPE_FAG_OG_YRKE
-	else -> Tiltak.Type.UKJENT
+	"ARBFORB" -> Tiltak.Type.ARBFORB
+	"ARBRRHDAG" -> Tiltak.Type.ARBRRHDAG
+	"AVKLARAG" -> Tiltak.Type.AVKLARAG
+	"DIGIOPPARB" -> Tiltak.Type.DIGIOPPARB
+	"GRUPPEAMO" -> Tiltak.Type.GRUPPEAMO
+	"INDOPPFAG" -> Tiltak.Type.INDOPPFAG
+	"JOBBK" -> Tiltak.Type.JOBBK
+	"VASV" -> Tiltak.Type.VASV
+	"GRUFAGYRKE" -> Tiltak.Type.GRUFAGYRKE
+	else -> throw IllegalStateException("Mottatt ukjent tiltakstype: $type")
 }
 
 fun cleanTiltaksnavn(navn: String) = when (navn) {
@@ -40,7 +39,7 @@ fun cleanTiltaksnavn(navn: String) = when (navn) {
 }
 
 fun erTiltakmedDeltakelsesmendge(type: Tiltak.Type) = when (type) {
-	Tiltak.Type.ARBEIDSFORBEREDENDE_TRENING -> true
-	Tiltak.Type.VARIG_TILRETTELAGT_ARBEID -> true
+	Tiltak.Type.ARBFORB -> true
+	Tiltak.Type.VASV -> true
 	else -> false
 }
