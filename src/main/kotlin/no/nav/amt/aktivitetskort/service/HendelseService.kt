@@ -36,11 +36,6 @@ class HendelseService(
 	fun deltakerHendelse(id: UUID, deltaker: DeltakerDto?) {
 		if (deltaker == null) return
 
-		if (deltaker.deltakerlisteId == UUID.fromString("56325c35-7d51-4bb5-8004-886adbcccc57")) {
-			log.warn("Ignorerer deltaker på gjennomføring av type UTVAOONAV")
-			return
-		}
-
 		if (deltakerStatusTilAktivetStatus(deltaker.status.type).isFailure) {
 			log.info("Kan ikke lage aktivitetskort for deltaker ${deltaker.id} med status ${deltaker.status.type}")
 			return
