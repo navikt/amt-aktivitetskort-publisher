@@ -7,7 +7,7 @@ import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.OppgaveWrapper
 import no.nav.amt.aktivitetskort.domain.Tag
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 data class AktivitetskortDto(
@@ -19,7 +19,7 @@ data class AktivitetskortDto(
 	val sluttDato: LocalDate?,
 	val beskrivelse: String?,
 	val endretAv: EndretAv,
-	val endretTidspunkt: LocalDateTime,
+	val endretTidspunkt: ZonedDateTime,
 	val avtaltMedNav: Boolean,
 	val oppgave: OppgaveWrapper? = null,
 	val handlinger: List<Handling>? = null,

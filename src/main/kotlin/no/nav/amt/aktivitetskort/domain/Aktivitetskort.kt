@@ -4,6 +4,7 @@ import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortDto
 import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Objects
 import java.util.UUID
 
@@ -34,7 +35,7 @@ data class Aktivitetskort(
 			sluttDato = sluttDato,
 			beskrivelse = beskrivelse,
 			endretAv = endretAv,
-			endretTidspunkt = endretTidspunkt,
+			endretTidspunkt = endretTidspunkt.atZone(ZoneId.systemDefault()),
 			avtaltMedNav = avtaltMedNav,
 			oppgave = oppgave,
 			handlinger = handlinger,
