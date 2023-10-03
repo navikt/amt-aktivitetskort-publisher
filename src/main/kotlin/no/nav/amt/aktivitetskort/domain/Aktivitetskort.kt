@@ -142,7 +142,7 @@ data class Tag(
 	}
 
 	enum class Sentiment {
-		POSITIVE, NEGATIVE, NEUTRAL, WAITING
+		POSITIVE, NEGATIVE, NEUTRAL
 	}
 }
 
