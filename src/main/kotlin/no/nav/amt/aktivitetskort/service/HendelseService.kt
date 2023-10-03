@@ -17,7 +17,6 @@ import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
-import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
@@ -83,7 +82,6 @@ class HendelseService(
 			aktivitetskort.forEach {
 				val payload = AktivitetskortPayload(
 					messageId = UUID.randomUUID(),
-					sendt = ZonedDateTime.now(),
 					aktivitetskortType = it.tiltakstype,
 					aktivitetskort = it.toAktivitetskortDto(),
 				)

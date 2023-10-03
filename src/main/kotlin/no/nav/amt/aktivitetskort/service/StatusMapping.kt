@@ -37,7 +37,7 @@ object StatusMapping {
 		return when (status.type) {
 			DeltakerStatus.Type.VENTER_PA_OPPSTART -> Tag(
 				tekst = "Venter på oppstart",
-				sentiment = Tag.Sentiment.WAITING,
+				sentiment = Tag.Sentiment.NEUTRAL,
 				kode = Tag.Kode.VENTER_PA_OPPSTART,
 			)
 			DeltakerStatus.Type.SOKT_INN -> Tag(
