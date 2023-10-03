@@ -12,7 +12,7 @@ import java.util.UUID
 
 data class AktivitetskortDto(
 	val id: UUID,
-	val personident: String,
+	val personIdent: String,
 	val tittel: String,
 	val aktivitetStatus: AktivitetStatus,
 	val startDato: LocalDate?,

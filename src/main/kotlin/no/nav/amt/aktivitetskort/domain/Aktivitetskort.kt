@@ -28,7 +28,7 @@ data class Aktivitetskort(
 	fun toAktivitetskortDto(): AktivitetskortDto {
 		return AktivitetskortDto(
 			id = id,
-			personident = personident,
+			personIdent = personident,
 			tittel = tittel,
 			aktivitetStatus = aktivitetStatus,
 			startDato = startDato,
