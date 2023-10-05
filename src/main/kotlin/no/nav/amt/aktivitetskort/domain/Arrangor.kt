@@ -6,4 +6,5 @@ data class Arrangor(
 	val id: UUID,
 	val organisasjonsnummer: String,
 	val navn: String,
+	val overordnetArrangorId: UUID?,
 )

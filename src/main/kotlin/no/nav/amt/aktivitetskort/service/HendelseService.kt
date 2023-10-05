@@ -3,6 +3,7 @@ package no.nav.amt.aktivitetskort.service
 import io.getunleash.DefaultUnleash
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
+import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.kafka.consumer.AKTIVITETSKORT_TOPIC
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
@@ -54,7 +55,7 @@ class HendelseService(
 		if (!deltakerliste.tiltakstype.erStottet()) return
 
 		val arrangor = arrangorRepository.get(deltakerliste.virksomhetsnummer)
-			?: amtArrangorClient.hentArrangor(deltakerliste.virksomhetsnummer)
+			?: hentOgLagreArrangorFraAmtArrangor(deltakerliste.virksomhetsnummer)
 
 		when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel(arrangor.id))) {
 			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
@@ -66,6 +67,9 @@ class HendelseService(
 
 	fun arrangorHendelse(id: UUID, arrangor: ArrangorDto?) {
 		if (arrangor == null) return
+		if (arrangor.overordnetArrangorId != null && arrangorRepository.get(arrangor.overordnetArrangorId) == null) {
+			hentOgLagreArrangorFraAmtArrangor(arrangor.overordnetArrangorId)
+		}
 
 		when (val result = arrangorRepository.upsert(arrangor.toModel())) {
 			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
@@ -91,5 +95,38 @@ class HendelseService(
 		} else {
 			log.info("Sender ikke aktivitetskort fordi funksjonaliteten er togglet av")
 		}
+	}
+
+	private fun hentOgLagreArrangorFraAmtArrangor(virksomhetsnummer: String): Arrangor {
+		val arrangorMedOverordnetArrangor = amtArrangorClient.hentArrangor(virksomhetsnummer)
+		lagreArrangorMedOverordnetArrangor(arrangorMedOverordnetArrangor)
+		return arrangorRepository.get(virksomhetsnummer) ?: throw RuntimeException("Fant ikke arrangør med id ${arrangorMedOverordnetArrangor.id} som vi nettopp lagret")
+	}
+
+	private fun hentOgLagreArrangorFraAmtArrangor(arrangorId: UUID) {
+		val arrangorMedOverordnetArrangor = amtArrangorClient.hentArrangor(arrangorId)
+		lagreArrangorMedOverordnetArrangor(arrangorMedOverordnetArrangor)
+		log.info("Hentet og lagret overordnet arrangør med id $arrangorId som manglet i databasen")
+	}
+
+	private fun lagreArrangorMedOverordnetArrangor(arrangorMedOverordnetArrangor: AmtArrangorClient.ArrangorMedOverordnetArrangorDto) {
+		arrangorMedOverordnetArrangor.overordnetArrangor?.let {
+			arrangorRepository.upsert(
+				Arrangor(
+					id = it.id,
+					organisasjonsnummer = it.organisasjonsnummer,
+					navn = it.navn,
+					overordnetArrangorId = it.overordnetArrangorId,
+				),
+			)
+		}
+		arrangorRepository.upsert(
+			Arrangor(
+				id = arrangorMedOverordnetArrangor.id,
+				organisasjonsnummer = arrangorMedOverordnetArrangor.organisasjonsnummer,
+				navn = arrangorMedOverordnetArrangor.navn,
+				overordnetArrangorId = arrangorMedOverordnetArrangor.overordnetArrangor?.id,
+			),
+		)
 	}
 }

@@ -109,7 +109,8 @@ object TestData {
 		id: UUID = UUID.randomUUID(),
 		organisasjonsnummer: String = (100_000_000..900_000_000).random().toString(),
 		navn: String = "Navn",
-	) = Arrangor(id, organisasjonsnummer, navn)
+		overordnetArrangorId: UUID? = null,
+	) = Arrangor(id, organisasjonsnummer, navn, overordnetArrangorId)
 
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
@@ -157,6 +158,7 @@ object TestData {
 		id = this.id,
 		organisasjonsnummer = this.organisasjonsnummer,
 		navn = this.navn,
+		overordnetArrangorId = this.overordnetArrangorId,
 	)
 
 	fun Tiltak.toDto(): DeltakerlisteDto.Tiltakstype {

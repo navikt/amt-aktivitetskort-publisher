@@ -48,11 +48,18 @@ class AktivitetskortService(
 		.map { opprettMelding(it.deltakerId, it.aktivitetskort.id).aktivitetskort }
 		.also { log.info("Opprettet nye aktivitetskort for deltakerliste: ${deltakerliste.id}") }
 
-	fun lagAktivitetskort(arrangor: Arrangor) = meldingRepository
-		.getByArrangorId(arrangor.id)
-		.filter { it.aktivitetskort.erAktivDeltaker() }
-		.map { opprettMelding(it.deltakerId, it.aktivitetskort.id).aktivitetskort }
-		.also { log.info("Opprettet nye aktivitetskort for arrangør: ${arrangor.id}") }
+	fun lagAktivitetskort(arrangor: Arrangor): List<Aktivitetskort> {
+		val underordnedeArrangorer = arrangorRepository.getUnderordnedeArrangorer(arrangor.id)
+		val alleOppdaterteArrangorer = mutableListOf(arrangor)
+		alleOppdaterteArrangorer.addAll(underordnedeArrangorer)
+		return alleOppdaterteArrangorer.flatMap { a ->
+			meldingRepository
+				.getByArrangorId(a.id)
+				.filter { it.aktivitetskort.erAktivDeltaker() }
+				.map { opprettMelding(it.deltakerId, it.aktivitetskort.id).aktivitetskort }
+				.also { log.info("Opprettet nye aktivitetskort for arrangør: ${a.id}") }
+		}
+	}
 
 	private fun getAktivitetskortId(deltakerId: UUID) = amtArenaAclClient.getArenaIdForAmtId(deltakerId)
 		?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
@@ -67,8 +74,10 @@ class AktivitetskortService(
 			?: throw RuntimeException("Deltakerliste ${deltaker.deltakerlisteId} finnes ikke")
 		val arrangor = arrangorRepository.get(deltakerliste.arrangorId)
 			?: throw RuntimeException("Arrangør ${deltakerliste.arrangorId} finnes ikke")
+		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
 
-		val aktivitetskort = nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor)
+		val aktivitetskort = overordnetArrangor?.let { nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, it) }
+			?: nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor)
 
 		val melding = Melding(
 			deltakerId = deltaker.id,

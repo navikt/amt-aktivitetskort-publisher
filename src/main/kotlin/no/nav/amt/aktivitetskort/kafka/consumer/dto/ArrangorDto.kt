@@ -8,10 +8,12 @@ data class ArrangorDto(
 	val id: UUID,
 	val organisasjonsnummer: String,
 	val navn: String,
+	val overordnetArrangorId: UUID?,
 ) {
 	fun toModel() = Arrangor(
 		this.id,
 		this.organisasjonsnummer,
 		toTitleCase(navn),
+		overordnetArrangorId,
 	)
 }
