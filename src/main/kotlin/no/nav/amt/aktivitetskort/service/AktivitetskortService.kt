@@ -50,8 +50,7 @@ class AktivitetskortService(
 
 	fun lagAktivitetskort(arrangor: Arrangor): List<Aktivitetskort> {
 		val underordnedeArrangorer = arrangorRepository.getUnderordnedeArrangorer(arrangor.id)
-		val alleOppdaterteArrangorer = mutableListOf(arrangor)
-		alleOppdaterteArrangorer.addAll(underordnedeArrangorer)
+		val alleOppdaterteArrangorer = listOf(arrangor) + underordnedeArrangorer
 		return alleOppdaterteArrangorer.flatMap { a ->
 			meldingRepository
 				.getByArrangorId(a.id)
