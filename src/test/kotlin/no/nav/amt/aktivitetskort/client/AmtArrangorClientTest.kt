@@ -30,7 +30,8 @@ class AmtArrangorClientTest {
 
 	@Test
 	fun `hentArrangor - arrangor finnes - parser response og returnerer arrangor`() {
-		val arrangor = TestData.arrangor()
+		val overordnetArrangor = TestData.arrangor(navn = "Overordnet Arrangor")
+		val arrangor = TestData.arrangor(overordnetArrangorId = overordnetArrangor.id)
 		server.enqueue(
 			MockResponse().setBody(
 				"""
@@ -38,13 +39,23 @@ class AmtArrangorClientTest {
 					"id": "${arrangor.id}",
 					"organisasjonsnummer": "${arrangor.organisasjonsnummer}",
 					"navn": "${arrangor.navn}",
-					"overordnetArrangor": null
+					"overordnetArrangor": {
+						"id": "${overordnetArrangor.id}",
+						"organisasjonsnummer": "${overordnetArrangor.organisasjonsnummer}",
+						"navn": "${overordnetArrangor.navn}",
+						"overordnetArrangorId": null
+					}
 				}
 				""".trimIndent(),
 			),
 		)
 
-		client.hentArrangor(arrangor.organisasjonsnummer) shouldBe arrangor
+		client.hentArrangor(arrangor.organisasjonsnummer) shouldBe AmtArrangorClient.ArrangorMedOverordnetArrangorDto(
+			id = arrangor.id,
+			navn = arrangor.navn,
+			organisasjonsnummer = arrangor.organisasjonsnummer,
+			overordnetArrangor = overordnetArrangor,
+		)
 	}
 
 	@Test

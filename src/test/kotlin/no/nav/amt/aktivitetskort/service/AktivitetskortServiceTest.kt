@@ -143,6 +143,7 @@ class AktivitetskortServiceTest {
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns emptyList()
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
 
@@ -151,6 +152,35 @@ class AktivitetskortServiceTest {
 		aktivitetskort shouldHaveSize 1
 
 		aktivitetskort.first() shouldBe mockAktivitetskort
+	}
+
+	@Test
+	fun `lagAktivitetskort(arrangor) - meldinger finnes, deltaker er aktiv, arrangor har underarrangorer - lager nye aktivitetskort for arrangor og underarrangor`() {
+		val ctx = TestData.MockContext()
+		val ctxUnderarrangor = TestData.MockContext()
+		val deltakerSluttdato = LocalDate.now().plusWeeks(3)
+		val mockAktivitetskort = ctx.aktivitetskort.copy(sluttDato = deltakerSluttdato)
+		val mockAktivitetskortUnderarrangor = ctxUnderarrangor.aktivitetskort.copy(sluttDato = deltakerSluttdato)
+		val underarrangor = ctxUnderarrangor.arrangor.copy(navn = "Underordnet arrangør", overordnetArrangorId = ctx.arrangor.id)
+
+		every { meldingRepository.getByArrangorId(ctx.arrangor.id) } returns listOf(ctx.melding.copy(aktivitetskort = mockAktivitetskort))
+		every { meldingRepository.getByArrangorId(underarrangor.id) } returns listOf(ctxUnderarrangor.melding.copy(aktivitetskort = mockAktivitetskortUnderarrangor))
+		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
+		every { deltakerRepository.get(ctxUnderarrangor.deltaker.id) } returns ctxUnderarrangor.deltaker.copy(sluttdato = deltakerSluttdato)
+		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
+		every { deltakerlisteRepository.get(ctxUnderarrangor.deltakerliste.id) } returns ctxUnderarrangor.deltakerliste.copy(arrangorId = underarrangor.id)
+		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { arrangorRepository.get(underarrangor.id) } returns underarrangor
+		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns listOf(underarrangor)
+
+		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
+
+		verify(exactly = 2) { meldingRepository.upsert(any()) }
+
+		aktivitetskort shouldHaveSize 2
+
+		aktivitetskort.first() shouldBe mockAktivitetskort
+		aktivitetskort[1] shouldBe mockAktivitetskortUnderarrangor
 	}
 
 	@Test
@@ -163,6 +193,7 @@ class AktivitetskortServiceTest {
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns emptyList()
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
 

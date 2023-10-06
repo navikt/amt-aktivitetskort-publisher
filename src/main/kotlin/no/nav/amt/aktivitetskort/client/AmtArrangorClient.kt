@@ -14,7 +14,7 @@ class AmtArrangorClient(
 	private val httpClient: OkHttpClient = baseClient(),
 ) {
 
-	fun hentArrangor(orgnummer: String): Arrangor {
+	fun hentArrangor(orgnummer: String): ArrangorMedOverordnetArrangorDto {
 		val request = Request.Builder()
 			.url("$baseUrl/api/service/arrangor/organisasjonsnummer/$orgnummer")
 			.addHeader("Authorization", "Bearer ${tokenProvider.get()}")
@@ -26,14 +26,30 @@ class AmtArrangorClient(
 				throw RuntimeException("Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.code}")
 			}
 			val body = response.body?.string() ?: throw RuntimeException("Body is missing")
-			val arrangor = JsonUtils.fromJson<ArrangorDto>(body)
-			return Arrangor(arrangor.id, arrangor.organisasjonsnummer, arrangor.navn)
+			return JsonUtils.fromJson<ArrangorMedOverordnetArrangorDto>(body)
 		}
 	}
 
-	data class ArrangorDto(
+	fun hentArrangor(arrangorId: UUID): ArrangorMedOverordnetArrangorDto {
+		val request = Request.Builder()
+			.url("$baseUrl/api/service/arrangor/$arrangorId")
+			.addHeader("Authorization", "Bearer ${tokenProvider.get()}")
+			.get()
+			.build()
+
+		httpClient.newCall(request).execute().use { response ->
+			if (!response.isSuccessful) {
+				throw RuntimeException("Kunne ikke hente arrangør med id $arrangorId fra amt-arrangør. Status=${response.code}")
+			}
+			val body = response.body?.string() ?: throw RuntimeException("Body is missing")
+			return JsonUtils.fromJson<ArrangorMedOverordnetArrangorDto>(body)
+		}
+	}
+
+	data class ArrangorMedOverordnetArrangorDto(
 		val id: UUID,
 		val navn: String,
 		val organisasjonsnummer: String,
+		val overordnetArrangor: Arrangor?,
 	)
 }

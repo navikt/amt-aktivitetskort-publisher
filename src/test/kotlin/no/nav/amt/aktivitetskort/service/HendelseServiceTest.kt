@@ -171,13 +171,14 @@ class HendelseServiceTest {
 		val deltakerliste =
 			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltak.Type.INDOPPFAG), arrangorId = arrangor.id)
 
-		every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null
-		every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns arrangor
+		every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null andThen arrangor
+		every { arrangorRepository.upsert(any()) } returns RepositoryResult.Created(arrangor)
+		every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns AmtArrangorClient.ArrangorMedOverordnetArrangorDto(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, null)
 		every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
 
 		hendelseService.deltakerlisteHendelse(deltakerliste.id, deltakerliste.toDto(arrangor))
 
-		verify(exactly = 1) { arrangorRepository.get(arrangor.organisasjonsnummer) }
+		verify(exactly = 2) { arrangorRepository.get(arrangor.organisasjonsnummer) }
 		verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) }
 		verify(exactly = 1) { deltakerlisteRepository.upsert(deltakerliste) }
 	}
