@@ -2,6 +2,9 @@ package no.nav.amt.aktivitetskort
 
 import no.nav.amt.aktivitetskort.database.DbTestDataUtils
 import no.nav.amt.aktivitetskort.database.SingletonPostgresContainer
+import no.nav.amt.aktivitetskort.mock.MockAktivitetArenaAclServer
+import no.nav.amt.aktivitetskort.mock.MockAmtArenaAclServer
+import no.nav.amt.aktivitetskort.mock.MockMachineToMachineServer
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -34,6 +37,10 @@ class IntegrationTest {
 
 	companion object {
 
+		val mockAktivitetArenaAclServer = MockAktivitetArenaAclServer()
+		val mockAmtArenaAclServer = MockAmtArenaAclServer()
+		val mockMachineToMachineServer = MockMachineToMachineServer()
+
 		@JvmStatic
 		@AfterAll
 		fun tearDown() {
@@ -55,15 +62,20 @@ class IntegrationTest {
 				System.setProperty("KAFKA_BROKERS", bootstrapServers)
 			}
 
-			registry.add("nais.env.azureOpenIdConfigTokenEndpoint") { "" }
+			mockMachineToMachineServer.start()
+			registry.add("nais.env.azureOpenIdConfigTokenEndpoint") {
+				mockMachineToMachineServer.serverUrl() + MockMachineToMachineServer.tokenPath
+			}
 
-			registry.add("amt.arena-acl.url") { "" }
+			mockAmtArenaAclServer.start()
+			registry.add("amt.arena-acl.url") { mockAmtArenaAclServer.serverUrl() }
 			registry.add("amt.arena-acl.scope") { "test.amt-arena-acl" }
 
 			registry.add("amt.arrangor.url") { "" }
 			registry.add("amt.arrangor.scope") { "test.amt-arrangor" }
 
-			registry.add("aktivitet.arena-acl.url") { "" }
+			mockAktivitetArenaAclServer.start()
+			registry.add("aktivitet.arena-acl.url") { mockAktivitetArenaAclServer.serverUrl() }
 			registry.add("aktivitet.arena-acl.scope") { "test.dab-arena-acl" }
 		}
 

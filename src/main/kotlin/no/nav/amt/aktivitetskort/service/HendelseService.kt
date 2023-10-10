@@ -2,8 +2,10 @@ package no.nav.amt.aktivitetskort.service
 
 import io.getunleash.DefaultUnleash
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
+import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
+import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.kafka.consumer.AKTIVITETSKORT_TOPIC
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
@@ -34,7 +36,7 @@ class HendelseService(
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	fun deltakerHendelse(id: UUID, deltaker: DeltakerDto?) {
-		if (deltaker == null) return
+		if (deltaker == null) return handterSlettetDeltaker(id)
 
 		if (deltakerStatusTilAktivetStatus(deltaker.status.type).isFailure) {
 			log.info("Kan ikke lage aktivitetskort for deltaker ${deltaker.id} med status ${deltaker.status.type}")
@@ -100,7 +102,8 @@ class HendelseService(
 	private fun hentOgLagreArrangorFraAmtArrangor(virksomhetsnummer: String): Arrangor {
 		val arrangorMedOverordnetArrangor = amtArrangorClient.hentArrangor(virksomhetsnummer)
 		lagreArrangorMedOverordnetArrangor(arrangorMedOverordnetArrangor)
-		return arrangorRepository.get(virksomhetsnummer) ?: throw RuntimeException("Fant ikke arrangør med id ${arrangorMedOverordnetArrangor.id} som vi nettopp lagret")
+		return arrangorRepository.get(virksomhetsnummer)
+			?: throw RuntimeException("Fant ikke arrangør med id ${arrangorMedOverordnetArrangor.id} som vi nettopp lagret")
 	}
 
 	private fun hentOgLagreArrangorFraAmtArrangor(arrangorId: UUID) {
@@ -128,5 +131,34 @@ class HendelseService(
 				overordnetArrangorId = arrangorMedOverordnetArrangor.overordnetArrangor?.id,
 			),
 		)
+	}
+
+	private fun handterSlettetDeltaker(deltakerId: UUID) {
+		val deltaker = deltakerRepository.get(deltakerId) ?: return
+		val aktivitetStatus = aktivitetskortService.getMelding(deltaker.id)?.aktivitetskort?.aktivitetStatus
+
+		if (skalAvbryteAktivtetskort(aktivitetStatus)) {
+			val avbruttDeltaker = deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.AVBRUTT, null))
+
+			aktivitetskortService.lagAktivitetskort(avbruttDeltaker)
+			log.info(
+				"Mottok tombstone for deltaker: $deltakerId som hadde status: ${deltaker.status.type}. " +
+					"Avbrøt deltakelse og aktivitetskort.",
+			)
+		}
+
+		log.info("Mottok tombstone for deltaker: $deltakerId og slettet deltaker")
+		deltakerRepository.delete(deltakerId)
+	}
+
+	private fun skalAvbryteAktivtetskort(status: AktivitetStatus?): Boolean {
+		return when (status) {
+			AktivitetStatus.FORSLAG,
+			AktivitetStatus.PLANLAGT,
+			AktivitetStatus.GJENNOMFORES,
+			-> true
+
+			else -> false
+		}
 	}
 }

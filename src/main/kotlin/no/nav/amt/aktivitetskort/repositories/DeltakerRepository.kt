@@ -104,4 +104,10 @@ class DeltakerRepository(
 		sqlParameters("id" to id),
 		rowMapper,
 	).firstOrNull()
+
+	fun delete(id: UUID) {
+		val sql = "DELETE FROM deltaker WHERE id = :id"
+		val parameters = sqlParameters("id" to id)
+		template.update(sql, parameters)
+	}
 }
