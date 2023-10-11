@@ -33,6 +33,8 @@ class AktivitetskortService(
 
 	private val log = LoggerFactory.getLogger(javaClass)
 
+	fun getMelding(deltakerId: UUID) = meldingRepository.getByDeltakerId(deltakerId)
+
 	fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort {
 		val melding = meldingRepository
 			.getByDeltakerId(deltaker.id)

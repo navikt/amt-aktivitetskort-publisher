@@ -1,10 +1,15 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
+import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
 import no.nav.amt.aktivitetskort.database.TestDatabaseService
+import no.nav.amt.aktivitetskort.domain.AktivitetStatus
+import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.utils.AsyncUtils
 import no.nav.amt.aktivitetskort.utils.JsonUtils
+import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.jupiter.api.Test
@@ -15,7 +20,7 @@ import java.util.concurrent.TimeUnit
 class KafkaListenerTest : IntegrationTest() {
 
 	@Autowired
-	lateinit var kafkaProducer: KafkaProducer<String, String>
+	lateinit var kafkaProducer: KafkaProducer<String, String?>
 
 	@Autowired
 	lateinit var db: TestDatabaseService
@@ -56,10 +61,13 @@ class KafkaListenerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `listen - melding om ny deltaker - deltaker upsertes`() {
+	fun `listen - melding om ny deltaker - deltaker upsertes og aktivitetskort opprettes`() {
 		val ctx = TestData.MockContext()
 		db.arrangorRepository.upsert(ctx.arrangor)
 		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
+
+		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
+		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -69,8 +77,102 @@ class KafkaListenerTest : IntegrationTest() {
 			),
 		)
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			db.deltakerRepository.get(ctx.deltaker.id) != null
+		AsyncUtils.eventually {
+			val deltaker = db.deltakerRepository.get(ctx.deltaker.id)!!
+			deltaker shouldBe ctx.deltaker
+
+			val aktivitetskort = db.meldingRepository.getByDeltakerId(deltaker.id)!!.aktivitetskort
+
+			aktivitetskort.personident shouldBe ctx.aktivitetskort.personident
+			aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
+			aktivitetskort.aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
+			aktivitetskort.startDato shouldBe ctx.aktivitetskort.startDato
+			aktivitetskort.sluttDato shouldBe ctx.aktivitetskort.sluttDato
+			aktivitetskort.beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
+			aktivitetskort.endretAv shouldBe ctx.aktivitetskort.endretAv
+			aktivitetskort.endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
+			aktivitetskort.avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
+			aktivitetskort.oppgave shouldBe ctx.aktivitetskort.oppgave
+			aktivitetskort.handlinger shouldBe ctx.aktivitetskort.handlinger
+			aktivitetskort.detaljer shouldBe ctx.aktivitetskort.detaljer
+			aktivitetskort.etiketter shouldBe ctx.aktivitetskort.etiketter
+		}
+	}
+
+	@Test
+	fun `listen - tombstone for deltaker som har aktivt aktivitetskort - deltaker slettes og aktivitetskort avbrytes`() {
+		val ctx = TestData.MockContext()
+		db.arrangorRepository.upsert(ctx.arrangor)
+		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
+		db.deltakerRepository.upsert(ctx.deltaker)
+		db.meldingRepository.upsert(ctx.melding)
+
+		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
+		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
+
+		kafkaProducer.send(
+			ProducerRecord(
+				DELTAKER_TOPIC,
+				ctx.deltaker.id.toString(),
+				null,
+			),
+		)
+
+		AsyncUtils.eventually {
+			val aktivitetskort = db.meldingRepository.getByDeltakerId(ctx.deltaker.id)!!.aktivitetskort
+			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.AVBRUTT
+
+			db.deltakerRepository.get(ctx.deltaker.id) shouldBe null
+		}
+	}
+
+	@Test
+	fun `listen - tombstone for deltaker som har inaktivt aktivitetskort - deltaker slettes og aktivitetskort endres ikke`() {
+		val ctx = TestData.MockContext(deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, null)))
+		db.arrangorRepository.upsert(ctx.arrangor)
+		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
+		db.deltakerRepository.upsert(ctx.deltaker)
+		db.meldingRepository.upsert(ctx.melding)
+
+		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
+		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
+
+		kafkaProducer.send(
+			ProducerRecord(
+				DELTAKER_TOPIC,
+				ctx.deltaker.id.toString(),
+				null,
+			),
+		)
+
+		AsyncUtils.eventually {
+			val aktivitetskort = db.meldingRepository.getByDeltakerId(ctx.deltaker.id)!!.aktivitetskort
+			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.FULLFORT
+
+			db.deltakerRepository.get(ctx.deltaker.id) shouldBe null
+		}
+	}
+
+	@Test
+	fun `listen - tombstone for deltaker som ikke aktivitetskort - deltaker slettes og aktivitetskort opprettes ikke`() {
+		val deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.PABEGYNT_REGISTRERING, null))
+		val deltakerliste = TestData.deltakerliste(deltaker.deltakerlisteId)
+		val arrangor = TestData.arrangor(deltakerliste.arrangorId)
+		db.arrangorRepository.upsert(arrangor)
+		db.deltakerlisteRepository.upsert(deltakerliste)
+		db.deltakerRepository.upsert(deltaker)
+
+		kafkaProducer.send(
+			ProducerRecord(
+				DELTAKER_TOPIC,
+				deltaker.id.toString(),
+				null,
+			),
+		)
+
+		AsyncUtils.eventually {
+			db.deltakerRepository.get(deltaker.id) shouldBe null
+			db.meldingRepository.getByDeltakerId(deltaker.id) shouldBe null
 		}
 	}
 }
