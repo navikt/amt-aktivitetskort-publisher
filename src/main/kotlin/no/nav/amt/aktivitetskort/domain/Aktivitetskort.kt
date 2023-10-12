@@ -87,6 +87,7 @@ data class Aktivitetskort(
 			Tiltak.Type.DIGIOPPARB -> "Digital oppfølging hos ${arrangor.navn}"
 			Tiltak.Type.JOBBK -> "Jobbsøkerkurs hos ${arrangor.navn}"
 			Tiltak.Type.GRUPPEAMO -> "Kurs: ${deltakerliste.navn}"
+			Tiltak.Type.GRUFAGYRKE -> deltakerliste.navn
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 
