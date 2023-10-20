@@ -21,7 +21,7 @@ data class DeltakerStatus(
 ) {
 	enum class Type {
 		VENTER_PA_OPPSTART, DELTAR, HAR_SLUTTET, IKKE_AKTUELL, FEILREGISTRERT,
-		SOKT_INN, VURDERES, VENTELISTE, AVBRUTT, // kursstatuser
+		SOKT_INN, VURDERES, VENTELISTE, AVBRUTT, FULLFORT, // kursstatuser
 		PABEGYNT_REGISTRERING,
 		;
 
@@ -35,6 +35,7 @@ data class DeltakerStatus(
 			VURDERES -> "Vurderes"
 			VENTELISTE -> "Venteliste"
 			AVBRUTT -> "Avbrutt"
+			FULLFORT -> "Fullført"
 			PABEGYNT_REGISTRERING -> "Påbegynt registrering"
 		}
 	}

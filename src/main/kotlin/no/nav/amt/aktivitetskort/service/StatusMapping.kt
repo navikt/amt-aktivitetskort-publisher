@@ -15,7 +15,10 @@ object StatusMapping {
 
 	private val GJENNOMFORER_STATUS = listOf(DeltakerStatus.Type.DELTAR)
 
-	private val FULLFORT_STATUS = listOf(DeltakerStatus.Type.HAR_SLUTTET)
+	private val FULLFORT_STATUS = listOf(
+		DeltakerStatus.Type.HAR_SLUTTET,
+		DeltakerStatus.Type.FULLFORT,
+	)
 
 	private val AVBRUTT_STATUS = listOf(
 		DeltakerStatus.Type.AVBRUTT,
@@ -64,6 +67,7 @@ object StatusMapping {
 			DeltakerStatus.Type.HAR_SLUTTET -> null
 			DeltakerStatus.Type.FEILREGISTRERT -> null
 			DeltakerStatus.Type.AVBRUTT -> null
+			DeltakerStatus.Type.FULLFORT -> null
 			DeltakerStatus.Type.PABEGYNT_REGISTRERING -> null
 		}
 	}
