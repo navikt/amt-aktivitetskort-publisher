@@ -1,5 +1,5 @@
 plugins {
-	id("org.springframework.boot") version "3.1.4"
+	id("org.springframework.boot") version "3.1.5"
 	id("io.spring.dependency-management") version "1.1.3"
 	id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 	kotlin("plugin.spring") version "1.9.10"
@@ -22,7 +22,7 @@ val kotestVersion = "5.7.2"
 val testcontainersVersion = "1.19.1"
 val klintVersion = "0.49.1"
 val mockkVersion = "1.13.8"
-val commonVersion = "3.2023.09.13_04.55-a8ff452fbd94"
+val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
 val tokenSupportVersion = "3.1.7"
 val unleashVersion = "8.4.0"
 
