@@ -62,4 +62,24 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 
 		db.deltakerlisteRepository.get(initialDeltakerliste.id) shouldBe updatedDeltakerliste
 	}
+
+	@Test
+	fun `upsert - endret arrangor - returnerer Modified Result og oppdaterer database`() {
+		val initialDeltakerliste = TestData.deltakerliste()
+			.also { db.insertArrangor(TestData.arrangor(it.arrangorId)) }
+			.also { db.deltakerlisteRepository.upsert(it) }
+		val nyArrangor = TestData.arrangor()
+			.also { db.insertArrangor(it) }
+
+		val updatedDeltakerliste = initialDeltakerliste.copy(
+			arrangorId = nyArrangor.id,
+		)
+
+		when (val result = db.deltakerlisteRepository.upsert(updatedDeltakerliste)) {
+			is RepositoryResult.Modified -> result.data shouldBe updatedDeltakerliste
+			else -> fail("Should be Modified, was $result")
+		}
+
+		db.deltakerlisteRepository.get(initialDeltakerliste.id) shouldBe updatedDeltakerliste
+	}
 }

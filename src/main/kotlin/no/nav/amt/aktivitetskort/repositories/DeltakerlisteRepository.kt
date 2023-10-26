@@ -43,7 +43,8 @@ class DeltakerlisteRepository(
 			ON CONFLICT (id) DO UPDATE SET
 				tiltaksnavn = :tiltaksnavn,
 				tiltakstype = :tiltakstype,
-			    navn = :navn
+			    navn = :navn,
+				arrangor_id = :arrangor_id
 			RETURNING *
 			""".trimIndent(),
 			sqlParameters(
