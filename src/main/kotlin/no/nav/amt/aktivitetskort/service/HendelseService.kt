@@ -14,7 +14,7 @@ import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortPayload
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
-import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivetStatus
+import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.utils.JsonUtils
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.slf4j.LoggerFactory
@@ -38,7 +38,7 @@ class HendelseService(
 	fun deltakerHendelse(id: UUID, deltaker: DeltakerDto?) {
 		if (deltaker == null) return handterSlettetDeltaker(id)
 
-		if (deltakerStatusTilAktivetStatus(deltaker.status.type).isFailure) {
+		if (deltakerStatusTilAktivitetStatus(deltaker.status.type).isFailure) {
 			log.info("Kan ikke lage aktivitetskort for deltaker ${deltaker.id} med status ${deltaker.status.type}")
 			return
 		}
