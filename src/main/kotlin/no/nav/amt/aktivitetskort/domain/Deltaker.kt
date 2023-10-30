@@ -48,7 +48,7 @@ data class DeltakerStatus(
 			FATT_JOBB -> "Fått jobb"
 			TRENGER_ANNEN_STOTTE -> "Trenger annen støtte"
 			FIKK_IKKE_PLASS -> "Fikk ikke plass"
-			IKKE_MOTT -> "Møtte ikke opp"
+			IKKE_MOTT -> "Møter ikke opp"
 			ANNET -> "Annet"
 			AVLYST_KONTRAKT -> "Avlyst kontrakt"
 		}
