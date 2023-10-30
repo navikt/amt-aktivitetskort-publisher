@@ -13,7 +13,7 @@ import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
-import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivetStatus
+import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -97,7 +97,7 @@ class AktivitetskortService(
 			id = id,
 			personident = deltaker.personident,
 			tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor),
-			aktivitetStatus = deltakerStatusTilAktivetStatus(deltaker.status.type).getOrThrow(),
+			aktivitetStatus = deltakerStatusTilAktivitetStatus(deltaker.status.type).getOrThrow(),
 			startDato = deltaker.oppstartsdato,
 			sluttDato = deltaker.sluttdato,
 			beskrivelse = null,

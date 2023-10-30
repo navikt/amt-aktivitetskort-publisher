@@ -15,7 +15,7 @@ import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
-import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivetStatus
+import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -66,7 +66,7 @@ object TestData {
 			id = id,
 			personident = deltaker.personident,
 			tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor),
-			aktivitetStatus = deltakerStatusTilAktivetStatus(deltaker.status.type).getOrThrow(),
+			aktivitetStatus = deltakerStatusTilAktivitetStatus(deltaker.status.type).getOrThrow(),
 			startDato = deltaker.oppstartsdato,
 			sluttDato = deltaker.sluttdato,
 			beskrivelse = null,
