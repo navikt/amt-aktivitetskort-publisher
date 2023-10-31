@@ -36,7 +36,7 @@ data class DeltakerStatus(
 			VENTELISTE -> "Venteliste"
 			AVBRUTT -> "Avbrutt"
 			FULLFORT -> "Fullført"
-			PABEGYNT_REGISTRERING -> "Påbegynt registrering"
+			PABEGYNT_REGISTRERING -> "Søkt inn"
 		}
 	}
 
