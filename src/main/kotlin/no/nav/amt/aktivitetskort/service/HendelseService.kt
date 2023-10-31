@@ -140,7 +140,7 @@ class HendelseService(
 		if (skalAvbryteAktivtetskort(aktivitetStatus)) {
 			val avbruttDeltaker = deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.AVBRUTT, null))
 
-			aktivitetskortService.lagAktivitetskort(avbruttDeltaker)
+			send(aktivitetskortService.lagAktivitetskort(avbruttDeltaker))
 			log.info(
 				"Mottok tombstone for deltaker: $deltakerId som hadde status: ${deltaker.status.type}. " +
 					"Avbrøt deltakelse og aktivitetskort.",
