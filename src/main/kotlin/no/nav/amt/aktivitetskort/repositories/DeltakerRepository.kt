@@ -36,7 +36,7 @@ class DeltakerRepository(
 		)
 	}
 
-	fun upsert(deltaker: Deltaker, offset: Long, skalRelasteSisteDeltaker: Boolean = false): RepositoryResult<Deltaker> {
+	fun upsert(deltaker: Deltaker, offset: Long, skalRelasteDeltakere: Boolean = false): RepositoryResult<Deltaker> {
 		val old = getDeltakerMedOffset(deltaker.id)
 
 		if (old != null && old.offset > offset) {
@@ -48,7 +48,7 @@ class DeltakerRepository(
 			return RepositoryResult.NoChange()
 		}
 
-		if (deltaker == old?.deltaker && !(skalRelasteSisteDeltaker && offset == old.offset)) return RepositoryResult.NoChange()
+		if (deltaker == old?.deltaker && !skalRelasteDeltakere) return RepositoryResult.NoChange()
 
 		val sql = """
 			insert into deltaker(
