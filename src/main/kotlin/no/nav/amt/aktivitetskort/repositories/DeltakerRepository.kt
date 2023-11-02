@@ -4,6 +4,7 @@ import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.aktivitetskort.utils.sqlParameters
+import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -13,27 +14,37 @@ import java.util.UUID
 class DeltakerRepository(
 	private val template: NamedParameterJdbcTemplate,
 ) {
+	private val log = LoggerFactory.getLogger(javaClass)
 
 	private val rowMapper = RowMapper { rs, _ ->
-		Deltaker(
-			id = UUID.fromString(rs.getString("id")),
-			personident = rs.getString("personident"),
-			deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
-			status = DeltakerStatus(
-				type = DeltakerStatus.Type.valueOf(rs.getString("deltaker_status_type")),
-				aarsak = rs.getString("deltaker_status_arsak")?.let { DeltakerStatus.Aarsak.valueOf(it) },
+		DeltakerMedOffset(
+			deltaker = Deltaker(
+				id = UUID.fromString(rs.getString("id")),
+				personident = rs.getString("personident"),
+				deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
+				status = DeltakerStatus(
+					type = DeltakerStatus.Type.valueOf(rs.getString("deltaker_status_type")),
+					aarsak = rs.getString("deltaker_status_arsak")?.let { DeltakerStatus.Aarsak.valueOf(it) },
+				),
+				dagerPerUke = rs.getFloat("dager_per_uke"),
+				prosentStilling = rs.getDouble("prosent_stilling"),
+				oppstartsdato = rs.getDate("start_dato")?.toLocalDate(),
+				sluttdato = rs.getDate("slutt_dato")?.toLocalDate(),
+				deltarPaKurs = rs.getBoolean("deltar_pa_kurs"),
 			),
-			dagerPerUke = rs.getFloat("dager_per_uke"),
-			prosentStilling = rs.getDouble("prosent_stilling"),
-			oppstartsdato = rs.getDate("start_dato")?.toLocalDate(),
-			sluttdato = rs.getDate("slutt_dato")?.toLocalDate(),
-			deltarPaKurs = rs.getBoolean("deltar_pa_kurs"),
+			offset = rs.getLong("kafkaoffset"),
 		)
 	}
 
-	fun upsert(deltaker: Deltaker): RepositoryResult<Deltaker> {
-		val old = get(deltaker.id)
-		if (deltaker == old) return RepositoryResult.NoChange()
+	fun upsert(deltaker: Deltaker, offset: Long): RepositoryResult<Deltaker> {
+		val old = getDeltakerMedOffset(deltaker.id)
+
+		if (old != null && old.offset > offset) {
+			log.info("Har lagret melding med offset ${old.offset} for deltaker ${deltaker.id}, ignorerer offset $offset")
+			return RepositoryResult.NoChange()
+		}
+
+		if (deltaker == old?.deltaker) return RepositoryResult.NoChange()
 
 		if (old == null && deltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
 			return RepositoryResult.NoChange()
@@ -52,7 +63,8 @@ class DeltakerRepository(
 				slutt_dato,
 				deltar_pa_kurs,
 				created_at,
-				modified_at
+				modified_at,
+				kafkaoffset
 			) values (
 				:id,
 				:personident,
@@ -65,7 +77,8 @@ class DeltakerRepository(
 				:slutt_dato,
 				:deltar_pa_kurs,
 				current_timestamp,
-				current_timestamp
+				current_timestamp,
+				:kafkaoffset
 			) on conflict(id) do update set
 				personident = :personident,
 				deltakerliste_id = :deltakerliste_id,
@@ -76,7 +89,8 @@ class DeltakerRepository(
 				start_dato = :start_dato,
 				slutt_dato = :slutt_dato,
 				deltar_pa_kurs = :deltar_pa_kurs,
-				modified_at = current_timestamp
+				modified_at = current_timestamp,
+				kafkaoffset = :kafkaoffset
 			returning *
 		""".trimIndent()
 		val parameters = sqlParameters(
@@ -90,16 +104,19 @@ class DeltakerRepository(
 			"start_dato" to deltaker.oppstartsdato,
 			"slutt_dato" to deltaker.sluttdato,
 			"deltar_pa_kurs" to deltaker.deltarPaKurs,
+			"kafkaoffset" to offset,
 		)
 
 		val new = template.query(sql, parameters, rowMapper).first()
 
-		if (old == null) return RepositoryResult.Created(new)
+		if (old == null) return RepositoryResult.Created(new.deltaker)
 
-		return RepositoryResult.Modified(new)
+		return RepositoryResult.Modified(new.deltaker)
 	}
 
-	fun get(id: UUID): Deltaker? = template.query(
+	fun get(id: UUID): Deltaker? = getDeltakerMedOffset(id)?.deltaker
+
+	private fun getDeltakerMedOffset(id: UUID): DeltakerMedOffset? = template.query(
 		"SELECT * from deltaker where id = :id",
 		sqlParameters("id" to id),
 		rowMapper,
@@ -111,3 +128,8 @@ class DeltakerRepository(
 		template.update(sql, parameters)
 	}
 }
+
+private data class DeltakerMedOffset(
+	val deltaker: Deltaker,
+	val offset: Long,
+)

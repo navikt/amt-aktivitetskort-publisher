@@ -35,7 +35,7 @@ class HendelseService(
 
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun deltakerHendelse(id: UUID, deltaker: DeltakerDto?) {
+	fun deltakerHendelse(id: UUID, deltaker: DeltakerDto?, offset: Long) {
 		if (deltaker == null) return handterSlettetDeltaker(id)
 
 		if (deltakerStatusTilAktivitetStatus(deltaker.status.type).isFailure) {
@@ -43,7 +43,7 @@ class HendelseService(
 			return
 		}
 
-		when (val result = deltakerRepository.upsert(deltaker.toModel())) {
+		when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
 			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.Created -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltaker ${deltaker.id}: Ingen endring")

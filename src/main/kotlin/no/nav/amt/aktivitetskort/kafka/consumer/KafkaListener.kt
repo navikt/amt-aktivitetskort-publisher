@@ -40,8 +40,9 @@ class KafkaListener(
 			)
 
 			DELTAKER_TOPIC -> hendelseService.deltakerHendelse(
-				UUID.fromString(record.key()),
-				record.value()?.let { fromJson(it) },
+				id = UUID.fromString(record.key()),
+				deltaker = record.value()?.let { fromJson(it) },
+				offset = record.offset(),
 			)
 
 			FEILTOPIC -> feilmeldingService.handleFeilmelding(

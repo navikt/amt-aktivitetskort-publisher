@@ -25,7 +25,7 @@ class DeltakerRepositoryTest : IntegrationTest() {
 	fun `upsert - finnes ikke - returnerer Created Result - finnes in database`() {
 		val deltaker = TestData.deltaker()
 			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-		when (val result = db.deltakerRepository.upsert(deltaker)) {
+		when (val result = db.deltakerRepository.upsert(deltaker, 0)) {
 			is RepositoryResult.Created -> result.data shouldBe deltaker
 			else -> fail("Should be Created, was $result")
 		}
@@ -37,9 +37,9 @@ class DeltakerRepositoryTest : IntegrationTest() {
 	fun `upsert - finnes - returnerer NoChange Result`() {
 		val deltaker = TestData.deltaker()
 			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { db.deltakerRepository.upsert(it) }
+			.also { db.deltakerRepository.upsert(it, 0) }
 
-		when (val result = db.deltakerRepository.upsert(deltaker)) {
+		when (val result = db.deltakerRepository.upsert(deltaker, 1)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
@@ -50,13 +50,13 @@ class DeltakerRepositoryTest : IntegrationTest() {
 	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
 		val initialDeltaker = TestData.deltaker()
 			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { db.deltakerRepository.upsert(it) }
+			.also { db.deltakerRepository.upsert(it, 0) }
 
 		val updatedDeltaker = initialDeltaker.copy(
 			personident = "UPDATED",
 		)
 
-		when (val result = db.deltakerRepository.upsert(updatedDeltaker)) {
+		when (val result = db.deltakerRepository.upsert(updatedDeltaker, 1)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedDeltaker
 			else -> fail("Should be Modified, was $result")
 		}
@@ -65,10 +65,29 @@ class DeltakerRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
+	fun `upsert - endret, eldre offset - returnerer NoChange Result og oppdaterer ikke database`() {
+		val initialDeltaker = TestData.deltaker()
+			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
+			.also { db.deltakerRepository.upsert(it, 1) }
+
+		val tidligereVersjonAvDeltaker = initialDeltaker.copy(
+			personident = "UTDATERT",
+		)
+
+		when (val result = db.deltakerRepository.upsert(tidligereVersjonAvDeltaker, 0)) {
+			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
+			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
+			is RepositoryResult.NoChange -> {}
+		}
+
+		db.deltakerRepository.get(initialDeltaker.id) shouldBe initialDeltaker
+	}
+
+	@Test
 	fun `upsert - finnes ikke, status feilregistrert - returnerer NoChange Result, lagres ikke`() {
 		val deltaker = TestData.deltaker().copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
 			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-		when (val result = db.deltakerRepository.upsert(deltaker)) {
+		when (val result = db.deltakerRepository.upsert(deltaker, 0)) {
 			is RepositoryResult.NoChange -> {}
 			else -> fail("Should be NoChange, was $result")
 		}
@@ -80,13 +99,13 @@ class DeltakerRepositoryTest : IntegrationTest() {
 	fun `upsert - finnes, status feilregistrert - returnerer Modified Result og oppdaterer database`() {
 		val initialDeltaker = TestData.deltaker()
 			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { db.deltakerRepository.upsert(it) }
+			.also { db.deltakerRepository.upsert(it, 0) }
 
 		val updatedDeltaker = initialDeltaker.copy(
 			status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null),
 		)
 
-		when (val result = db.deltakerRepository.upsert(updatedDeltaker)) {
+		when (val result = db.deltakerRepository.upsert(updatedDeltaker, 1)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedDeltaker
 			else -> fail("Should be Modified, was $result")
 		}
