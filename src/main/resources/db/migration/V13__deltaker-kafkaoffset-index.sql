@@ -1,1 +1,0 @@
-CREATE INDEX deltaker_kafkaoffset_idx ON deltaker(kafkaoffset);
