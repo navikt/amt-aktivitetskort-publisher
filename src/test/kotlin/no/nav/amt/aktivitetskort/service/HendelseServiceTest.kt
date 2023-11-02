@@ -43,7 +43,8 @@ class HendelseServiceTest {
 
 	@BeforeEach
 	fun setup() {
-		every { unleash.isEnabled(any()) } returns true
+		every { unleash.isEnabled("amt.send-aktivitetskort") } returns true
+		every { unleash.isEnabled("amt.relast-aktivitetskort-deltaker") } returns false
 	}
 
 	@Test

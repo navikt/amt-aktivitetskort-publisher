@@ -43,7 +43,7 @@ class HendelseService(
 			return
 		}
 
-		when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
+		when (val result = deltakerRepository.upsert(deltaker.toModel(), offset, skalRelasteSisteDeltaker())) {
 			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.Created -> send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltaker ${deltaker.id}: Ingen endring")
@@ -160,5 +160,9 @@ class HendelseService(
 
 			else -> false
 		}
+	}
+
+	private fun skalRelasteSisteDeltaker(): Boolean {
+		return unleash.isEnabled("amt.relast-aktivitetskort-deltaker")
 	}
 }
