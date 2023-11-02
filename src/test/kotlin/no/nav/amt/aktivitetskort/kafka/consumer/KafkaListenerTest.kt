@@ -25,6 +25,8 @@ class KafkaListenerTest : IntegrationTest() {
 	@Autowired
 	lateinit var db: TestDatabaseService
 
+	private val offset: Long = 0
+
 	@Test
 	fun `listen - melding om ny arrangor - arrangor upsertes`() {
 		val arrangor = TestData.arrangor()
@@ -104,7 +106,7 @@ class KafkaListenerTest : IntegrationTest() {
 		val ctx = TestData.MockContext()
 		db.arrangorRepository.upsert(ctx.arrangor)
 		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
-		db.deltakerRepository.upsert(ctx.deltaker)
+		db.deltakerRepository.upsert(ctx.deltaker, offset)
 		db.meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
@@ -131,7 +133,7 @@ class KafkaListenerTest : IntegrationTest() {
 		val ctx = TestData.MockContext(deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, null)))
 		db.arrangorRepository.upsert(ctx.arrangor)
 		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
-		db.deltakerRepository.upsert(ctx.deltaker)
+		db.deltakerRepository.upsert(ctx.deltaker, offset)
 		db.meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
@@ -160,7 +162,7 @@ class KafkaListenerTest : IntegrationTest() {
 		val arrangor = TestData.arrangor(deltakerliste.arrangorId)
 		db.arrangorRepository.upsert(arrangor)
 		db.deltakerlisteRepository.upsert(deltakerliste)
-		db.deltakerRepository.upsert(deltaker)
+		db.deltakerRepository.upsert(deltaker, offset)
 
 		kafkaProducer.send(
 			ProducerRecord(

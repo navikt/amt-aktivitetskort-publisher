@@ -29,9 +29,9 @@ class TestDatabaseService(
 
 	fun clean() = DbTestDataUtils.cleanDatabase(datasource)
 
-	fun insertDeltaker(deltaker: Deltaker = deltaker()): Deltaker {
+	fun insertDeltaker(deltaker: Deltaker = deltaker(), offset: Long = 0): Deltaker {
 		insertDeltakerliste(deltakerliste(id = deltaker.deltakerlisteId))
-		return when (val result = deltakerRepository.upsert(deltaker)) {
+		return when (val result = deltakerRepository.upsert(deltaker, offset)) {
 			is RepositoryResult.Created -> result.data
 			is RepositoryResult.Modified -> result.data
 			is RepositoryResult.NoChange -> deltaker

@@ -29,6 +29,8 @@ class HendelseServiceTest {
 	private val template = mockk<KafkaTemplate<String, String>>(relaxed = true)
 	private val unleash = mockk<DefaultUnleash>()
 
+	private val offset: Long = 0
+
 	private val hendelseService = HendelseService(
 		arrangorRepository = arrangorRepository,
 		deltakerlisteRepository = deltakerlisteRepository,
@@ -41,19 +43,20 @@ class HendelseServiceTest {
 
 	@BeforeEach
 	fun setup() {
-		every { unleash.isEnabled(any()) } returns true
+		every { unleash.isEnabled("amt.send-aktivitetskort") } returns true
+		every { unleash.isEnabled("amt.relast-aktivitetskort-deltaker") } returns false
 	}
 
 	@Test
 	fun `deltakerHendelse - deltaker modifisert - publiser melding`() {
 		val ctx = TestData.MockContext()
 
-		every { deltakerRepository.upsert(ctx.deltaker) } returns RepositoryResult.Modified(ctx.deltaker)
+		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Modified(ctx.deltaker)
 		every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
 
-		hendelseService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto())
+		hendelseService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker) }
+		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
 	}
 
@@ -61,12 +64,12 @@ class HendelseServiceTest {
 	fun `deltakerHendelse - deltaker lagd - publiser melding`() {
 		val ctx = TestData.MockContext()
 
-		every { deltakerRepository.upsert(ctx.deltaker) } returns RepositoryResult.Created(ctx.deltaker)
+		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Created(ctx.deltaker)
 		every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
 
-		hendelseService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto())
+		hendelseService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker) }
+		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
 	}
 
@@ -74,11 +77,11 @@ class HendelseServiceTest {
 	fun `deltakerHendelse - deltaker har ingen forandring - ikke publiser melding`() {
 		val ctx = TestData.MockContext()
 
-		every { deltakerRepository.upsert(ctx.deltaker) } returns RepositoryResult.NoChange()
+		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.NoChange()
 
-		hendelseService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto())
+		hendelseService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker) }
+		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
 	}
 
@@ -87,11 +90,11 @@ class HendelseServiceTest {
 		val ctx = TestData.MockContext()
 		val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
 
-		every { deltakerRepository.upsert(mockDeltaker) } returns RepositoryResult.NoChange()
+		every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.NoChange()
 
-		hendelseService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto())
+		hendelseService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker) }
+		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
 	}
 
@@ -100,12 +103,12 @@ class HendelseServiceTest {
 		val ctx = TestData.MockContext()
 		val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
 
-		every { deltakerRepository.upsert(mockDeltaker) } returns RepositoryResult.Modified(mockDeltaker)
+		every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.Modified(mockDeltaker)
 		every { aktivitetskortService.lagAktivitetskort(mockDeltaker) } returns ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
 
-		hendelseService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto())
+		hendelseService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker) }
+		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
 	}
 
