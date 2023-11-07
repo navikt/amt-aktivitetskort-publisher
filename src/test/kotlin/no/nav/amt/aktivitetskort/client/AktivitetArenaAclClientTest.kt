@@ -7,6 +7,7 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.util.UUID
 
 class AktivitetArenaAclClientTest {
@@ -39,11 +40,11 @@ class AktivitetArenaAclClientTest {
 	}
 
 	@Test
-	fun `getAktivitetIdForArenaId - returnerer null om 404`() {
+	fun `getAktivitetIdForArenaId - kaster feilmelding om 404`() {
 		server.enqueue(MockResponse().setResponseCode(404))
 
-		val id = client.getAktivitetIdForArenaId(1L)
-
-		id shouldBe null
+		assertThrows<IllegalStateException> {
+			client.getAktivitetIdForArenaId(1L)
+		}
 	}
 }
