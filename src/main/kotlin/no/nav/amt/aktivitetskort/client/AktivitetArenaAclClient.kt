@@ -20,7 +20,7 @@ class AktivitetArenaAclClient(
 	private val httpClient: OkHttpClient = RestClient.baseClient(),
 ) {
 
-	fun getAktivitetIdForArenaId(arenaId: Long): UUID? {
+	fun getAktivitetIdForArenaId(arenaId: Long): UUID {
 		val request = okhttp3.Request.Builder()
 			.url("$baseUrl/api/translation/arenaid")
 			.header("Accept", APPLICATION_JSON_VALUE)
@@ -30,9 +30,6 @@ class AktivitetArenaAclClient(
 			.build()
 
 		httpClient.newCall(request).execute().use { response ->
-			if (response.code == 404) {
-				return null
-			}
 			if (!response.isSuccessful) {
 				error("Klarte ikke å hente aktivitetId for ArenaId. Status: ${response.code}")
 			}

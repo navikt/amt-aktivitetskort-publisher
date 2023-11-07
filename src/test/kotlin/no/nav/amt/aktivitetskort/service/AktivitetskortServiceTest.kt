@@ -2,7 +2,6 @@ package no.nav.amt.aktivitetskort.service
 
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -15,6 +14,7 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.util.UUID
 
@@ -66,39 +66,38 @@ class AktivitetskortServiceTest {
 	}
 
 	@Test
-	fun `lagAktivitetskort(deltaker) - meldinger finnes ikke - har ikke arena id i amt, genererer random id`() {
+	fun `lagAktivitetskort(deltaker) - meldinger finnes ikke, kall til amt-arena-acl feiler - oppretting feiler`() {
 		val ctx = TestData.MockContext()
 		val aktivitetskordId = UUID.randomUUID()
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns null
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
-		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns null
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } throws IllegalStateException("Noe gikk galt")
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) } returns aktivitetskordId
 
-		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+		assertThrows<IllegalStateException> {
+			aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+		}
 
-		verify(exactly = 1) { meldingRepository.upsert(any()) }
+		verify(exactly = 0) { meldingRepository.upsert(any()) }
 		verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
-
-		aktivitetskort.id shouldNotBe aktivitetskordId
 	}
 
 	@Test
-	fun `lagAktivitetskort(deltaker) - meldinger finnes ikke - har arena id i amt, ikke i aktivitet, genererer random id`() {
+	fun `lagAktivitetskort(deltaker) - meldinger finnes ikke, har arena id i amt, ikke i aktivitet - oppretting feiler`() {
 		val ctx = TestData.MockContext()
-		val aktivitetskordId = UUID.randomUUID()
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns null
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
-		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns null
+		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } throws IllegalStateException("Noe gikk galt")
 
-		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+		assertThrows<IllegalStateException> {
+			aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+		}
 
-		verify(exactly = 1) { meldingRepository.upsert(any()) }
+		verify(exactly = 0) { meldingRepository.upsert(any()) }
 		verify(exactly = 1) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
-
-		aktivitetskort.id shouldNotBe aktivitetskordId
 	}
 
 	@Test
@@ -107,6 +106,8 @@ class AktivitetskortServiceTest {
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns ctx.melding
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
+		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
@@ -123,6 +124,8 @@ class AktivitetskortServiceTest {
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
+		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltakerliste)
 
@@ -144,6 +147,8 @@ class AktivitetskortServiceTest {
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns emptyList()
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
+		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
 
@@ -172,6 +177,10 @@ class AktivitetskortServiceTest {
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { arrangorRepository.get(underarrangor.id) } returns underarrangor
 		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns listOf(underarrangor)
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
+		every { amtArenaAclClient.getArenaIdForAmtId(ctxUnderarrangor.deltaker.id) } returns 2L
+		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns mockAktivitetskort.id
+		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(2L) } returns mockAktivitetskortUnderarrangor.id
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
 
@@ -194,6 +203,8 @@ class AktivitetskortServiceTest {
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns emptyList()
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
+		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
 

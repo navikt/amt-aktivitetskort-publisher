@@ -15,7 +15,7 @@ class AmtArenaAclClient(
 	private val httpClient: OkHttpClient = baseClient(),
 ) {
 
-	fun getArenaIdForAmtId(amtId: UUID): Long? {
+	fun getArenaIdForAmtId(amtId: UUID): Long {
 		val request = Request.Builder()
 			.url("$baseUrl/api/translation/$amtId")
 			.header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
@@ -24,7 +24,6 @@ class AmtArenaAclClient(
 			.build()
 
 		httpClient.newCall(request).execute().use { response ->
-			if (response.code == 404) { return null }
 			if (!response.isSuccessful) {
 				error("Klarte ikke å hente arenaId for AmtId. Status: ${response.code}")
 			}
