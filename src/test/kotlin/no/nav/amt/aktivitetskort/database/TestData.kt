@@ -65,7 +65,7 @@ object TestData {
 		Aktivitetskort(
 			id = id,
 			personident = deltaker.personident,
-			tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor),
+			tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor, deltaker.deltarPaKurs),
 			aktivitetStatus = deltakerStatusTilAktivitetStatus(deltaker.status.type).getOrThrow(),
 			startDato = deltaker.oppstartsdato,
 			sluttDato = deltaker.sluttdato,
