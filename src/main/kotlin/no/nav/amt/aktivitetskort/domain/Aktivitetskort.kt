@@ -83,10 +83,10 @@ data class Aktivitetskort(
 	}
 
 	companion object {
-		fun lagTittel(deltakerliste: Deltakerliste, arrangor: Arrangor) = when (deltakerliste.tiltak.type) {
+		fun lagTittel(deltakerliste: Deltakerliste, arrangor: Arrangor, erKurs: Boolean) = when (deltakerliste.tiltak.type) {
 			Tiltak.Type.DIGIOPPARB -> "Digital oppfølging hos ${arrangor.navn}"
 			Tiltak.Type.JOBBK -> "Jobbsøkerkurs hos ${arrangor.navn}"
-			Tiltak.Type.GRUPPEAMO -> "Kurs: ${deltakerliste.navn}"
+			Tiltak.Type.GRUPPEAMO -> if (erKurs) "Kurs: ${deltakerliste.navn}" else deltakerliste.navn
 			Tiltak.Type.GRUFAGYRKE -> deltakerliste.navn
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}

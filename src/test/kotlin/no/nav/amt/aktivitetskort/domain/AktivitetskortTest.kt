@@ -25,7 +25,7 @@ class AktivitetskortTest {
 			}
 
 		deltakerlister.forEach {
-			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor)
+			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor, true)
 			when (it.tiltak.type) {
 				Tiltak.Type.DIGIOPPARB -> aktivitetskortTittel shouldBe "Digital oppfølging hos ${arrangor.navn}"
 				Tiltak.Type.JOBBK -> aktivitetskortTittel shouldBe "Jobbsøkerkurs hos ${arrangor.navn}"
@@ -33,6 +33,10 @@ class AktivitetskortTest {
 				Tiltak.Type.GRUFAGYRKE -> aktivitetskortTittel shouldBe it.navn
 				else -> aktivitetskortTittel shouldBe "${it.tiltak.navn} hos ${arrangor.navn}"
 			}
+		}
+		deltakerlister.find { it.tiltak.type == Tiltak.Type.GRUPPEAMO }?.let {
+			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor, false)
+			aktivitetskortTittel shouldBe it.navn
 		}
 	}
 
