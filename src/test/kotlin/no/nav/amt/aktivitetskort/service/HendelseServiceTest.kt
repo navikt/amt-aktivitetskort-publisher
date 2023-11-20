@@ -28,6 +28,7 @@ class HendelseServiceTest {
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val template = mockk<KafkaTemplate<String, String>>(relaxed = true)
 	private val unleash = mockk<DefaultUnleash>()
+	private val metricsService = mockk<MetricsService>(relaxed = true)
 
 	private val offset: Long = 0
 
@@ -39,6 +40,7 @@ class HendelseServiceTest {
 		amtArrangorClient = amtArrangorClient,
 		template = template,
 		unleash = unleash,
+		metricsService = metricsService,
 	)
 
 	@BeforeEach

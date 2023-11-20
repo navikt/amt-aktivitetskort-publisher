@@ -18,7 +18,7 @@ class FeilmeldingService(
 		if (feilmelding == null || feilmelding.source != SOURCE) {
 			return
 		}
-		log.error("Mottok feilmelding fra AkaaS for key $key: ${feilmelding.errorMessage}, ${feilmelding.errorType}")
+		log.warn("Mottok feilmelding fra AkaaS for key $key: ${feilmelding.errorMessage}, ${feilmelding.errorType}")
 		feilmeldingRepository.insert(feilmelding)
 		metricsService.incMottattFeilmelding(feilmelding.errorType)
 		log.info("Lagret feilmelding for key $key")

@@ -14,4 +14,10 @@ class MetricsService(
 			.register(registry)
 			.increment()
 	}
+
+	fun incSendtAktivitetskort() {
+		Counter.builder("amt_aktvkortpublisher_sendt")
+			.register(registry)
+			.increment()
+	}
 }

@@ -31,6 +31,7 @@ class HendelseService(
 	private val amtArrangorClient: AmtArrangorClient,
 	private val template: KafkaTemplate<String, String>,
 	private val unleash: DefaultUnleash,
+	private val metricsService: MetricsService,
 ) {
 
 	private val log = LoggerFactory.getLogger(javaClass)
@@ -92,6 +93,7 @@ class HendelseService(
 					aktivitetskort = it.toAktivitetskortDto(),
 				)
 				template.send(AKTIVITETSKORT_TOPIC, it.id.toString(), JsonUtils.toJsonString(payload)).get()
+				metricsService.incSendtAktivitetskort()
 			}
 			log.info("Sendte aktivtetskort til aktivitetsplanen: ${aktivitetskort.joinToString { it.id.toString() }}")
 		} else {
