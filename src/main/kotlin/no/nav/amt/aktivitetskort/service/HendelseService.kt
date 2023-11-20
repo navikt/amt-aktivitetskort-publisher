@@ -46,10 +46,13 @@ class HendelseService(
 
 		when (val result = deltakerRepository.upsert(deltaker.toModel(), offset, skalRelasteDeltakere())) {
 			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
-			is RepositoryResult.Created -> send(aktivitetskortService.lagAktivitetskort(result.data))
+				.also { log.info("Oppdatert deltaker: $id") }
+			is RepositoryResult.Created -> send(aktivitetskortService.lagAktivitetskort(result.data)).also {
+				log.info("Opprettet deltaker: $id")
+			}
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltaker ${deltaker.id}: Ingen endring")
 		}
-		log.info("Konsumerte melding med deltaker $id")
+		log.info("Konsumerte melding med deltaker $id, offset $offset")
 	}
 
 	fun deltakerlisteHendelse(id: UUID, deltakerliste: DeltakerlisteDto?) {
