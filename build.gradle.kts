@@ -19,12 +19,12 @@ val logstashEncoderVersion = "7.4"
 val okHttpVersion = "4.12.0"
 val kafkaClientsVersion = "3.6.0"
 val kotestVersion = "5.8.0"
-val testcontainersVersion = "1.19.2"
+val testcontainersVersion = "1.19.3"
 val klintVersion = "0.49.1"
 val mockkVersion = "1.13.8"
 val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
-val tokenSupportVersion = "3.1.8"
-val unleashVersion = "9.1.0"
+val tokenSupportVersion = "3.1.9"
+val unleashVersion = "9.1.1"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
