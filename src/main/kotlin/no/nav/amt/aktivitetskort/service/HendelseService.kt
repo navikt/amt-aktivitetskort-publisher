@@ -88,20 +88,16 @@ class HendelseService(
 	private fun send(aktivitetskort: Aktivitetskort) = send(listOf(aktivitetskort))
 
 	private fun send(aktivitetskort: List<Aktivitetskort>) {
-		if (unleash.isEnabled("amt.send-aktivitetskort")) {
-			aktivitetskort.forEach {
-				val payload = AktivitetskortPayload(
-					messageId = UUID.randomUUID(),
-					aktivitetskortType = it.tiltakstype,
-					aktivitetskort = it.toAktivitetskortDto(),
-				)
-				template.send(AKTIVITETSKORT_TOPIC, it.id.toString(), JsonUtils.toJsonString(payload)).get()
-				metricsService.incSendtAktivitetskort()
-			}
-			log.info("Sendte aktivtetskort til aktivitetsplanen: ${aktivitetskort.joinToString { it.id.toString() }}")
-		} else {
-			log.info("Sender ikke aktivitetskort fordi funksjonaliteten er togglet av")
+		aktivitetskort.forEach {
+			val payload = AktivitetskortPayload(
+				messageId = UUID.randomUUID(),
+				aktivitetskortType = it.tiltakstype,
+				aktivitetskort = it.toAktivitetskortDto(),
+			)
+			template.send(AKTIVITETSKORT_TOPIC, it.id.toString(), JsonUtils.toJsonString(payload)).get()
+			metricsService.incSendtAktivitetskort()
 		}
+		log.info("Sendte aktivtetskort til aktivitetsplanen: ${aktivitetskort.joinToString { it.id.toString() }}")
 	}
 
 	private fun hentOgLagreArrangorFraAmtArrangor(virksomhetsnummer: String): Arrangor {
