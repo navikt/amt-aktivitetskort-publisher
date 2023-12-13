@@ -24,7 +24,7 @@ val kotestVersion = "5.8.0"
 val testcontainersVersion = "1.19.3"
 val klintVersion = "0.49.1"
 val mockkVersion = "1.13.8"
-val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
+val commonVersion = "3.2023.12.12_13.53-510909d4aa1a"
 val tokenSupportVersion = "3.2.0"
 val unleashVersion = "9.2.0"
 
@@ -36,7 +36,6 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-logging")
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
 	implementation("org.springframework.boot:spring-boot-configuration-processor")
-	implementation("org.yaml:snakeyaml:2.2") // overstyrer sårbar dependency
 
 	implementation("org.springframework.kafka:spring-kafka")
 	implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
