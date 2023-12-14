@@ -6,6 +6,8 @@ import no.nav.amt.aktivitetskort.domain.Tag
 
 object StatusMapping {
 
+	private val FORSLAG_STATUS = listOf(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
+
 	private val PLANLEGGES_STATUS = listOf(
 		DeltakerStatus.Type.PABEGYNT_REGISTRERING,
 		DeltakerStatus.Type.SOKT_INN,
@@ -25,10 +27,12 @@ object StatusMapping {
 		DeltakerStatus.Type.AVBRUTT,
 		DeltakerStatus.Type.IKKE_AKTUELL,
 		DeltakerStatus.Type.FEILREGISTRERT,
+		DeltakerStatus.Type.AVBRUTT_UTKAST,
 	)
 
 	fun deltakerStatusTilAktivitetStatus(deltakerStatus: DeltakerStatus.Type): Result<AktivitetStatus> {
 		return when (deltakerStatus) {
+			in FORSLAG_STATUS -> Result.success(AktivitetStatus.FORSLAG)
 			in PLANLEGGES_STATUS -> Result.success(AktivitetStatus.PLANLAGT)
 			in FULLFORT_STATUS -> Result.success(AktivitetStatus.FULLFORT)
 			in GJENNOMFORER_STATUS -> Result.success(AktivitetStatus.GJENNOMFORES)
@@ -74,6 +78,8 @@ object StatusMapping {
 				sentiment = Tag.Sentiment.NEUTRAL,
 				kode = Tag.Kode.SOKT_INN,
 			)
+			DeltakerStatus.Type.UTKAST_TIL_PAMELDING -> null
+			DeltakerStatus.Type.AVBRUTT_UTKAST -> null
 		}
 	}
 }

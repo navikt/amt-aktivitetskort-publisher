@@ -23,6 +23,8 @@ data class DeltakerStatus(
 		VENTER_PA_OPPSTART, DELTAR, HAR_SLUTTET, IKKE_AKTUELL, FEILREGISTRERT,
 		SOKT_INN, VURDERES, VENTELISTE, AVBRUTT, FULLFORT, // kursstatuser
 		PABEGYNT_REGISTRERING,
+		UTKAST_TIL_PAMELDING,
+		AVBRUTT_UTKAST,
 		;
 
 		fun display() = when (this) {
@@ -37,6 +39,8 @@ data class DeltakerStatus(
 			AVBRUTT -> "Avbrutt"
 			FULLFORT -> "Fullført"
 			PABEGYNT_REGISTRERING -> "Søkt inn"
+			UTKAST_TIL_PAMELDING -> "Utkast til påmelding"
+			AVBRUTT_UTKAST -> "Avbrutt utkast"
 		}
 	}
 
