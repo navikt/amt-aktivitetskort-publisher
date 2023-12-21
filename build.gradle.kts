@@ -28,6 +28,8 @@ val commonVersion = "3.2023.12.12_13.53-510909d4aa1a"
 val tokenSupportVersion = "3.2.0"
 val unleashVersion = "9.2.0"
 
+extra["logback.version"] = "1.4.14"
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
