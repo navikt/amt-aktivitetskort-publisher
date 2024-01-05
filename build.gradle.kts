@@ -25,7 +25,7 @@ val testcontainersVersion = "1.19.3"
 val klintVersion = "0.49.1"
 val mockkVersion = "1.13.8"
 val commonVersion = "3.2023.12.12_13.53-510909d4aa1a"
-val tokenSupportVersion = "3.2.0"
+val tokenSupportVersion = "4.0.3"
 val unleashVersion = "9.2.0"
 
 extra["logback.version"] = "1.4.14"
