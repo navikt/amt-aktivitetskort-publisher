@@ -1,6 +1,6 @@
 package no.nav.amt.aktivitetskort.service
 
-import io.getunleash.DefaultUnleash
+import io.getunleash.Unleash
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
@@ -30,7 +30,7 @@ class HendelseService(
 	private val aktivitetskortService: AktivitetskortService,
 	private val amtArrangorClient: AmtArrangorClient,
 	private val template: KafkaTemplate<String, String>,
-	private val unleash: DefaultUnleash,
+	private val unleash: Unleash,
 	private val metricsService: MetricsService,
 ) {
 
