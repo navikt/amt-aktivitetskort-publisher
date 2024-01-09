@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.service
 
+import io.getunleash.DefaultUnleash
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -25,6 +26,7 @@ class AktivitetskortServiceTest {
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val aktivitetArenaAclClient = mockk<AktivitetArenaAclClient>()
 	private val amtArenaAclClient = mockk<AmtArenaAclClient>()
+	private val unleash = mockk<DefaultUnleash>()
 
 	private val aktivitetskortService = AktivitetskortService(
 		meldingRepository = meldingRepository,
@@ -33,6 +35,7 @@ class AktivitetskortServiceTest {
 		deltakerRepository = deltakerRepository,
 		aktivitetArenaAclClient = aktivitetArenaAclClient,
 		amtArenaAclClient = amtArenaAclClient,
+		unleash = unleash,
 	)
 
 	@Test

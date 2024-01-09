@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.service
 
+import io.getunleash.Unleash
 import no.nav.amt.aktivitetskort.client.AktivitetArenaAclClient
 import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
@@ -15,6 +16,7 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
+import no.nav.amt.aktivitetskort.utils.EnvUtils.isDev
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -28,7 +30,7 @@ class AktivitetskortService(
 	private val deltakerRepository: DeltakerRepository,
 	private val aktivitetArenaAclClient: AktivitetArenaAclClient,
 	private val amtArenaAclClient: AmtArenaAclClient,
-
+	private val unleash: Unleash,
 ) {
 
 	private val log = LoggerFactory.getLogger(javaClass)
@@ -59,8 +61,19 @@ class AktivitetskortService(
 		}
 	}
 
-	private fun getAktivitetskortId(deltakerId: UUID) = amtArenaAclClient.getArenaIdForAmtId(deltakerId)
-		.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
+	private fun getAktivitetskortId(deltakerId: UUID): UUID {
+		val aktivitetskortId = amtArenaAclClient.getArenaIdForAmtId(deltakerId)
+			?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
+
+		if (aktivitetskortId != null) {
+			return aktivitetskortId
+		} else if (unleash.isEnabled("amt.enable-komet-deltakere") && isDev()) {
+			log.info("Definerer egen aktivitetskortId for deltaker med id $deltakerId")
+			return UUID.randomUUID()
+		} else {
+			throw IllegalStateException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
+		}
+	}
 
 	private fun opprettMelding(deltakerId: UUID) = deltakerRepository.get(deltakerId)
 		?.let { opprettMelding(it) }
