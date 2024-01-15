@@ -55,7 +55,7 @@ class DeltakerRepository(
 		if (deltaker == old?.deltaker) return RepositoryResult.NoChange()
 
 		if (deltaker.status.type in AVSLUTTENDE_STATUSER && deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&
-			(old?.deltaker == null || old.deltaker.status.type in AVSLUTTENDE_STATUSER)
+			!skalKorrigereTidligereDeltaker(old?.deltaker)
 		) {
 			log.info("Ignorerer deltaker som er avsluttet før aktivitetsplanen ble lansert, id ${deltaker.id}")
 			return RepositoryResult.NoChange()
@@ -126,6 +126,10 @@ class DeltakerRepository(
 	}
 
 	fun get(id: UUID): Deltaker? = getDeltakerMedOffset(id)?.deltaker
+
+	private fun skalKorrigereTidligereDeltaker(lagretDeltaker: Deltaker?): Boolean {
+		return !(lagretDeltaker == null || lagretDeltaker.status.type in AVSLUTTENDE_STATUSER)
+	}
 
 	private fun getDeltakerMedOffset(id: UUID): DeltakerMedOffset? = template.query(
 		"SELECT * from deltaker where id = :id",
