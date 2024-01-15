@@ -1,6 +1,5 @@
 package no.nav.amt.aktivitetskort.service
 
-import io.getunleash.Unleash
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
@@ -30,7 +29,6 @@ class HendelseService(
 	private val aktivitetskortService: AktivitetskortService,
 	private val amtArrangorClient: AmtArrangorClient,
 	private val template: KafkaTemplate<String, String>,
-	private val unleash: Unleash,
 	private val metricsService: MetricsService,
 ) {
 
@@ -44,7 +42,7 @@ class HendelseService(
 			return
 		}
 
-		when (val result = deltakerRepository.upsert(deltaker.toModel(), offset, skalRelasteDeltakere())) {
+		when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
 			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
 				.also { log.info("Oppdatert deltaker: $id") }
 			is RepositoryResult.Created -> send(aktivitetskortService.lagAktivitetskort(result.data)).also {
@@ -161,9 +159,5 @@ class HendelseService(
 
 			else -> false
 		}
-	}
-
-	private fun skalRelasteDeltakere(): Boolean {
-		return unleash.isEnabled("amt.relast-aktivitetskort-deltaker")
 	}
 }
