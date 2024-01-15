@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.repositories
 
+import no.nav.amt.aktivitetskort.domain.AVSLUTTENDE_STATUSER
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
@@ -8,12 +9,15 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 import java.util.UUID
 
 @Repository
 class DeltakerRepository(
 	private val template: NamedParameterJdbcTemplate,
 ) {
+	val lanseringAktivitetsplan: LocalDate = LocalDate.of(2017, 12, 4)
+
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	private val rowMapper = RowMapper { rs, _ ->
@@ -36,7 +40,7 @@ class DeltakerRepository(
 		)
 	}
 
-	fun upsert(deltaker: Deltaker, offset: Long, skalRelasteDeltakere: Boolean = false): RepositoryResult<Deltaker> {
+	fun upsert(deltaker: Deltaker, offset: Long): RepositoryResult<Deltaker> {
 		val old = getDeltakerMedOffset(deltaker.id)
 
 		if (old != null && old.offset > offset) {
@@ -48,7 +52,14 @@ class DeltakerRepository(
 			return RepositoryResult.NoChange()
 		}
 
-		if (deltaker == old?.deltaker && !skalRelasteDeltakere) return RepositoryResult.NoChange()
+		if (deltaker == old?.deltaker) return RepositoryResult.NoChange()
+
+		if (deltaker.status.type in AVSLUTTENDE_STATUSER && deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&
+			!skalKorrigereTidligereDeltaker(old?.deltaker)
+		) {
+			log.info("Ignorerer deltaker som er avsluttet før aktivitetsplanen ble lansert, id ${deltaker.id}")
+			return RepositoryResult.NoChange()
+		}
 
 		val sql = """
 			insert into deltaker(
@@ -115,6 +126,10 @@ class DeltakerRepository(
 	}
 
 	fun get(id: UUID): Deltaker? = getDeltakerMedOffset(id)?.deltaker
+
+	private fun skalKorrigereTidligereDeltaker(lagretDeltaker: Deltaker?): Boolean {
+		return !(lagretDeltaker == null || lagretDeltaker.status.type in AVSLUTTENDE_STATUSER)
+	}
 
 	private fun getDeltakerMedOffset(id: UUID): DeltakerMedOffset? = template.query(
 		"SELECT * from deltaker where id = :id",
