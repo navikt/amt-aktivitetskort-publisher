@@ -34,8 +34,8 @@ class DeltakerRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `upsert - finnes - returnerer NoChange Result`() {
-		val deltaker = TestData.deltaker()
+	fun `upsert - finnes, uendret - returnerer NoChange Result`() {
+		val deltaker = TestData.deltaker(dagerPerUke = null, prosentStilling = null)
 			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
 			.also { db.deltakerRepository.upsert(it, 0) }
 
