@@ -107,3 +107,12 @@ data class DeltakerStatus(
 		return this.type.display()
 	}
 }
+
+val AVSLUTTENDE_STATUSER = listOf(
+	DeltakerStatus.Type.HAR_SLUTTET,
+	DeltakerStatus.Type.IKKE_AKTUELL,
+	DeltakerStatus.Type.FEILREGISTRERT,
+	DeltakerStatus.Type.AVBRUTT,
+	DeltakerStatus.Type.FULLFORT,
+	DeltakerStatus.Type.AVBRUTT_UTKAST,
+)

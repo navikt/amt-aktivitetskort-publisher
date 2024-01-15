@@ -9,6 +9,7 @@ import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 import java.util.UUID
 
 class DeltakerRepositoryTest : IntegrationTest() {
@@ -22,7 +23,7 @@ class DeltakerRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `upsert - finnes ikke - returnerer Created Result - finnes in database`() {
+	fun `upsert - finnes ikke - returnerer Created Result - finnes i database`() {
 		val deltaker = TestData.deltaker()
 			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
 		when (val result = db.deltakerRepository.upsert(deltaker, 0)) {
@@ -132,6 +133,46 @@ class DeltakerRepositoryTest : IntegrationTest() {
 
 		val updatedDeltaker = initialDeltaker.copy(
 			status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null),
+		)
+
+		when (val result = db.deltakerRepository.upsert(updatedDeltaker, 1)) {
+			is RepositoryResult.Modified -> result.data shouldBe updatedDeltaker
+			else -> fail("Should be Modified, was $result")
+		}
+
+		db.deltakerRepository.get(initialDeltaker.id) shouldBe updatedDeltaker
+	}
+
+	@Test
+	fun `upsert - avsluttet i nov 2017, finnes ikke - returnerer NoChange Result - lagres ikke`() {
+		val deltaker = TestData.deltaker(
+			oppstartsdato = LocalDate.of(2017, 10, 1),
+			sluttdato = LocalDate.of(2017, 11, 30),
+			status = DeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Aarsak.FATT_JOBB),
+		)
+			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
+		when (val result = db.deltakerRepository.upsert(deltaker, 0)) {
+			is RepositoryResult.NoChange -> {}
+			else -> fail("Should be NoChange, was $result")
+		}
+
+		db.deltakerRepository.get(deltaker.id) shouldBe null
+	}
+
+	@Test
+	fun `upsert - avsluttet nov 2017, finnes med annen status - returnerer Modified Result og oppdaterer database`() {
+		val initialDeltaker = TestData.deltaker(
+			oppstartsdato = LocalDate.of(2017, 10, 1),
+			sluttdato = null,
+			status = DeltakerStatus(DeltakerStatus.Type.DELTAR, null),
+		)
+			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
+			.also { db.deltakerRepository.upsert(it, 0) }
+
+		val updatedDeltaker = initialDeltaker.copy(
+			oppstartsdato = LocalDate.of(2017, 10, 1),
+			sluttdato = LocalDate.of(2017, 11, 30),
+			status = DeltakerStatus(DeltakerStatus.Type.FULLFORT, DeltakerStatus.Aarsak.ANNET),
 		)
 
 		when (val result = db.deltakerRepository.upsert(updatedDeltaker, 1)) {

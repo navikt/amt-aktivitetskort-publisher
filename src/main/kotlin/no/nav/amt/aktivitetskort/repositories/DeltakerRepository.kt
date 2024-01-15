@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.repositories
 
+import no.nav.amt.aktivitetskort.domain.AVSLUTTENDE_STATUSER
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
@@ -8,12 +9,15 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 import java.util.UUID
 
 @Repository
 class DeltakerRepository(
 	private val template: NamedParameterJdbcTemplate,
 ) {
+	val lanseringAktivitetsplan: LocalDate = LocalDate.of(2017, 12, 4)
+
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	private val rowMapper = RowMapper { rs, _ ->
@@ -49,6 +53,13 @@ class DeltakerRepository(
 		}
 
 		if (deltaker == old?.deltaker) return RepositoryResult.NoChange()
+
+		if (deltaker.status.type in AVSLUTTENDE_STATUSER && deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&
+			(old?.deltaker == null || old.deltaker.status.type in AVSLUTTENDE_STATUSER)
+		) {
+			log.info("Ignorerer deltaker som er avsluttet før aktivitetsplanen ble lansert, id ${deltaker.id}")
+			return RepositoryResult.NoChange()
+		}
 
 		val sql = """
 			insert into deltaker(
