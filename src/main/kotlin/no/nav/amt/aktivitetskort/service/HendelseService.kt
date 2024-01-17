@@ -2,22 +2,18 @@ package no.nav.amt.aktivitetskort.service
 
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
-import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
-import no.nav.amt.aktivitetskort.kafka.consumer.AKTIVITETSKORT_TOPIC
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
-import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortPayload
+import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
-import no.nav.amt.aktivitetskort.utils.JsonUtils
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.slf4j.LoggerFactory
-import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -28,10 +24,8 @@ class HendelseService(
 	private val deltakerRepository: DeltakerRepository,
 	private val aktivitetskortService: AktivitetskortService,
 	private val amtArrangorClient: AmtArrangorClient,
-	private val template: KafkaTemplate<String, String>,
-	private val metricsService: MetricsService,
+	private val aktivitetskortProducer: AktivitetskortProducer,
 ) {
-
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	fun deltakerHendelse(id: UUID, deltaker: DeltakerDto?, offset: Long) {
@@ -43,9 +37,9 @@ class HendelseService(
 		}
 
 		when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
-			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
+			is RepositoryResult.Modified -> aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
 				.also { log.info("Oppdatert deltaker: $id") }
-			is RepositoryResult.Created -> send(aktivitetskortService.lagAktivitetskort(result.data)).also {
+			is RepositoryResult.Created -> aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data)).also {
 				log.info("Opprettet deltaker: $id")
 			}
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltaker ${deltaker.id}: Ingen endring")
@@ -62,7 +56,7 @@ class HendelseService(
 			?: hentOgLagreArrangorFraAmtArrangor(deltakerliste.virksomhetsnummer)
 
 		when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel(arrangor.id))) {
-			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
+			is RepositoryResult.Modified -> aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.Created -> log.info("Ny hendelse deltakerliste ${deltakerliste.id}: Opprettet deltakerliste")
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Ingen endring")
 		}
@@ -76,26 +70,11 @@ class HendelseService(
 		}
 
 		when (val result = arrangorRepository.upsert(arrangor.toModel())) {
-			is RepositoryResult.Modified -> send(aktivitetskortService.lagAktivitetskort(result.data))
+			is RepositoryResult.Modified -> aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
 			is RepositoryResult.Created -> log.info("Ny hendelse arrangør ${arrangor.id}: Opprettet arrangør")
 			is RepositoryResult.NoChange -> log.info("Ny hendelse for arrangør ${arrangor.id}: Ingen endring")
 		}
 		log.info("Konsumerte melding med arrangør $id")
-	}
-
-	private fun send(aktivitetskort: Aktivitetskort) = send(listOf(aktivitetskort))
-
-	private fun send(aktivitetskort: List<Aktivitetskort>) {
-		aktivitetskort.forEach {
-			val payload = AktivitetskortPayload(
-				messageId = UUID.randomUUID(),
-				aktivitetskortType = it.tiltakstype,
-				aktivitetskort = it.toAktivitetskortDto(),
-			)
-			template.send(AKTIVITETSKORT_TOPIC, it.id.toString(), JsonUtils.toJsonString(payload)).get()
-			metricsService.incSendtAktivitetskort()
-		}
-		log.info("Sendte aktivtetskort til aktivitetsplanen: ${aktivitetskort.joinToString { it.id.toString() }}")
 	}
 
 	private fun hentOgLagreArrangorFraAmtArrangor(virksomhetsnummer: String): Arrangor {
@@ -139,7 +118,7 @@ class HendelseService(
 		if (skalAvbryteAktivtetskort(aktivitetStatus)) {
 			val avbruttDeltaker = deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.AVBRUTT, null))
 
-			send(aktivitetskortService.lagAktivitetskort(avbruttDeltaker))
+			aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(avbruttDeltaker))
 			log.info(
 				"Mottok tombstone for deltaker: $deltakerId som hadde status: ${deltaker.status.type}. " +
 					"Avbrøt deltakelse og aktivitetskort.",
