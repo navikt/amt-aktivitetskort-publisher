@@ -23,7 +23,7 @@ class InternalController(
 
 	@Unprotected
 	@GetMapping("/publiser/{deltakerId}")
-	fun republiserNavBruker(
+	fun publiserAktivitetskortForDeltaker(
 		servlet: HttpServletRequest,
 		@PathVariable("deltakerId") deltakerId: UUID,
 	) {
@@ -31,6 +31,21 @@ class InternalController(
 			val aktivitetskort = aktivitetskortService.lagAktivitetskort(deltakerId)
 			aktivitetskortProducer.send(aktivitetskort)
 			log.info("Publiserte aktivitetskort for deltaker med id $deltakerId")
+		} else {
+			throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+		}
+	}
+
+	@Unprotected
+	@GetMapping("/resend/{deltakerId}")
+	fun resendSistSendteMelding(
+		servlet: HttpServletRequest,
+		@PathVariable("deltakerId") deltakerId: UUID,
+	) {
+		if (isInternal(servlet)) {
+			val aktivitetskort = aktivitetskortService.getMelding(deltakerId)?.aktivitetskort ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Fant ikke melding")
+			aktivitetskortProducer.send(aktivitetskort)
+			log.info("Resendte siste aktivitetskort for deltaker med id $deltakerId")
 		} else {
 			throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 		}
