@@ -44,6 +44,13 @@ class AktivitetskortService(
 		return melding.aktivitetskort
 	}
 
+	fun lagAktivitetskort(deltakerId: UUID): Aktivitetskort {
+		val melding = opprettMelding(deltakerId)
+
+		log.info("Opprettet nytt aktivitetskort: ${melding.aktivitetskort.id} for deltaker: $deltakerId")
+		return melding.aktivitetskort
+	}
+
 	fun lagAktivitetskort(deltakerliste: Deltakerliste) = meldingRepository
 		.getByDeltakerlisteId(deltakerliste.id)
 		.map { opprettMelding(it.deltakerId).aktivitetskort }

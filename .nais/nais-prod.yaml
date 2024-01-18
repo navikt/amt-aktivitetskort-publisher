@@ -20,8 +20,6 @@ spec:
         insights:
           enabled: true
   port: 8080
-  ingresses:
-    - https://amt-aktivitetskort-publisher.intern.nav.no
   prometheus:
     enabled: true
     path: /internal/prometheus

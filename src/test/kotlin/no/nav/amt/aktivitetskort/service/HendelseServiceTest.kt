@@ -7,15 +7,16 @@ import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
+import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
+import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.junit.jupiter.api.Test
-import org.springframework.kafka.core.KafkaTemplate
 import java.util.UUID
 
 class HendelseServiceTest {
@@ -24,8 +25,7 @@ class HendelseServiceTest {
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val aktivitetskortService = mockk<AktivitetskortService>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
-	private val template = mockk<KafkaTemplate<String, String>>(relaxed = true)
-	private val metricsService = mockk<MetricsService>(relaxed = true)
+	private val aktivitetskortProducer = mockk<AktivitetskortProducer>(relaxed = true)
 
 	private val offset: Long = 0
 
@@ -35,8 +35,7 @@ class HendelseServiceTest {
 		deltakerRepository = deltakerRepository,
 		aktivitetskortService = aktivitetskortService,
 		amtArrangorClient = amtArrangorClient,
-		template = template,
-		metricsService = metricsService,
+		aktivitetskortProducer = aktivitetskortProducer,
 	)
 
 	@Test
@@ -50,6 +49,7 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
+		verify(exactly = 1) { aktivitetskortProducer.send(ctx.aktivitetskort) }
 	}
 
 	@Test
@@ -63,6 +63,7 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
+		verify(exactly = 1) { aktivitetskortProducer.send(ctx.aktivitetskort) }
 	}
 
 	@Test
@@ -75,6 +76,7 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
+		verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
 	}
 
 	@Test
@@ -88,20 +90,23 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
+		verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
 	}
 
 	@Test
 	fun `deltakerHendelse - deltaker finnes, status feilregistrert - publiserer melding`() {
 		val ctx = TestData.MockContext()
 		val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
+		val mockAktivitetskort = ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
 
 		every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.Modified(mockDeltaker)
-		every { aktivitetskortService.lagAktivitetskort(mockDeltaker) } returns ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
+		every { aktivitetskortService.lagAktivitetskort(mockDeltaker) } returns mockAktivitetskort
 
 		hendelseService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
 
 		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
+		verify(exactly = 1) { aktivitetskortProducer.send(mockAktivitetskort) }
 	}
 
 	@Test
@@ -116,6 +121,7 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
+		verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
 	}
 
 	@Test
@@ -129,6 +135,7 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
+		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
 	}
 
 	@Test
@@ -142,6 +149,7 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
+		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
 	}
 
 	@Test
@@ -189,6 +197,7 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.arrangor) }
+		verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
 	}
 
 	@Test
@@ -201,6 +210,7 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.arrangor) }
+		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
 	}
 
 	@Test
@@ -213,5 +223,6 @@ class HendelseServiceTest {
 
 		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.arrangor) }
+		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
 	}
 }
