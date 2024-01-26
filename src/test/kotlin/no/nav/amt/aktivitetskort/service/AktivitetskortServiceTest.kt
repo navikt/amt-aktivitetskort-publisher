@@ -13,6 +13,7 @@ import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
+import no.nav.amt.aktivitetskort.utils.EnvUtils
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -84,6 +85,43 @@ class AktivitetskortServiceTest {
 
 		verify(exactly = 0) { meldingRepository.upsert(any()) }
 		verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
+	}
+
+	@Test
+	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, arenaId finnes ikke - oppretter med ny aktivitetskortId`() {
+		val ctx = TestData.MockContext()
+		val envUtils = mockk<EnvUtils>()
+
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns null
+		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
+		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns null
+		every { unleash.isEnabled(any()) } returns true
+		every { envUtils.isDev() } returns true
+
+		aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+
+		verify(exactly = 1) { meldingRepository.upsert(any()) }
+		verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
+	}
+
+	@Test
+	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, aktivitetskort finnes - gjenbruker aktivitetskortId`() {
+		val ctx = TestData.MockContext()
+		val envUtils = mockk<EnvUtils>()
+
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns ctx.melding
+		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
+		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns null
+		every { unleash.isEnabled(any()) } returns true
+		every { envUtils.isDev() } returns true
+
+		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+
+		verify(exactly = 1) { meldingRepository.upsert(any()) }
+		verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
+		aktivitetskort.id shouldBe ctx.melding.aktivitetskort.id
 	}
 
 	@Test
@@ -169,14 +207,21 @@ class AktivitetskortServiceTest {
 		val deltakerSluttdato = LocalDate.now().plusWeeks(3)
 		val mockAktivitetskort = ctx.aktivitetskort.copy(sluttDato = deltakerSluttdato)
 		val mockAktivitetskortUnderarrangor = ctxUnderarrangor.aktivitetskort.copy(sluttDato = deltakerSluttdato)
-		val underarrangor = ctxUnderarrangor.arrangor.copy(navn = "Underordnet arrangør", overordnetArrangorId = ctx.arrangor.id)
+		val underarrangor =
+			ctxUnderarrangor.arrangor.copy(navn = "Underordnet arrangør", overordnetArrangorId = ctx.arrangor.id)
 
 		every { meldingRepository.getByArrangorId(ctx.arrangor.id) } returns listOf(ctx.melding.copy(aktivitetskort = mockAktivitetskort))
-		every { meldingRepository.getByArrangorId(underarrangor.id) } returns listOf(ctxUnderarrangor.melding.copy(aktivitetskort = mockAktivitetskortUnderarrangor))
+		every { meldingRepository.getByArrangorId(underarrangor.id) } returns listOf(
+			ctxUnderarrangor.melding.copy(
+				aktivitetskort = mockAktivitetskortUnderarrangor,
+			),
+		)
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerRepository.get(ctxUnderarrangor.deltaker.id) } returns ctxUnderarrangor.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
-		every { deltakerlisteRepository.get(ctxUnderarrangor.deltakerliste.id) } returns ctxUnderarrangor.deltakerliste.copy(arrangorId = underarrangor.id)
+		every { deltakerlisteRepository.get(ctxUnderarrangor.deltakerliste.id) } returns ctxUnderarrangor.deltakerliste.copy(
+			arrangorId = underarrangor.id,
+		)
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { arrangorRepository.get(underarrangor.id) } returns underarrangor
 		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns listOf(underarrangor)

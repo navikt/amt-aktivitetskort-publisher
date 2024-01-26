@@ -74,13 +74,16 @@ class AktivitetskortService(
 
 		if (aktivitetskortId != null) {
 			return aktivitetskortId
-		} else if (unleash.isEnabled("amt.enable-komet-deltakere") && isDev()) {
-			log.info("Definerer egen aktivitetskortId for deltaker med id $deltakerId")
-			return UUID.randomUUID()
+		} else if (unleash.isEnabled("amt.enable-komet-deltakere") && !isDev()) {
+			return aktivitetskortIdForDeltaker(deltakerId)
 		} else {
 			throw IllegalStateException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
 		}
 	}
+
+	private fun aktivitetskortIdForDeltaker(deltakerId: UUID) =
+		meldingRepository.getByDeltakerId(deltakerId)?.aktivitetskort?.id
+			?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId for deltaker med id $deltakerId") }
 
 	private fun opprettMelding(deltakerId: UUID) = deltakerRepository.get(deltakerId)
 		?.let { opprettMelding(it) }
@@ -94,8 +97,9 @@ class AktivitetskortService(
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
 		val aktivitetskortId = getAktivitetskortId(deltaker.id)
 
-		val aktivitetskort = overordnetArrangor?.let { nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, it) }
-			?: nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor)
+		val aktivitetskort =
+			overordnetArrangor?.let { nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, it) }
+				?: nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor)
 
 		val melding = Melding(
 			deltakerId = deltaker.id,
