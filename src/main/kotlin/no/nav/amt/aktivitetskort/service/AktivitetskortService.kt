@@ -74,7 +74,7 @@ class AktivitetskortService(
 
 		if (aktivitetskortId != null) {
 			return aktivitetskortId
-		} else if (unleash.isEnabled("amt.enable-komet-deltakere") && !isDev()) {
+		} else if (unleash.isEnabled("amt.enable-komet-deltakere") && isDev()) {
 			return aktivitetskortIdForDeltaker(deltakerId)
 		} else {
 			throw IllegalStateException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
