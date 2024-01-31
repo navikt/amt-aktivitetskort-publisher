@@ -97,9 +97,12 @@ class AktivitetskortService(
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
 		val aktivitetskortId = getAktivitetskortId(deltaker.id)
 
-		val aktivitetskort =
-			overordnetArrangor?.let { nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, it) }
-				?: nyttAktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor)
+		val aktivitetskort = nyttAktivitetskort(
+			aktivitetskortId,
+			deltaker,
+			deltakerliste,
+			getArrangorForAktivitetskort(arrangor = arrangor, overordnetArrangor = overordnetArrangor),
+		)
 
 		val melding = Melding(
 			deltakerId = deltaker.id,
@@ -111,6 +114,18 @@ class AktivitetskortService(
 		meldingRepository.upsert(melding)
 
 		return melding
+	}
+
+	private fun getArrangorForAktivitetskort(arrangor: Arrangor, overordnetArrangor: Arrangor?): Arrangor {
+		return if (overordnetArrangor == null) {
+			arrangor
+		} else {
+			if (overordnetArrangor.navn == "Ukjent Virksomhet") {
+				arrangor
+			} else {
+				overordnetArrangor
+			}
+		}
 	}
 
 	private fun nyttAktivitetskort(id: UUID, deltaker: Deltaker, deltakerliste: Deltakerliste, arrangor: Arrangor) =
