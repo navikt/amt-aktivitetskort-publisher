@@ -9,17 +9,19 @@ import io.mockk.verify
 import no.nav.amt.aktivitetskort.client.AktivitetArenaAclClient
 import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
 import no.nav.amt.aktivitetskort.database.TestData
+import no.nav.amt.aktivitetskort.mock.mockCluster
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
-import no.nav.amt.aktivitetskort.utils.EnvUtils
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.test.context.TestPropertySource
 import java.time.LocalDate
 import java.util.UUID
 
+@TestPropertySource(properties = ["NAIS_CLUSTER_NAME=dev-gcp"])
 class AktivitetskortServiceTest {
 	private val meldingRepository = mockk<MeldingRepository>(relaxUnitFun = true)
 	private val arrangorRepository = mockk<ArrangorRepository>()
@@ -88,16 +90,14 @@ class AktivitetskortServiceTest {
 	}
 
 	@Test
-	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, arenaId finnes ikke - oppretter med ny aktivitetskortId`() {
+	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, arenaId finnes ikke - oppretter med ny aktivitetskortId`() = mockCluster {
 		val ctx = TestData.MockContext()
-		val envUtils = mockk<EnvUtils>()
 
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns null
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns null
 		every { unleash.isEnabled(any()) } returns true
-		every { envUtils.isDev() } returns true
 
 		aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
@@ -106,16 +106,14 @@ class AktivitetskortServiceTest {
 	}
 
 	@Test
-	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, aktivitetskort finnes - gjenbruker aktivitetskortId`() {
+	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, aktivitetskort finnes - gjenbruker aktivitetskortId`() = mockCluster {
 		val ctx = TestData.MockContext()
-		val envUtils = mockk<EnvUtils>()
 
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns ctx.melding
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns null
 		every { unleash.isEnabled(any()) } returns true
-		every { envUtils.isDev() } returns true
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
