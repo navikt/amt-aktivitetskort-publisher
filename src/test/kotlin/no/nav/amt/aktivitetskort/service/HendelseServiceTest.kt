@@ -16,8 +16,13 @@ import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.transaction.TransactionStatus
+import org.springframework.transaction.support.SimpleTransactionStatus
+import org.springframework.transaction.support.TransactionTemplate
 import java.util.UUID
+import java.util.function.Consumer
 
 class HendelseServiceTest {
 	private val arrangorRepository = mockk<ArrangorRepository>()
@@ -26,6 +31,7 @@ class HendelseServiceTest {
 	private val aktivitetskortService = mockk<AktivitetskortService>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val aktivitetskortProducer = mockk<AktivitetskortProducer>(relaxed = true)
+	private val transactionTemplate = mockk<TransactionTemplate>()
 
 	private val offset: Long = 0
 
@@ -36,7 +42,15 @@ class HendelseServiceTest {
 		aktivitetskortService = aktivitetskortService,
 		amtArrangorClient = amtArrangorClient,
 		aktivitetskortProducer = aktivitetskortProducer,
+		transactionTemplate = transactionTemplate,
 	)
+
+	@BeforeEach
+	fun setup() {
+		every { transactionTemplate.executeWithoutResult(any<Consumer<TransactionStatus>>()) } answers {
+			(firstArg() as Consumer<TransactionStatus>).accept(SimpleTransactionStatus())
+		}
+	}
 
 	@Test
 	fun `deltakerHendelse - deltaker modifisert - publiser melding`() {
@@ -176,7 +190,12 @@ class HendelseServiceTest {
 
 		every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null andThen arrangor
 		every { arrangorRepository.upsert(any()) } returns RepositoryResult.Created(arrangor)
-		every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns AmtArrangorClient.ArrangorMedOverordnetArrangorDto(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, null)
+		every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns AmtArrangorClient.ArrangorMedOverordnetArrangorDto(
+			arrangor.id,
+			arrangor.navn,
+			arrangor.organisasjonsnummer,
+			null,
+		)
 		every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
 
 		hendelseService.deltakerlisteHendelse(deltakerliste.id, deltakerliste.toDto(arrangor))
