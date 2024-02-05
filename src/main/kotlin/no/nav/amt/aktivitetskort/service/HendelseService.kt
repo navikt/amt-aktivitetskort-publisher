@@ -15,6 +15,7 @@ import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivite
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.support.TransactionTemplate
 import java.util.UUID
 
 @Service
@@ -25,6 +26,7 @@ class HendelseService(
 	private val aktivitetskortService: AktivitetskortService,
 	private val amtArrangorClient: AmtArrangorClient,
 	private val aktivitetskortProducer: AktivitetskortProducer,
+	private val transactionTemplate: TransactionTemplate,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -36,15 +38,24 @@ class HendelseService(
 			return
 		}
 
-		when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
-			is RepositoryResult.Modified -> aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
-				.also { log.info("Oppdatert deltaker: $id") }
-			is RepositoryResult.Created -> aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data)).also {
-				log.info("Opprettet deltaker: $id")
+		transactionTemplate.executeWithoutResult {
+			when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
+				is RepositoryResult.Modified -> {
+					log.info("Ny hendelse for deltaker ${deltaker.id}: Oppdatering")
+					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+				}
+
+				is RepositoryResult.Created -> {
+					log.info("Ny hendelse for deltaker ${deltaker.id}: Opprettelse")
+					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+				}
+
+				is RepositoryResult.NoChange -> {
+					log.info("Ny hendelse for deltaker ${deltaker.id}: Ingen endring")
+				}
 			}
-			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltaker ${deltaker.id}: Ingen endring")
+			log.info("Konsumerte melding med deltaker $id, offset $offset")
 		}
-		log.info("Konsumerte melding med deltaker $id, offset $offset")
 	}
 
 	fun deltakerlisteHendelse(id: UUID, deltakerliste: DeltakerlisteDto?) {
@@ -55,12 +66,18 @@ class HendelseService(
 		val arrangor = arrangorRepository.get(deltakerliste.virksomhetsnummer)
 			?: hentOgLagreArrangorFraAmtArrangor(deltakerliste.virksomhetsnummer)
 
-		when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel(arrangor.id))) {
-			is RepositoryResult.Modified -> aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
-			is RepositoryResult.Created -> log.info("Ny hendelse deltakerliste ${deltakerliste.id}: Opprettet deltakerliste")
-			is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Ingen endring")
+		transactionTemplate.executeWithoutResult {
+			when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel(arrangor.id))) {
+				is RepositoryResult.Modified -> {
+					log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Oppdatering")
+					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+				}
+
+				is RepositoryResult.Created -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Opprettelse")
+				is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Ingen endring")
+			}
+			log.info("Konsumerte melding med deltakerliste $id")
 		}
-		log.info("Konsumerte melding med deltakerliste $id")
 	}
 
 	fun arrangorHendelse(id: UUID, arrangor: ArrangorDto?) {
@@ -69,12 +86,18 @@ class HendelseService(
 			hentOgLagreArrangorFraAmtArrangor(arrangor.overordnetArrangorId)
 		}
 
-		when (val result = arrangorRepository.upsert(arrangor.toModel())) {
-			is RepositoryResult.Modified -> aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
-			is RepositoryResult.Created -> log.info("Ny hendelse arrangør ${arrangor.id}: Opprettet arrangør")
-			is RepositoryResult.NoChange -> log.info("Ny hendelse for arrangør ${arrangor.id}: Ingen endring")
+		transactionTemplate.executeWithoutResult {
+			when (val result = arrangorRepository.upsert(arrangor.toModel())) {
+				is RepositoryResult.Modified -> {
+					log.info("Ny hendelse for arrangor ${arrangor.id}: Oppdatering")
+					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+				}
+
+				is RepositoryResult.Created -> log.info("Ny hendelse for arrangør ${arrangor.id}: Opprettelse")
+				is RepositoryResult.NoChange -> log.info("Ny hendelse for arrangør ${arrangor.id}: Ingen endring")
+			}
+			log.info("Konsumerte melding med arrangør $id")
 		}
-		log.info("Konsumerte melding med arrangør $id")
 	}
 
 	private fun hentOgLagreArrangorFraAmtArrangor(virksomhetsnummer: String): Arrangor {
