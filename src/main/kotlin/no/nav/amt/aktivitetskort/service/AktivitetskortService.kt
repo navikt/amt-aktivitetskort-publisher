@@ -45,7 +45,7 @@ class AktivitetskortService(
 	}
 
 	fun lagAktivitetskort(deltakerId: UUID): Aktivitetskort {
-		val melding = opprettMelding(deltakerId)
+		val melding = opprettMelding(deltakerId) ?: throw RuntimeException("Deltaker $deltakerId finnes ikke")
 
 		log.info("Opprettet nytt aktivitetskort: ${melding.aktivitetskort.id} for deltaker: $deltakerId")
 		return melding.aktivitetskort
@@ -53,7 +53,7 @@ class AktivitetskortService(
 
 	fun lagAktivitetskort(deltakerliste: Deltakerliste) = meldingRepository
 		.getByDeltakerlisteId(deltakerliste.id)
-		.map { opprettMelding(it.deltakerId).aktivitetskort }
+		.mapNotNull { opprettMelding(it.deltakerId)?.aktivitetskort }
 		.also { log.info("Opprettet nye aktivitetskort for deltakerliste: ${deltakerliste.id}") }
 
 	fun lagAktivitetskort(arrangor: Arrangor): List<Aktivitetskort> {
@@ -63,7 +63,7 @@ class AktivitetskortService(
 			meldingRepository
 				.getByArrangorId(a.id)
 				.filter { it.aktivitetskort.erAktivDeltaker() }
-				.map { opprettMelding(it.deltakerId).aktivitetskort }
+				.mapNotNull { opprettMelding(it.deltakerId)?.aktivitetskort }
 				.also { log.info("Opprettet nye aktivitetskort for arrangør: ${a.id}") }
 		}
 	}
@@ -85,9 +85,14 @@ class AktivitetskortService(
 		meldingRepository.getByDeltakerId(deltakerId)?.aktivitetskort?.id
 			?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId for deltaker med id $deltakerId") }
 
-	private fun opprettMelding(deltakerId: UUID) = deltakerRepository.get(deltakerId)
-		?.let { opprettMelding(it) }
-		?: throw RuntimeException("Deltaker $deltakerId finnes ikke")
+	private fun opprettMelding(deltakerId: UUID): Melding? {
+		val deltaker = deltakerRepository.get(deltakerId)
+		if (deltaker == null) {
+			log.warn("Deltaker med id $deltakerId finnes ikke lenger")
+			return null
+		}
+		return opprettMelding(deltaker)
+	}
 
 	private fun opprettMelding(deltaker: Deltaker): Melding {
 		val deltakerliste = deltakerlisteRepository.get(deltaker.deltakerlisteId)
