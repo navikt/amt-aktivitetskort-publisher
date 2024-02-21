@@ -28,7 +28,7 @@ val commonVersion = "3.2023.12.12_13.53-510909d4aa1a"
 val tokenSupportVersion = "4.1.3"
 val unleashVersion = "9.2.0"
 
-extra["logback.version"] = "1.4.14"
+extra["postgresql.version"] = "42.7.2"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
