@@ -20,7 +20,7 @@ repositories {
 val logstashEncoderVersion = "7.4"
 val okHttpVersion = "4.12.0"
 val kafkaClientsVersion = "3.7.0"
-val kotestVersion = "5.8.0"
+val kotestVersion = "5.8.1"
 val testcontainersVersion = "1.19.7"
 val klintVersion = "0.49.1"
 val mockkVersion = "1.13.10"
