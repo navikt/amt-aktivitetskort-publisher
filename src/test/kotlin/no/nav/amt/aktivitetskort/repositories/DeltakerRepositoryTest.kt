@@ -13,7 +13,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DeltakerRepositoryTest : IntegrationTest() {
-
 	@Autowired
 	private lateinit var db: TestDatabaseService
 

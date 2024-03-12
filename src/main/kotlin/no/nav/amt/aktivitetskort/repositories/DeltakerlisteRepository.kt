@@ -13,7 +13,6 @@ import java.util.UUID
 class DeltakerlisteRepository(
 	private val template: NamedParameterJdbcTemplate,
 ) {
-
 	private val rowMapper = RowMapper { rs, _ ->
 		Deltakerliste(
 			id = UUID.fromString(rs.getString("id")),

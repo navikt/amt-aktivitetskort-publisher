@@ -12,7 +12,6 @@ import java.util.UUID
 class ArrangorRepository(
 	private val template: NamedParameterJdbcTemplate,
 ) {
-
 	private val rowMapper = RowMapper { rs, _ ->
 		Arrangor(
 			id = UUID.fromString(rs.getString("id")),

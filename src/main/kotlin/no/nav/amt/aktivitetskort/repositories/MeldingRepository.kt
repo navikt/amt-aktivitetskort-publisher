@@ -15,7 +15,6 @@ import java.util.UUID
 class MeldingRepository(
 	private val template: NamedParameterJdbcTemplate,
 ) {
-
 	private val rowMapper = RowMapper { rs, _ ->
 		Melding(
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),

@@ -25,7 +25,6 @@ import java.time.Duration
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(classes = [Application::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class IntegrationTest {
-
 	@LocalServerPort
 	private var port: Int = 0
 
@@ -36,7 +35,6 @@ class IntegrationTest {
 		.build()
 
 	companion object {
-
 		val mockAktivitetArenaAclServer = MockAktivitetArenaAclServer()
 		val mockAmtArenaAclServer = MockAmtArenaAclServer()
 		val mockMachineToMachineServer = MockMachineToMachineServer()
@@ -64,7 +62,7 @@ class IntegrationTest {
 
 			mockMachineToMachineServer.start()
 			registry.add("nais.env.azureOpenIdConfigTokenEndpoint") {
-				mockMachineToMachineServer.serverUrl() + MockMachineToMachineServer.tokenPath
+				mockMachineToMachineServer.serverUrl() + MockMachineToMachineServer.TOKEN_PATH
 			}
 
 			mockAmtArenaAclServer.start()

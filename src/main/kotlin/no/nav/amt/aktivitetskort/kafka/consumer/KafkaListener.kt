@@ -22,7 +22,6 @@ class KafkaListener(
 	val hendelseService: HendelseService,
 	val feilmeldingService: FeilmeldingService,
 ) {
-
 	@KafkaListener(
 		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC, FEILTOPIC],
 		containerFactory = "kafkaListenerContainerFactory",

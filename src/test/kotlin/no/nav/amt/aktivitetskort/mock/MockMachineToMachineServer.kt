@@ -5,7 +5,7 @@ import okhttp3.mockwebserver.RecordedRequest
 
 class MockMachineToMachineServer : MockHttpServer(name = "MockMachineToMachineHttpServer") {
 	companion object {
-		const val tokenPath = "/token"
+		const val TOKEN_PATH = "/token"
 	}
 
 	init {
@@ -14,10 +14,11 @@ class MockMachineToMachineServer : MockHttpServer(name = "MockMachineToMachineHt
 
 	private fun mockToken() {
 		val predicate = { req: RecordedRequest ->
-			req.path == tokenPath
+			req.path == TOKEN_PATH
 		}
 
-		val body = """
+		val body =
+			"""
 			{
 			  "token_type" : "Bearer",
 			  "id_token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
@@ -26,7 +27,7 @@ class MockMachineToMachineServer : MockHttpServer(name = "MockMachineToMachineHt
 			  "expires_in" : 31535999,
 			  "scope" : "openid somescope"
 			}
-		""".trimIndent()
+			""".trimIndent()
 
 		val response = MockResponse().setResponseCode(200).setBody(body).setHeader("content-type", "application/json")
 

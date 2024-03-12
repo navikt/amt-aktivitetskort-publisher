@@ -17,7 +17,6 @@ fun RecordedRequest.getBodyAsString(): String {
 abstract class MockHttpServer(
 	private val name: String,
 ) {
-
 	private val server = MockWebServer()
 
 	private val log = LoggerFactory.getLogger(javaClass)
@@ -50,10 +49,7 @@ abstract class MockHttpServer(
 		}
 	}
 
-	fun addResponseHandler(
-		predicate: (req: RecordedRequest) -> Boolean,
-		response: (req: RecordedRequest) -> MockResponse,
-	): UUID {
+	fun addResponseHandler(predicate: (req: RecordedRequest) -> Boolean, response: (req: RecordedRequest) -> MockResponse): UUID {
 		val id = UUID.randomUUID()
 		responses[predicate] = ResponseHolder(id, response)
 		return id

@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.util.UUID
 
 class ArrangorRepositoryTest : IntegrationTest() {
-
 	@Autowired
 	private lateinit var db: TestDatabaseService
 
