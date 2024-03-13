@@ -26,7 +26,6 @@ class TestDatabaseService(
 	private val datasource: DataSource,
 	private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
 ) {
-
 	fun clean() = DbTestDataUtils.cleanDatabase(datasource)
 
 	fun insertDeltaker(deltaker: Deltaker = deltaker(), offset: Long = 0): Deltaker {
@@ -38,12 +37,11 @@ class TestDatabaseService(
 		}
 	}
 
-	fun insertArrangor(arrangor: Arrangor = arrangor()) =
-		when (val result = arrangorRepository.upsert(arrangor)) {
-			is RepositoryResult.Created -> result.data
-			is RepositoryResult.Modified -> result.data
-			is RepositoryResult.NoChange -> arrangor
-		}
+	fun insertArrangor(arrangor: Arrangor = arrangor()) = when (val result = arrangorRepository.upsert(arrangor)) {
+		is RepositoryResult.Created -> result.data
+		is RepositoryResult.Modified -> result.data
+		is RepositoryResult.NoChange -> arrangor
+	}
 
 	fun insertDeltakerliste(deltakerliste: Deltakerliste = deltakerliste()): Deltakerliste {
 		arrangorRepository.upsert(arrangor(id = deltakerliste.arrangorId))

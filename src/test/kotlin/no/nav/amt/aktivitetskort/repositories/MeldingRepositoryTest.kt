@@ -10,7 +10,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class MeldingRepositoryTest : IntegrationTest() {
-
 	@Autowired
 	private lateinit var db: TestDatabaseService
 

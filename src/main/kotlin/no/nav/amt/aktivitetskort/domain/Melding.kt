@@ -11,7 +11,6 @@ data class Melding(
 	val createdAt: ZonedDateTime = ZonedDateTime.now(),
 	val modifiedAt: ZonedDateTime = ZonedDateTime.now(),
 ) {
-
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
 		if (javaClass != other?.javaClass) return false

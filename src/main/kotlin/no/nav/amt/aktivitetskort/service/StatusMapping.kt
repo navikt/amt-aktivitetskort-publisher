@@ -5,7 +5,6 @@ import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tag
 
 object StatusMapping {
-
 	private val FORSLAG_STATUS = listOf(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
 
 	private val PLANLEGGES_STATUS = listOf(

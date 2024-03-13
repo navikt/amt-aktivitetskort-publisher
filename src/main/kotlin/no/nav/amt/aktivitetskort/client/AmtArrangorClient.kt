@@ -13,7 +13,6 @@ class AmtArrangorClient(
 	private val tokenProvider: Supplier<String>,
 	private val httpClient: OkHttpClient = baseClient(),
 ) {
-
 	fun hentArrangor(orgnummer: String): ArrangorMedOverordnetArrangorDto {
 		val request = Request.Builder()
 			.url("$baseUrl/api/service/arrangor/organisasjonsnummer/$orgnummer")

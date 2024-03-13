@@ -7,7 +7,7 @@ import okhttp3.Request
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import java.util.*
+import java.util.UUID
 import java.util.function.Supplier
 
 class AmtArenaAclClient(

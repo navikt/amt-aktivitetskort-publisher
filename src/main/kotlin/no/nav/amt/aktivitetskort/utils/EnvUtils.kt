@@ -1,6 +1,7 @@
 package no.nav.amt.aktivitetskort.utils
 
 const val NAIS_CLUSTER_NAME = "NAIS_CLUSTER_NAME"
+
 object EnvUtils {
 	fun isDev(): Boolean {
 		val cluster = getEnvVar(NAIS_CLUSTER_NAME) ?: "Ikke dev"

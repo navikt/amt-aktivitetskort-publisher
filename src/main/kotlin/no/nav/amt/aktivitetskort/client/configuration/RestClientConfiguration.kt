@@ -20,7 +20,6 @@ class RestClientConfiguration(
 	@Value("\${aktivitet.arena-acl.url}") private val aktivitetArenaAclUrl: String,
 	@Value("\${aktivitet.arena-acl.scope}") private val aktivitetArenaAclScope: String,
 ) {
-
 	@Bean
 	fun machineToMachineTokenClient(
 		@Value("\${nais.env.azureAppClientId}") azureAdClientId: String,

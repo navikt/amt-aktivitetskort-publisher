@@ -32,7 +32,6 @@ class AktivitetskortService(
 	private val amtArenaAclClient: AmtArenaAclClient,
 	private val unleash: Unleash,
 ) {
-
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	fun getMelding(deltakerId: UUID) = meldingRepository.getByDeltakerId(deltakerId)
@@ -81,9 +80,8 @@ class AktivitetskortService(
 		}
 	}
 
-	private fun aktivitetskortIdForDeltaker(deltakerId: UUID) =
-		meldingRepository.getByDeltakerId(deltakerId)?.aktivitetskort?.id
-			?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId for deltaker med id $deltakerId") }
+	private fun aktivitetskortIdForDeltaker(deltakerId: UUID) = meldingRepository.getByDeltakerId(deltakerId)?.aktivitetskort?.id
+		?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId for deltaker med id $deltakerId") }
 
 	private fun opprettMelding(deltakerId: UUID): Melding? {
 		val deltaker = deltakerRepository.get(deltakerId)
@@ -133,22 +131,26 @@ class AktivitetskortService(
 		}
 	}
 
-	private fun nyttAktivitetskort(id: UUID, deltaker: Deltaker, deltakerliste: Deltakerliste, arrangor: Arrangor) =
-		Aktivitetskort(
-			id = id,
-			personident = deltaker.personident,
-			tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor, deltaker.deltarPaKurs),
-			aktivitetStatus = deltakerStatusTilAktivitetStatus(deltaker.status.type).getOrThrow(),
-			startDato = deltaker.oppstartsdato,
-			sluttDato = deltaker.sluttdato,
-			beskrivelse = null,
-			endretAv = EndretAv("amt-aktivitetskort-publisher", IdentType.SYSTEM),
-			endretTidspunkt = LocalDateTime.now(),
-			avtaltMedNav = true,
-			oppgave = null,
-			handlinger = null,
-			detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
-			etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-			tiltakstype = deltakerliste.tiltak.type,
-		)
+	private fun nyttAktivitetskort(
+		id: UUID,
+		deltaker: Deltaker,
+		deltakerliste: Deltakerliste,
+		arrangor: Arrangor,
+	) = Aktivitetskort(
+		id = id,
+		personident = deltaker.personident,
+		tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor, deltaker.deltarPaKurs),
+		aktivitetStatus = deltakerStatusTilAktivitetStatus(deltaker.status.type).getOrThrow(),
+		startDato = deltaker.oppstartsdato,
+		sluttDato = deltaker.sluttdato,
+		beskrivelse = null,
+		endretAv = EndretAv("amt-aktivitetskort-publisher", IdentType.SYSTEM),
+		endretTidspunkt = LocalDateTime.now(),
+		avtaltMedNav = true,
+		oppgave = null,
+		handlinger = null,
+		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
+		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
+		tiltakstype = deltakerliste.tiltak.type,
+	)
 }

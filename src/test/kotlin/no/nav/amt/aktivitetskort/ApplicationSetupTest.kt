@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class ApplicationSetupTest : IntegrationTest() {
-
 	@Test
 	fun `Applcation starts and answers`() {
 		sendRequest(

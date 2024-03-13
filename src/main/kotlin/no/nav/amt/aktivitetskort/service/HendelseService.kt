@@ -30,7 +30,11 @@ class HendelseService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun deltakerHendelse(id: UUID, deltaker: DeltakerDto?, offset: Long) {
+	fun deltakerHendelse(
+		id: UUID,
+		deltaker: DeltakerDto?,
+		offset: Long,
+	) {
 		if (deltaker == null) return handterSlettetDeltaker(id)
 
 		if (deltakerStatusTilAktivitetStatus(deltaker.status.type).isFailure) {

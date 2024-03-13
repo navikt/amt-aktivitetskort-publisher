@@ -10,10 +10,9 @@ import org.testcontainers.utility.DockerImageName
 import javax.sql.DataSource
 
 object SingletonPostgresContainer {
-
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	private const val postgresDockerImageName = "postgres:14-alpine"
+	private const val POSTGRES_IMAGE = "postgres:14-alpine"
 
 	private var postgresContainer: PostgreSQLContainer<Nothing>? = null
 
@@ -57,7 +56,7 @@ object SingletonPostgresContainer {
 	}
 
 	private fun createContainer(): PostgreSQLContainer<Nothing> {
-		return PostgreSQLContainer<Nothing>(DockerImageName.parse(postgresDockerImageName))
+		return PostgreSQLContainer<Nothing>(DockerImageName.parse(POSTGRES_IMAGE))
 			.waitingFor(HostPortWaitStrategy())
 	}
 

@@ -61,27 +61,31 @@ object TestData {
 		tiltakstype = tiltakstype,
 	)
 
-	fun aktivitetskort(id: UUID, deltaker: Deltaker, deltakerliste: Deltakerliste, arrangor: Arrangor) =
-		Aktivitetskort(
-			id = id,
-			personident = deltaker.personident,
-			tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor, deltaker.deltarPaKurs),
-			aktivitetStatus = deltakerStatusTilAktivitetStatus(deltaker.status.type).getOrThrow(),
-			startDato = deltaker.oppstartsdato,
-			sluttDato = deltaker.sluttdato,
-			beskrivelse = null,
-			endretAv = EndretAv("amt-aktivitetskort-publisher", IdentType.SYSTEM),
-			endretTidspunkt = LocalDateTime.now(),
-			avtaltMedNav = true,
-			oppgave = null,
-			handlinger = null,
-			detaljer = listOfNotNull(
-				Detalj("Status for deltakelse", deltaker.status.display()),
-				Detalj("Arrangør", arrangor.navn),
-			),
-			etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-			tiltakstype = deltakerliste.tiltak.type,
-		)
+	fun aktivitetskort(
+		id: UUID,
+		deltaker: Deltaker,
+		deltakerliste: Deltakerliste,
+		arrangor: Arrangor,
+	) = Aktivitetskort(
+		id = id,
+		personident = deltaker.personident,
+		tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor, deltaker.deltarPaKurs),
+		aktivitetStatus = deltakerStatusTilAktivitetStatus(deltaker.status.type).getOrThrow(),
+		startDato = deltaker.oppstartsdato,
+		sluttDato = deltaker.sluttdato,
+		beskrivelse = null,
+		endretAv = EndretAv("amt-aktivitetskort-publisher", IdentType.SYSTEM),
+		endretTidspunkt = LocalDateTime.now(),
+		avtaltMedNav = true,
+		oppgave = null,
+		handlinger = null,
+		detaljer = listOfNotNull(
+			Detalj("Status for deltakelse", deltaker.status.display()),
+			Detalj("Arrangør", arrangor.navn),
+		),
+		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
+		tiltakstype = deltakerliste.tiltak.type,
+	)
 
 	fun deltaker(
 		id: UUID = UUID.randomUUID(),

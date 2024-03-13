@@ -83,7 +83,11 @@ data class Aktivitetskort(
 	}
 
 	companion object {
-		fun lagTittel(deltakerliste: Deltakerliste, arrangor: Arrangor, erKurs: Boolean) = when (deltakerliste.tiltak.type) {
+		fun lagTittel(
+			deltakerliste: Deltakerliste,
+			arrangor: Arrangor,
+			erKurs: Boolean,
+		) = when (deltakerliste.tiltak.type) {
 			Tiltak.Type.DIGIOPPARB -> "Digital oppfølging hos ${arrangor.navn}"
 			Tiltak.Type.JOBBK -> "Jobbsøkerkurs hos ${arrangor.navn}"
 			Tiltak.Type.GRUPPEAMO -> if (erKurs) "Kurs: ${deltakerliste.navn}" else deltakerliste.navn
@@ -91,7 +95,11 @@ data class Aktivitetskort(
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 
-		fun lagDetaljer(deltaker: Deltaker, deltakerliste: Deltakerliste, arrangor: Arrangor): List<Detalj> {
+		fun lagDetaljer(
+			deltaker: Deltaker,
+			deltakerliste: Deltakerliste,
+			arrangor: Arrangor,
+		): List<Detalj> {
 			val detaljer = mutableListOf<Detalj>()
 
 			detaljer.add(Detalj("Status for deltakelse", deltaker.status.display()))
@@ -112,6 +120,7 @@ data class Aktivitetskort(
 			val label = "Deltakelsesmengde"
 
 			fun fmtProsent(pct: Double) = "${DecimalFormat("#.#").format(pct)}%"
+
 			fun fmtDager(antall: Float) = "${DecimalFormat("#.#").format(antall)} ${if (antall == 1.0f) "dag" else "dager"} i uka"
 
 			return when {
@@ -139,11 +148,19 @@ data class Tag(
 	val kode: Kode,
 ) {
 	enum class Kode {
-		SOKT_INN, VURDERES, VENTER_PA_OPPSTART, VENTELISTE, IKKE_AKTUELL, UTKAST_TIL_PAMELDING, AVBRUTT_UTKAST
+		SOKT_INN,
+		VURDERES,
+		VENTER_PA_OPPSTART,
+		VENTELISTE,
+		IKKE_AKTUELL,
+		UTKAST_TIL_PAMELDING,
+		AVBRUTT_UTKAST,
 	}
 
 	enum class Sentiment {
-		POSITIVE, NEGATIVE, NEUTRAL
+		POSITIVE,
+		NEGATIVE,
+		NEUTRAL,
 	}
 }
 

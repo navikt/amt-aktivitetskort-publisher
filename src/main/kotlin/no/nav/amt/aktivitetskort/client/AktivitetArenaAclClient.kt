@@ -19,7 +19,6 @@ class AktivitetArenaAclClient(
 	private val tokenProvider: Supplier<String>,
 	private val httpClient: OkHttpClient = RestClient.baseClient(),
 ) {
-
 	fun getAktivitetIdForArenaId(arenaId: Long): UUID {
 		val request = okhttp3.Request.Builder()
 			.url("$baseUrl/api/translation/arenaid")

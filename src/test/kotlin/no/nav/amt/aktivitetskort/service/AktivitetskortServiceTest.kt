@@ -90,20 +90,21 @@ class AktivitetskortServiceTest {
 	}
 
 	@Test
-	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, arenaId finnes ikke - oppretter med ny aktivitetskortId`() = mockCluster {
-		val ctx = TestData.MockContext()
+	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, arenaId finnes ikke - oppretter med ny aktivitetskortId`() =
+		mockCluster {
+			val ctx = TestData.MockContext()
 
-		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns null
-		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
-		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
-		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns null
-		every { unleash.isEnabled(any()) } returns true
+			every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns null
+			every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
+			every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+			every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns null
+			every { unleash.isEnabled(any()) } returns true
 
-		aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+			aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
-		verify(exactly = 1) { meldingRepository.upsert(any()) }
-		verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
-	}
+			verify(exactly = 1) { meldingRepository.upsert(any()) }
+			verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
+		}
 
 	@Test
 	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, aktivitetskort finnes - gjenbruker aktivitetskortId`() = mockCluster {
@@ -199,7 +200,7 @@ class AktivitetskortServiceTest {
 	}
 
 	@Test
-	fun `lagAktivitetskort(arrangor) - meldinger finnes, deltaker er aktiv, arrangor har underarrangorer - lager nye aktivitetskort for arrangor og underarrangor`() {
+	fun `lagAktivitetskort(arrangor) - meldinger finnes, deltaker er aktiv, arrangor har underarrangorer - lager nye aktivitetskort`() {
 		val ctx = TestData.MockContext()
 		val ctxUnderarrangor = TestData.MockContext()
 		val deltakerSluttdato = LocalDate.now().plusWeeks(3)

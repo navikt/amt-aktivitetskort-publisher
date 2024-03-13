@@ -61,7 +61,8 @@ class DeltakerRepository(
 			return RepositoryResult.NoChange()
 		}
 
-		val sql = """
+		val sql =
+			"""
 			insert into deltaker(
 				id,
 				personident,
@@ -103,7 +104,7 @@ class DeltakerRepository(
 				modified_at = current_timestamp,
 				kafkaoffset = :kafkaoffset
 			returning *
-		""".trimIndent()
+			""".trimIndent()
 		val parameters = sqlParameters(
 			"id" to deltaker.id,
 			"personident" to deltaker.personident,

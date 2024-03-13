@@ -18,7 +18,6 @@ import org.testcontainers.shaded.org.awaitility.Awaitility
 import java.util.concurrent.TimeUnit
 
 class KafkaListenerTest : IntegrationTest() {
-
 	@Autowired
 	lateinit var kafkaProducer: KafkaProducer<String, String?>
 
