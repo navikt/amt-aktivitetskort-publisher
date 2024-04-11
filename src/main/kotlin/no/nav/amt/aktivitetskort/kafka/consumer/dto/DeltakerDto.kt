@@ -2,6 +2,7 @@ package no.nav.amt.aktivitetskort.kafka.consumer.dto
 
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.domain.Kilde
 import java.time.LocalDate
 import java.util.UUID
 
@@ -15,6 +16,7 @@ data class DeltakerDto(
 	val oppstartsdato: LocalDate?,
 	val sluttdato: LocalDate?,
 	val deltarPaKurs: Boolean,
+	val kilde: Kilde?,
 ) {
 	data class DeltakerPersonaliaDto(
 		val personident: String,
@@ -35,5 +37,6 @@ data class DeltakerDto(
 		oppstartsdato = oppstartsdato,
 		sluttdato = sluttdato,
 		deltarPaKurs = deltarPaKurs,
+		kilde = kilde,
 	)
 }
