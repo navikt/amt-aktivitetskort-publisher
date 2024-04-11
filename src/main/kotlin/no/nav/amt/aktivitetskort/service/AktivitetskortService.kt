@@ -9,6 +9,7 @@ import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.Handling
+import no.nav.amt.aktivitetskort.domain.IKKE_AVTALT_MED_NAV_STATUSER
 import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
@@ -152,7 +153,7 @@ class AktivitetskortService(
 		beskrivelse = null,
 		endretAv = EndretAv("amt-aktivitetskort-publisher", IdentType.SYSTEM),
 		endretTidspunkt = LocalDateTime.now(),
-		avtaltMedNav = true,
+		avtaltMedNav = deltaker.status.type !in IKKE_AVTALT_MED_NAV_STATUSER,
 		oppgave = null,
 		handlinger = getHandlinger(deltaker),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),

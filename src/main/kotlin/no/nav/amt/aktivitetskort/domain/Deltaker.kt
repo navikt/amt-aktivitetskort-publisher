@@ -139,3 +139,8 @@ val AVSLUTTENDE_STATUSER = listOf(
 	DeltakerStatus.Type.FULLFORT,
 	DeltakerStatus.Type.AVBRUTT_UTKAST,
 )
+
+val IKKE_AVTALT_MED_NAV_STATUSER = listOf(
+	DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
+	DeltakerStatus.Type.AVBRUTT_UTKAST,
+)
