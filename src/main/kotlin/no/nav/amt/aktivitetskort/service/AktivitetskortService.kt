@@ -166,13 +166,13 @@ class AktivitetskortService(
 		}
 		return listOf(
 			Handling(
-				tekst = "Gå til tiltakssiden",
+				tekst = "Les mer om din deltakelse",
 				subtekst = "",
 				url = "$veilederUrlBasePath/${deltaker.id}",
 				lenkeType = LenkeType.INTERN,
 			),
 			Handling(
-				tekst = "Gå til tiltakssiden",
+				tekst = "Les mer om din deltakelse",
 				subtekst = "",
 				url = "$deltakerUrlBasePath/${deltaker.id}",
 				lenkeType = LenkeType.EKSTERN,
