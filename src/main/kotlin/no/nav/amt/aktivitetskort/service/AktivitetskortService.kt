@@ -8,7 +8,10 @@ import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.EndretAv
+import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.IdentType
+import no.nav.amt.aktivitetskort.domain.Kilde
+import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -18,6 +21,7 @@ import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivite
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.aktivitetskort.utils.EnvUtils.isDev
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.UUID
@@ -31,6 +35,8 @@ class AktivitetskortService(
 	private val aktivitetArenaAclClient: AktivitetArenaAclClient,
 	private val amtArenaAclClient: AmtArenaAclClient,
 	private val unleash: Unleash,
+	@Value("\${veilederurl.basepath}") private val veilederUrlBasePath: String,
+	@Value("\${deltakerurl.basepath}") private val deltakerUrlBasePath: String,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -148,9 +154,29 @@ class AktivitetskortService(
 		endretTidspunkt = LocalDateTime.now(),
 		avtaltMedNav = true,
 		oppgave = null,
-		handlinger = null,
+		handlinger = getHandlinger(deltaker),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
 		tiltakstype = deltakerliste.tiltak.type,
 	)
+
+	private fun getHandlinger(deltaker: Deltaker): List<Handling>? {
+		if (deltaker.kilde != Kilde.KOMET) {
+			return null
+		}
+		return listOf(
+			Handling(
+				tekst = "Gå til tiltakssiden",
+				subtekst = "",
+				url = "$veilederUrlBasePath/${deltaker.id}",
+				lenkeType = LenkeType.INTERN,
+			),
+			Handling(
+				tekst = "Gå til tiltakssiden",
+				subtekst = "",
+				url = "$deltakerUrlBasePath/${deltaker.id}",
+				lenkeType = LenkeType.EKSTERN,
+			),
+		)
+	}
 }

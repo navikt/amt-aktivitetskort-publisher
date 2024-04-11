@@ -9,6 +9,9 @@ import io.mockk.verify
 import no.nav.amt.aktivitetskort.client.AktivitetArenaAclClient
 import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
 import no.nav.amt.aktivitetskort.database.TestData
+import no.nav.amt.aktivitetskort.domain.Handling
+import no.nav.amt.aktivitetskort.domain.Kilde
+import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.mock.mockCluster
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -30,6 +33,8 @@ class AktivitetskortServiceTest {
 	private val aktivitetArenaAclClient = mockk<AktivitetArenaAclClient>()
 	private val amtArenaAclClient = mockk<AmtArenaAclClient>()
 	private val unleash = mockk<DefaultUnleash>()
+	private val veilederUrlBasePath = "https://intern.veileder"
+	private val deltakerUrlBasePath = "https://ekstern.deltaker"
 
 	private val aktivitetskortService = AktivitetskortService(
 		meldingRepository = meldingRepository,
@@ -39,6 +44,8 @@ class AktivitetskortServiceTest {
 		aktivitetArenaAclClient = aktivitetArenaAclClient,
 		amtArenaAclClient = amtArenaAclClient,
 		unleash = unleash,
+		veilederUrlBasePath = veilederUrlBasePath,
+		deltakerUrlBasePath = deltakerUrlBasePath,
 	)
 
 	@Test
@@ -67,6 +74,51 @@ class AktivitetskortServiceTest {
 		aktivitetskort.avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
 		aktivitetskort.oppgave shouldBe ctx.aktivitetskort.oppgave
 		aktivitetskort.handlinger shouldBe ctx.aktivitetskort.handlinger
+		aktivitetskort.detaljer shouldBe ctx.aktivitetskort.detaljer
+		aktivitetskort.etiketter shouldBe ctx.aktivitetskort.etiketter
+	}
+
+	@Test
+	fun `lagAktivitetskort(deltaker) - kilde komet - lager nytt aktivitetskort med lenker`() {
+		val deltaker = TestData.deltaker(kilde = Kilde.KOMET)
+		val ctx = TestData.MockContext(deltaker = deltaker)
+		val aktivitetskordId = UUID.randomUUID()
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns null
+		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
+		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
+		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns aktivitetskordId
+		val forventedeHandlinger = listOf(
+			Handling(
+				tekst = "Gå til tiltakssiden",
+				subtekst = "",
+				url = "$veilederUrlBasePath/${deltaker.id}",
+				lenkeType = LenkeType.INTERN,
+			),
+			Handling(
+				tekst = "Gå til tiltakssiden",
+				subtekst = "",
+				url = "$deltakerUrlBasePath/${deltaker.id}",
+				lenkeType = LenkeType.EKSTERN,
+			),
+		)
+
+		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+
+		verify(exactly = 1) { meldingRepository.upsert(any()) }
+
+		aktivitetskort.id shouldBe aktivitetskordId
+		aktivitetskort.personident shouldBe ctx.aktivitetskort.personident
+		aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
+		aktivitetskort.aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
+		aktivitetskort.startDato shouldBe ctx.aktivitetskort.startDato
+		aktivitetskort.sluttDato shouldBe ctx.aktivitetskort.sluttDato
+		aktivitetskort.beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
+		aktivitetskort.endretAv shouldBe ctx.aktivitetskort.endretAv
+		aktivitetskort.endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
+		aktivitetskort.avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
+		aktivitetskort.oppgave shouldBe ctx.aktivitetskort.oppgave
+		aktivitetskort.handlinger shouldBe forventedeHandlinger
 		aktivitetskort.detaljer shouldBe ctx.aktivitetskort.detaljer
 		aktivitetskort.etiketter shouldBe ctx.aktivitetskort.etiketter
 	}
