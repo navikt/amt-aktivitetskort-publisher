@@ -77,6 +77,10 @@ spec:
       value: http://aktivitet-arena-acl.dab.svc.cluster.local
     - name: AKTIVITET_ARENA_ACL_SCOPE
       value: api://prod-gcp.dab.aktivitet-arena-acl/.default
+    - name: VEILEDERURL_BASEPATH
+      value: https://veilarbpersonflate.intern.nav.no/arbeidsmarkedstiltak/deltakelse/deltaker
+    - name: DELTAKERURL_BASEPATH
+      value: https://www.nav.no/arbeidsmarkedstiltak
 
   observability:
     autoInstrumentation:

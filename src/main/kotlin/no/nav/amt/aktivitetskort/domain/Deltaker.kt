@@ -14,6 +14,7 @@ data class Deltaker(
 	val oppstartsdato: LocalDate?,
 	val sluttdato: LocalDate?,
 	val deltarPaKurs: Boolean,
+	val kilde: Kilde?,
 ) {
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
@@ -27,7 +28,8 @@ data class Deltaker(
 			isEqual(prosentStilling, other.prosentStilling) &&
 			oppstartsdato == other.oppstartsdato &&
 			sluttdato == other.sluttdato &&
-			deltarPaKurs == other.deltarPaKurs
+			deltarPaKurs == other.deltarPaKurs &&
+			kilde == other.kilde
 	}
 
 	private fun isEqual(dagerPerUke: Float?, otherDagerPerUke: Float?): Boolean {
@@ -53,6 +55,7 @@ data class Deltaker(
 			oppstartsdato,
 			sluttdato,
 			deltarPaKurs,
+			kilde,
 		)
 	}
 }
@@ -123,11 +126,21 @@ data class DeltakerStatus(
 	}
 }
 
+enum class Kilde {
+	KOMET,
+	ARENA,
+}
+
 val AVSLUTTENDE_STATUSER = listOf(
 	DeltakerStatus.Type.HAR_SLUTTET,
 	DeltakerStatus.Type.IKKE_AKTUELL,
 	DeltakerStatus.Type.FEILREGISTRERT,
 	DeltakerStatus.Type.AVBRUTT,
 	DeltakerStatus.Type.FULLFORT,
+	DeltakerStatus.Type.AVBRUTT_UTKAST,
+)
+
+val IKKE_AVTALT_MED_NAV_STATUSER = listOf(
+	DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
 	DeltakerStatus.Type.AVBRUTT_UTKAST,
 )

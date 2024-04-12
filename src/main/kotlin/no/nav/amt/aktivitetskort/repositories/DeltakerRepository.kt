@@ -3,6 +3,7 @@ package no.nav.amt.aktivitetskort.repositories
 import no.nav.amt.aktivitetskort.domain.AVSLUTTENDE_STATUSER
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.aktivitetskort.utils.sqlParameters
 import org.slf4j.LoggerFactory
@@ -35,6 +36,7 @@ class DeltakerRepository(
 				oppstartsdato = rs.getDate("start_dato")?.toLocalDate(),
 				sluttdato = rs.getDate("slutt_dato")?.toLocalDate(),
 				deltarPaKurs = rs.getBoolean("deltar_pa_kurs"),
+				kilde = rs.getString("kilde")?.let { Kilde.valueOf(it) },
 			),
 			offset = rs.getLong("kafkaoffset"),
 		)
@@ -76,7 +78,8 @@ class DeltakerRepository(
 				deltar_pa_kurs,
 				created_at,
 				modified_at,
-				kafkaoffset
+				kafkaoffset,
+				kilde
 			) values (
 				:id,
 				:personident,
@@ -90,7 +93,8 @@ class DeltakerRepository(
 				:deltar_pa_kurs,
 				current_timestamp,
 				current_timestamp,
-				:kafkaoffset
+				:kafkaoffset,
+				:kilde
 			) on conflict(id) do update set
 				personident = :personident,
 				deltakerliste_id = :deltakerliste_id,
@@ -102,7 +106,8 @@ class DeltakerRepository(
 				slutt_dato = :slutt_dato,
 				deltar_pa_kurs = :deltar_pa_kurs,
 				modified_at = current_timestamp,
-				kafkaoffset = :kafkaoffset
+				kafkaoffset = :kafkaoffset,
+				kilde = :kilde
 			returning *
 			""".trimIndent()
 		val parameters = sqlParameters(
@@ -117,6 +122,7 @@ class DeltakerRepository(
 			"slutt_dato" to deltaker.sluttdato,
 			"deltar_pa_kurs" to deltaker.deltarPaKurs,
 			"kafkaoffset" to offset,
+			"kilde" to deltaker.kilde?.name,
 		)
 
 		val new = template.query(sql, parameters, rowMapper).first()

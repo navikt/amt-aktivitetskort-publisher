@@ -9,6 +9,7 @@ import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.Detalj
 import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.IdentType
+import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Tag
 import no.nav.amt.aktivitetskort.domain.Tiltak
@@ -97,6 +98,7 @@ object TestData {
 		oppstartsdato: LocalDate? = LocalDate.now().minusWeeks(4),
 		sluttdato: LocalDate? = LocalDate.now().plusWeeks(4),
 		deltarPaKurs: Boolean = false,
+		kilde: Kilde = Kilde.ARENA,
 	) = Deltaker(
 		id,
 		personident,
@@ -107,6 +109,7 @@ object TestData {
 		oppstartsdato,
 		sluttdato,
 		deltarPaKurs,
+		kilde,
 	)
 
 	fun arrangor(
@@ -156,6 +159,7 @@ object TestData {
 		oppstartsdato = this.oppstartsdato,
 		sluttdato = this.sluttdato,
 		deltarPaKurs = this.deltarPaKurs,
+		kilde = this.kilde,
 	)
 
 	fun Arrangor.toDto() = ArrangorDto(
