@@ -77,13 +77,16 @@ object StatusMapping {
 				sentiment = Tag.Sentiment.NEUTRAL,
 				kode = Tag.Kode.SOKT_INN,
 			)
-			DeltakerStatus.Type.UTKAST_TIL_PAMELDING ->
-				Tag(
-					tekst = "Utkast til påmelding",
-					sentiment = Tag.Sentiment.NEUTRAL,
-					kode = Tag.Kode.UTKAST_TIL_PAMELDING,
-				)
-			DeltakerStatus.Type.AVBRUTT_UTKAST -> null
+			DeltakerStatus.Type.UTKAST_TIL_PAMELDING -> Tag(
+				tekst = "Utkast til påmelding",
+				sentiment = Tag.Sentiment.NEUTRAL,
+				kode = Tag.Kode.UTKAST_TIL_PAMELDING,
+			)
+			DeltakerStatus.Type.AVBRUTT_UTKAST -> Tag(
+				tekst = "Avbrutt utkast",
+				sentiment = Tag.Sentiment.NEUTRAL,
+				kode = Tag.Kode.AVBRUTT_UTKAST,
+			)
 		}
 	}
 }
