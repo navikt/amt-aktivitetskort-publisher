@@ -28,8 +28,6 @@ val commonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 val tokenSupportVersion = "4.1.7"
 val unleashVersion = "9.2.2"
 
-extra["postgresql.version"] = "42.7.2"
-
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -47,6 +45,7 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
 	implementation("org.flywaydb:flyway-core")
+	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.postgresql:postgresql")
 
 	implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
