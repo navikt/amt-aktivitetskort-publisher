@@ -65,7 +65,7 @@ class AktivitetskortTest {
 
 		val detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor)
 
-		detaljer.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "50% 2 dager i uka")
+		detaljer.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "50% fordelt på 2 dager i uka")
 	}
 
 	@Test
@@ -98,8 +98,8 @@ class AktivitetskortTest {
 		val detaljer1 = Aktivitetskort.lagDetaljer(deltaker1, deltakerliste, arrangor)
 		val detaljer2 = Aktivitetskort.lagDetaljer(deltaker2, deltakerliste, arrangor)
 
-		detaljer1.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "5 dager i uka")
-		detaljer2.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "1 dag i uka")
+		detaljer1.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "fordelt på 5 dager i uka")
+		detaljer2.find { it.label == "Deltakelsesmengde" }!! shouldBe Detalj("Deltakelsesmengde", "fordelt på 1 dag i uka")
 	}
 
 	@Test
