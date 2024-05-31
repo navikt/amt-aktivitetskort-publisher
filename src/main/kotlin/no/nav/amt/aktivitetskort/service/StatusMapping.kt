@@ -69,7 +69,11 @@ object StatusMapping {
 			)
 			DeltakerStatus.Type.DELTAR -> null
 			DeltakerStatus.Type.HAR_SLUTTET -> null
-			DeltakerStatus.Type.FEILREGISTRERT -> null
+			DeltakerStatus.Type.FEILREGISTRERT -> Tag(
+				tekst = "Feilregistrert",
+				sentiment = Tag.Sentiment.NEUTRAL,
+				kode = Tag.Kode.FEILREGISTRERT,
+			)
 			DeltakerStatus.Type.AVBRUTT -> null
 			DeltakerStatus.Type.FULLFORT -> null
 			DeltakerStatus.Type.PABEGYNT_REGISTRERING -> Tag(

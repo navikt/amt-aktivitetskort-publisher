@@ -155,6 +155,7 @@ data class Tag(
 		IKKE_AKTUELL,
 		UTKAST_TIL_PAMELDING,
 		AVBRUTT_UTKAST,
+		FEILREGISTRERT,
 	}
 
 	enum class Sentiment {
