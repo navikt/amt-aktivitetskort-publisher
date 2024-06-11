@@ -105,6 +105,7 @@ data class DeltakerStatus(
 		IKKE_MOTT,
 		ANNET,
 		AVLYST_KONTRAKT,
+		UTDANNING,
 		;
 
 		fun display() = when (this) {
@@ -115,6 +116,7 @@ data class DeltakerStatus(
 			IKKE_MOTT -> "Møter ikke opp"
 			ANNET -> "Annet"
 			AVLYST_KONTRAKT -> "Avlyst kontrakt"
+			UTDANNING -> "Utdanning"
 		}
 	}
 
