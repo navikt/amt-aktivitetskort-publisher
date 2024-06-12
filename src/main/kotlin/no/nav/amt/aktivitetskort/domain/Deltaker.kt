@@ -106,6 +106,7 @@ data class DeltakerStatus(
 		ANNET,
 		AVLYST_KONTRAKT,
 		UTDANNING,
+		SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT,
 		;
 
 		fun display() = when (this) {
@@ -117,6 +118,7 @@ data class DeltakerStatus(
 			ANNET -> "Annet"
 			AVLYST_KONTRAKT -> "Avlyst kontrakt"
 			UTDANNING -> "Utdanning"
+			SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT -> "Samarbeidet med arrangøren er avbrutt"
 		}
 	}
 
