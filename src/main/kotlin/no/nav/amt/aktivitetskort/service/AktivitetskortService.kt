@@ -13,6 +13,7 @@ import no.nav.amt.aktivitetskort.domain.IKKE_AVTALT_MED_NAV_STATUSER
 import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
+import no.nav.amt.aktivitetskort.domain.ManglerArenaIdException
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -83,7 +84,7 @@ class AktivitetskortService(
 		} else if (unleash.isEnabled("amt.enable-komet-deltakere") && isDev()) {
 			return aktivitetskortIdForDeltaker(deltakerId)
 		} else {
-			throw IllegalStateException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
+			throw ManglerArenaIdException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
 		}
 	}
 
