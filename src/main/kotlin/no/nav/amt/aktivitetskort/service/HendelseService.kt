@@ -4,6 +4,7 @@ import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.domain.ManglerArenaIdException
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
@@ -42,23 +43,26 @@ class HendelseService(
 			return
 		}
 
-		transactionTemplate.executeWithoutResult {
-			when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
-				is RepositoryResult.Modified -> {
-					log.info("Ny hendelse for deltaker ${deltaker.id}: Oppdatering")
-					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+		try {
+			transactionTemplate.executeWithoutResult {
+				when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
+					is RepositoryResult.Modified -> {
+						log.info("Ny hendelse for deltaker ${deltaker.id}: Oppdatering")
+						aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+					}
+					is RepositoryResult.Created -> {
+						log.info("Ny hendelse for deltaker ${deltaker.id}: Opprettelse")
+						aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+					}
+					is RepositoryResult.NoChange -> {
+						log.info("Ny hendelse for deltaker ${deltaker.id}: Ingen endring")
+					}
 				}
-
-				is RepositoryResult.Created -> {
-					log.info("Ny hendelse for deltaker ${deltaker.id}: Opprettelse")
-					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
-				}
-
-				is RepositoryResult.NoChange -> {
-					log.info("Ny hendelse for deltaker ${deltaker.id}: Ingen endring")
-				}
+				log.info("Konsumerte melding med deltaker $id, offset $offset")
 			}
-			log.info("Konsumerte melding med deltaker $id, offset $offset")
+		} catch (e: ManglerArenaIdException) {
+			log.error("Deltaker $id, offset $offset mangler arena-id, antar hist-deltaker")
+			return
 		}
 	}
 
