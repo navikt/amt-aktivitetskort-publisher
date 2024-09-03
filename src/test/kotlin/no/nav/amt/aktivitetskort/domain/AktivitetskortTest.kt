@@ -29,6 +29,7 @@ class AktivitetskortTest {
 			when (it.tiltak.type) {
 				Tiltak.Type.DIGIOPPARB -> aktivitetskortTittel shouldBe "Digital oppfølging hos ${arrangor.navn}"
 				Tiltak.Type.JOBBK -> aktivitetskortTittel shouldBe "Jobbsøkerkurs hos ${arrangor.navn}"
+				Tiltak.Type.VASV -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
 				Tiltak.Type.GRUPPEAMO -> aktivitetskortTittel shouldBe "Kurs: ${it.navn}"
 				Tiltak.Type.GRUFAGYRKE -> aktivitetskortTittel shouldBe it.navn
 				else -> aktivitetskortTittel shouldBe "${it.tiltak.navn} hos ${arrangor.navn}"
