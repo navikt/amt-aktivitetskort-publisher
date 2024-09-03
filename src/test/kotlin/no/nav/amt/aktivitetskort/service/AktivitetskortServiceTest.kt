@@ -12,6 +12,7 @@ import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
+import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.mock.mockCluster
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -57,6 +58,7 @@ class AktivitetskortServiceTest {
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns aktivitetskordId
+		every { unleash.isEnabled(any()) } returns false
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
@@ -79,15 +81,18 @@ class AktivitetskortServiceTest {
 	}
 
 	@Test
-	fun `lagAktivitetskort(deltaker) - kilde komet - lager nytt aktivitetskort med lenker`() {
-		val deltaker = TestData.deltaker(kilde = Kilde.KOMET)
-		val ctx = TestData.MockContext(deltaker = deltaker)
+	fun `lagAktivitetskort(deltaker) - komet er master - lager nytt aktivitetskort med lenker`() {
+		val deltakerliste = TestData.deltakerliste(tiltak = Tiltak("Arbeidsforberedende trening", Tiltak.Type.ARBFORB))
+		val deltaker = TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id, prosentStilling = null, dagerPerUke = null)
+		val ctx = TestData.MockContext(deltaker = deltaker, deltakerliste = deltakerliste)
 		val aktivitetskordId = UUID.randomUUID()
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns null
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns aktivitetskordId
+		every { unleash.isEnabled(any()) } returns true
+
 		val forventedeHandlinger = listOf(
 			Handling(
 				tekst = "Les mer om din deltakelse",
@@ -132,6 +137,7 @@ class AktivitetskortServiceTest {
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } throws IllegalStateException("Noe gikk galt")
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) } returns aktivitetskordId
+		every { unleash.isEnabled(any()) } returns false
 
 		assertThrows<IllegalStateException> {
 			aktivitetskortService.lagAktivitetskort(ctx.deltaker)
@@ -144,7 +150,9 @@ class AktivitetskortServiceTest {
 	@Test
 	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, arenaId finnes ikke - oppretter med ny aktivitetskortId`() =
 		mockCluster {
-			val ctx = TestData.MockContext()
+			val deltakerliste = TestData.deltakerliste(tiltak = Tiltak("Arbeidsforberedende trening", Tiltak.Type.ARBFORB))
+			val deltaker = TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id)
+			val ctx = TestData.MockContext(deltaker = deltaker, deltakerliste = deltakerliste)
 
 			every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns null
 			every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
@@ -160,7 +168,9 @@ class AktivitetskortServiceTest {
 
 	@Test
 	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, aktivitetskort finnes - gjenbruker aktivitetskortId`() = mockCluster {
-		val ctx = TestData.MockContext()
+		val deltakerliste = TestData.deltakerliste(tiltak = Tiltak("Arbeidsforberedende trening", Tiltak.Type.ARBFORB))
+		val deltaker = TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id)
+		val ctx = TestData.MockContext(deltaker = deltaker, deltakerliste = deltakerliste)
 
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns ctx.melding
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
@@ -183,6 +193,7 @@ class AktivitetskortServiceTest {
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } throws IllegalStateException("Noe gikk galt")
+		every { unleash.isEnabled(any()) } returns false
 
 		assertThrows<IllegalStateException> {
 			aktivitetskortService.lagAktivitetskort(ctx.deltaker)
@@ -200,6 +211,7 @@ class AktivitetskortServiceTest {
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
+		every { unleash.isEnabled(any()) } returns false
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
@@ -218,6 +230,7 @@ class AktivitetskortServiceTest {
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
+		every { unleash.isEnabled(any()) } returns false
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltakerliste)
 
@@ -241,6 +254,7 @@ class AktivitetskortServiceTest {
 		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns emptyList()
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
+		every { unleash.isEnabled(any()) } returns false
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
 
@@ -280,6 +294,7 @@ class AktivitetskortServiceTest {
 		every { amtArenaAclClient.getArenaIdForAmtId(ctxUnderarrangor.deltaker.id) } returns 2L
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns mockAktivitetskort.id
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(2L) } returns mockAktivitetskortUnderarrangor.id
+		every { unleash.isEnabled(any()) } returns false
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
 
@@ -304,6 +319,7 @@ class AktivitetskortServiceTest {
 		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns emptyList()
 		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
+		every { unleash.isEnabled(any()) } returns false
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
 
