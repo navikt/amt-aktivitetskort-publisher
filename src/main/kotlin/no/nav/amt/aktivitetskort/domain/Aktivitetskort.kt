@@ -89,6 +89,7 @@ data class Aktivitetskort(
 			erKurs: Boolean,
 		) = when (deltakerliste.tiltak.type) {
 			Tiltak.Type.DIGIOPPARB -> "Digital oppfølging hos ${arrangor.navn}"
+			Tiltak.Type.VASV -> "Tilrettelagt arbeid hos ${arrangor.navn}"
 			Tiltak.Type.JOBBK -> "Jobbsøkerkurs hos ${arrangor.navn}"
 			Tiltak.Type.GRUPPEAMO -> if (erKurs) "Kurs: ${deltakerliste.navn}" else deltakerliste.navn
 			Tiltak.Type.GRUFAGYRKE -> deltakerliste.navn
