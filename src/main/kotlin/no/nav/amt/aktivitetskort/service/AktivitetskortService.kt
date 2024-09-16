@@ -11,6 +11,7 @@ import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.IKKE_AVTALT_MED_NAV_STATUSER
 import no.nav.amt.aktivitetskort.domain.IdentType
+import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Tiltak
@@ -20,6 +21,7 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
+import no.nav.amt.aktivitetskort.utils.EnvUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -73,13 +75,17 @@ class AktivitetskortService(
 		}
 	}
 
-	private fun getAktivitetskortId(deltakerId: UUID, tiltakstype: Tiltak.Type): UUID {
+	private fun getAktivitetskortId(
+		deltakerId: UUID,
+		tiltakstype: Tiltak.Type,
+		kilde: Kilde?,
+	): UUID {
 		val aktivitetskortId = amtArenaAclClient.getArenaIdForAmtId(deltakerId)
 			?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
 
 		if (aktivitetskortId != null) {
 			return aktivitetskortId
-		} else if (kometErMasterForTiltakstype(tiltakstype)) {
+		} else if (kometErMasterForTiltakstype(tiltakstype) || (EnvUtils.isDev() && kilde == Kilde.KOMET)) {
 			return aktivitetskortIdForDeltaker(deltakerId)
 		} else {
 			throw IllegalStateException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
@@ -104,7 +110,7 @@ class AktivitetskortService(
 		val arrangor = arrangorRepository.get(deltakerliste.arrangorId)
 			?: throw RuntimeException("Arrangør ${deltakerliste.arrangorId} finnes ikke")
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
-		val aktivitetskortId = getAktivitetskortId(deltaker.id, deltakerliste.tiltak.type)
+		val aktivitetskortId = getAktivitetskortId(deltaker.id, deltakerliste.tiltak.type, deltaker.kilde)
 
 		val aktivitetskort = nyttAktivitetskort(
 			aktivitetskortId,
