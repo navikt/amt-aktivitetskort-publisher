@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.repositories
 
+import io.getunleash.FakeUnleash
 import io.kotest.assertions.fail
 import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.IntegrationTest
@@ -7,6 +8,7 @@ import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestDatabaseService
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
@@ -15,6 +17,14 @@ import java.util.UUID
 class DeltakerRepositoryTest : IntegrationTest() {
 	@Autowired
 	private lateinit var db: TestDatabaseService
+
+	@Autowired
+	private lateinit var unleashClient: FakeUnleash
+
+	@BeforeEach
+	fun setup() {
+		unleashClient.disableAll()
+	}
 
 	@Test
 	fun `get - finnes ikke - returnerer null`() {
@@ -43,6 +53,20 @@ class DeltakerRepositoryTest : IntegrationTest() {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
+		}
+	}
+
+	@Test
+	fun `upsert - finnes, uendret, skal oppdatere for uendrede deltakere - returnerer Modified Result`() {
+		unleashClient.enableAll()
+		val deltaker = TestData.deltaker(dagerPerUke = null, prosentStilling = null)
+			.also { db.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
+			.also { db.deltakerRepository.upsert(it, 0) }
+
+		when (val result = db.deltakerRepository.upsert(deltaker, 1)) {
+			is RepositoryResult.Created -> fail("Should be Modified, was $result")
+			is RepositoryResult.Modified -> {}
+			is RepositoryResult.NoChange -> fail("Should be Modified, was $result")
 		}
 	}
 

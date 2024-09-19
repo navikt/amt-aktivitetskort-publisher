@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.repositories
 
+import io.getunleash.Unleash
 import no.nav.amt.aktivitetskort.domain.AVSLUTTENDE_STATUSER
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
@@ -16,6 +17,7 @@ import java.util.UUID
 @Repository
 class DeltakerRepository(
 	private val template: NamedParameterJdbcTemplate,
+	private val unleash: Unleash,
 ) {
 	val lanseringAktivitetsplan: LocalDate = LocalDate.of(2017, 12, 4)
 
@@ -54,7 +56,7 @@ class DeltakerRepository(
 			return RepositoryResult.NoChange()
 		}
 
-		if (deltaker == old?.deltaker) return RepositoryResult.NoChange()
+		if (deltaker == old?.deltaker && !skalOppdatereForUendretDeltaker()) return RepositoryResult.NoChange()
 
 		if (deltaker.status.type in AVSLUTTENDE_STATUSER && deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&
 			!skalKorrigereTidligereDeltaker(old?.deltaker)
@@ -148,6 +150,10 @@ class DeltakerRepository(
 		val sql = "DELETE FROM deltaker WHERE id = :id"
 		val parameters = sqlParameters("id" to id)
 		template.update(sql, parameters)
+	}
+
+	private fun skalOppdatereForUendretDeltaker(): Boolean {
+		return unleash.isEnabled("amt.oppdater-alle-aktivitetskort")
 	}
 }
 
