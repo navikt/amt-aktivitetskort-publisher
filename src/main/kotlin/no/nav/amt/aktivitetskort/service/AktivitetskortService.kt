@@ -11,7 +11,6 @@ import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.IKKE_AVTALT_MED_NAV_STATUSER
 import no.nav.amt.aktivitetskort.domain.IdentType
-import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Tiltak
@@ -75,17 +74,13 @@ class AktivitetskortService(
 		}
 	}
 
-	private fun getAktivitetskortId(
-		deltakerId: UUID,
-		tiltakstype: Tiltak.Type,
-		kilde: Kilde?,
-	): UUID {
+	private fun getAktivitetskortId(deltakerId: UUID, tiltakstype: Tiltak.Type): UUID {
 		val aktivitetskortId = amtArenaAclClient.getArenaIdForAmtId(deltakerId)
 			?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
 
 		if (aktivitetskortId != null) {
 			return aktivitetskortId
-		} else if (kometErMasterForTiltakstype(tiltakstype) || (EnvUtils.isDev() && kilde == Kilde.KOMET)) {
+		} else if (kometErMasterForTiltakstype(tiltakstype) || EnvUtils.isDev()) {
 			return aktivitetskortIdForDeltaker(deltakerId)
 		} else {
 			throw IllegalStateException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
@@ -110,7 +105,7 @@ class AktivitetskortService(
 		val arrangor = arrangorRepository.get(deltakerliste.arrangorId)
 			?: throw RuntimeException("Arrangør ${deltakerliste.arrangorId} finnes ikke")
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
-		val aktivitetskortId = getAktivitetskortId(deltaker.id, deltakerliste.tiltak.type, deltaker.kilde)
+		val aktivitetskortId = getAktivitetskortId(deltaker.id, deltakerliste.tiltak.type)
 
 		val aktivitetskort = nyttAktivitetskort(
 			aktivitetskortId,
