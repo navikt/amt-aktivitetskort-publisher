@@ -221,15 +221,14 @@ class AktivitetskortServiceTest {
 	}
 
 	@Test
-	fun `lagAktivitetskort(deltakerlist) - meldinger finnes - lager nye aktivitetskort`() {
+	fun `lagAktivitetskort(deltakerliste) - meldinger finnes - lager nye aktivitetskort`() {
 		val ctx = TestData.MockContext()
 
 		every { meldingRepository.getByDeltakerlisteId(ctx.deltakerliste.id) } returns listOf(ctx.melding)
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns ctx.melding
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
-		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
-		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
 		every { unleash.isEnabled(any()) } returns false
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltakerliste)
@@ -248,12 +247,12 @@ class AktivitetskortServiceTest {
 		val mockAktivitetskort = ctx.aktivitetskort.copy(sluttDato = deltakerSluttdato)
 
 		every { meldingRepository.getByArrangorId(ctx.arrangor.id) } returns listOf(ctx.melding.copy(aktivitetskort = mockAktivitetskort))
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns ctx.melding
+
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns emptyList()
-		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
-		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns ctx.aktivitetskortId
 		every { unleash.isEnabled(any()) } returns false
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.arrangor)
@@ -274,13 +273,15 @@ class AktivitetskortServiceTest {
 		val mockAktivitetskortUnderarrangor = ctxUnderarrangor.aktivitetskort.copy(sluttDato = deltakerSluttdato)
 		val underarrangor =
 			ctxUnderarrangor.arrangor.copy(navn = "Underordnet arrangør", overordnetArrangorId = ctx.arrangor.id)
+		val underarrangorMelding = ctxUnderarrangor.melding.copy(
+			aktivitetskort = mockAktivitetskortUnderarrangor,
+		)
 
 		every { meldingRepository.getByArrangorId(ctx.arrangor.id) } returns listOf(ctx.melding.copy(aktivitetskort = mockAktivitetskort))
-		every { meldingRepository.getByArrangorId(underarrangor.id) } returns listOf(
-			ctxUnderarrangor.melding.copy(
-				aktivitetskort = mockAktivitetskortUnderarrangor,
-			),
-		)
+		every { meldingRepository.getByArrangorId(underarrangor.id) } returns listOf(underarrangorMelding)
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns ctx.melding
+		every { meldingRepository.getByDeltakerId(ctxUnderarrangor.deltaker.id) } returns underarrangorMelding
+
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerRepository.get(ctxUnderarrangor.deltaker.id) } returns ctxUnderarrangor.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
@@ -290,8 +291,6 @@ class AktivitetskortServiceTest {
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { arrangorRepository.get(underarrangor.id) } returns underarrangor
 		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns listOf(underarrangor)
-		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
-		every { amtArenaAclClient.getArenaIdForAmtId(ctxUnderarrangor.deltaker.id) } returns 2L
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns mockAktivitetskort.id
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(2L) } returns mockAktivitetskortUnderarrangor.id
 		every { unleash.isEnabled(any()) } returns false
