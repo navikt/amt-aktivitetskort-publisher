@@ -73,13 +73,18 @@ class AktivitetskortService(
 		}
 	}
 
-	private fun getAktivitetskortId(deltakerId: UUID): UUID {
+	private fun getAktivitetskortId(deltakerId: UUID, tiltakstype: Tiltak.Type): UUID {
 		val eksisterendeAktivitetskortId = aktivitetskortIdForDeltaker(deltakerId)
-
-		return eksisterendeAktivitetskortId
 			?: amtArenaAclClient.getArenaIdForAmtId(deltakerId)
 				?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
-			?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id $deltakerId") }
+
+		if (kometErMasterForTiltakstype(tiltakstype)) {
+			return eksisterendeAktivitetskortId
+				?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id $deltakerId") }
+		}
+
+		return eksisterendeAktivitetskortId
+			?: throw IllegalStateException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
 	}
 
 	private fun aktivitetskortIdForDeltaker(deltakerId: UUID) = meldingRepository.getByDeltakerId(deltakerId)?.aktivitetskort?.id
@@ -99,7 +104,7 @@ class AktivitetskortService(
 		val arrangor = arrangorRepository.get(deltakerliste.arrangorId)
 			?: throw RuntimeException("Arrangør ${deltakerliste.arrangorId} finnes ikke")
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
-		val aktivitetskortId = getAktivitetskortId(deltaker.id)
+		val aktivitetskortId = getAktivitetskortId(deltaker.id, deltakerliste.tiltak.type)
 
 		val aktivitetskort = nyttAktivitetskort(
 			aktivitetskortId,
