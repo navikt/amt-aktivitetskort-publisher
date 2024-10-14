@@ -20,7 +20,6 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
-import no.nav.amt.aktivitetskort.utils.EnvUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -75,20 +74,20 @@ class AktivitetskortService(
 	}
 
 	private fun getAktivitetskortId(deltakerId: UUID, tiltakstype: Tiltak.Type): UUID {
-		val aktivitetskortId = amtArenaAclClient.getArenaIdForAmtId(deltakerId)
-			?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
+		val eksisterendeAktivitetskortId = aktivitetskortIdForDeltaker(deltakerId)
+			?: amtArenaAclClient.getArenaIdForAmtId(deltakerId)
+				?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
 
-		if (aktivitetskortId != null) {
-			return aktivitetskortId
-		} else if (kometErMasterForTiltakstype(tiltakstype) || EnvUtils.isDev()) {
-			return aktivitetskortIdForDeltaker(deltakerId)
-		} else {
-			throw IllegalStateException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
+		if (kometErMasterForTiltakstype(tiltakstype)) {
+			return eksisterendeAktivitetskortId
+				?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id $deltakerId") }
 		}
+
+		return eksisterendeAktivitetskortId
+			?: throw IllegalStateException("Kunne ikke hente aktivitetskortId for deltaker med id $deltakerId")
 	}
 
 	private fun aktivitetskortIdForDeltaker(deltakerId: UUID) = meldingRepository.getByDeltakerId(deltakerId)?.aktivitetskort?.id
-		?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId for deltaker med id $deltakerId") }
 
 	private fun opprettMelding(deltakerId: UUID): Melding? {
 		val deltaker = deltakerRepository.get(deltakerId)
