@@ -1,6 +1,5 @@
 package no.nav.amt.aktivitetskort.service
 
-import io.getunleash.Unleash
 import no.nav.amt.aktivitetskort.client.AktivitetArenaAclClient
 import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
@@ -20,6 +19,7 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
+import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -34,7 +34,7 @@ class AktivitetskortService(
 	private val deltakerRepository: DeltakerRepository,
 	private val aktivitetArenaAclClient: AktivitetArenaAclClient,
 	private val amtArenaAclClient: AmtArenaAclClient,
-	private val unleash: Unleash,
+	private val unleashToggle: UnleashToggle,
 	@Value("\${veilederurl.basepath}") private val veilederUrlBasePath: String,
 	@Value("\${deltakerurl.basepath}") private val deltakerUrlBasePath: String,
 ) {
@@ -78,7 +78,7 @@ class AktivitetskortService(
 			?: amtArenaAclClient.getArenaIdForAmtId(deltakerId)
 				?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
 
-		if (kometErMasterForTiltakstype(tiltakstype)) {
+		if (unleashToggle.erKometMasterForTiltakstype(tiltakstype)) {
 			return eksisterendeAktivitetskortId
 				?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id $deltakerId") }
 		}
@@ -161,7 +161,7 @@ class AktivitetskortService(
 	)
 
 	private fun getHandlinger(deltaker: Deltaker, tiltakstype: Tiltak.Type): List<Handling>? {
-		if (!kometErMasterForTiltakstype(tiltakstype)) {
+		if (!unleashToggle.erKometMasterForTiltakstype(tiltakstype)) {
 			return null
 		}
 		return listOf(
@@ -178,9 +178,5 @@ class AktivitetskortService(
 				lenkeType = LenkeType.EKSTERN,
 			),
 		)
-	}
-
-	private fun kometErMasterForTiltakstype(tiltakstype: Tiltak.Type): Boolean {
-		return unleash.isEnabled("amt.enable-komet-deltakere") && tiltakstype == Tiltak.Type.ARBFORB
 	}
 }
