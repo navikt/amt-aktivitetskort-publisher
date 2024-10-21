@@ -74,12 +74,6 @@ class AktivitetskortService(
 	}
 
 	private fun getAktivitetskortId(deltakerId: UUID, tiltakstype: Tiltak.Type): UUID {
-		if (deltakerId == UUID.fromString("ac119d61-8370-4020-8ef8-d9d3ac6a4ad4") && aktivitetskortIdForDeltaker(deltakerId) == null) {
-			val nyId = UUID.randomUUID()
-			log.warn("Setter ny id for hist-deltaker med id $deltakerId: $nyId")
-			return nyId
-		}
-
 		val eksisterendeAktivitetskortId = aktivitetskortIdForDeltaker(deltakerId)
 			?: amtArenaAclClient.getArenaIdForAmtId(deltakerId)
 				?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
