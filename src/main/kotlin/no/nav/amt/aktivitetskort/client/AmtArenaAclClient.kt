@@ -19,7 +19,7 @@ class AmtArenaAclClient(
 
 	fun getArenaIdForAmtId(amtId: UUID): Long? {
 		val request = Request.Builder()
-			.url("$baseUrl/api/translation/$amtId")
+			.url("$baseUrl/api/v2/translation/$amtId")
 			.header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
 			.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.get())
 			.get()
@@ -27,20 +27,25 @@ class AmtArenaAclClient(
 
 		httpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
-				if (response.code == 404) {
-					log.warn("Fant ikke arenaId for deltaker med id $amtId")
-					return null
-				}
-				error("Klarte ikke å hente arenaId for AmtId. Status: ${response.code}")
+				error("Klarte ikke å hente arenaId for AmtId $amtId. Status: ${response.code}")
 			}
 
 			val body = response.body?.string() ?: error("Body is missing")
-
-			return JsonUtils.fromJson<HentArenaIdResponse>(body).arenaId.toLong()
+			val hentArenaIdV2Response = JsonUtils.fromJson<HentArenaIdV2Response>(body)
+			if (hentArenaIdV2Response.arenaId != null) {
+				return hentArenaIdV2Response.arenaId.toLong()
+			} else if (hentArenaIdV2Response.arenaHistId != null) {
+				log.info("amtId $amtId tilhører histdeltaker med id ${hentArenaIdV2Response.arenaHistId}")
+				return null
+			} else {
+				log.warn("Fant ikke arenaId eller arenaHistId for deltaker med id $amtId")
+				return null
+			}
 		}
 	}
 
-	private data class HentArenaIdResponse(
-		val arenaId: String,
+	private data class HentArenaIdV2Response(
+		val arenaId: String?,
+		val arenaHistId: String?,
 	)
 }
