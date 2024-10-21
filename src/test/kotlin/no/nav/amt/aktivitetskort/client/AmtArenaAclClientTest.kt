@@ -6,6 +6,7 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.util.UUID
 
 class AmtArenaAclClientTest {
@@ -28,9 +29,9 @@ class AmtArenaAclClientTest {
 	}
 
 	@Test
-	fun `getAktivitetIdForArenaId - returnerer id om eksisterer`() {
-		val arenaId: Long = 1L
-		val response = """{"arenaId": "$arenaId"}""""
+	fun `getArenaIdForAmtId - returnerer arenaid om eksisterer`() {
+		val arenaId = 1L
+		val response = """{"arenaId": "$arenaId"}, "arenaHistId": null}""""
 		server.enqueue(MockResponse().setBody(response))
 
 		val id = client.getArenaIdForAmtId(UUID.randomUUID())
@@ -39,9 +40,28 @@ class AmtArenaAclClientTest {
 	}
 
 	@Test
-	fun `getAktivitetIdForArenaId - returnerer null om 404`() {
-		server.enqueue(MockResponse().setResponseCode(404))
+	fun `getArenaIdForAmtId - returnerer null om arenahistid finnes`() {
+		val arenaHistId = 1L
+		val response = """{"arenaId": null}, "arenaHistId": "$arenaHistId"}""""
+		server.enqueue(MockResponse().setBody(response))
 
 		client.getArenaIdForAmtId(UUID.randomUUID()) shouldBe null
+	}
+
+	@Test
+	fun `getArenaIdForAmtId - returnerer null om ingen arenaid finnes`() {
+		val response = """{"arenaId": null}, "arenaHistId": null}""""
+		server.enqueue(MockResponse().setBody(response))
+
+		client.getArenaIdForAmtId(UUID.randomUUID()) shouldBe null
+	}
+
+	@Test
+	fun `getArenaIdForAmtId - kaster feil hvis respons er 404`() {
+		server.enqueue(MockResponse().setResponseCode(404))
+
+		assertThrows<IllegalStateException> {
+			client.getArenaIdForAmtId(UUID.randomUUID())
+		}
 	}
 }
