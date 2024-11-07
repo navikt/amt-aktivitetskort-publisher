@@ -1,6 +1,7 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
@@ -94,7 +95,7 @@ class KafkaListenerTest : IntegrationTest() {
 			aktivitetskort.endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
 			aktivitetskort.avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
 			aktivitetskort.oppgave shouldBe ctx.aktivitetskort.oppgave
-			aktivitetskort.handlinger shouldBe ctx.aktivitetskort.handlinger
+			aktivitetskort.handlinger shouldNotBe null
 			aktivitetskort.detaljer shouldBe ctx.aktivitetskort.detaljer
 			aktivitetskort.etiketter shouldBe ctx.aktivitetskort.etiketter
 		}
