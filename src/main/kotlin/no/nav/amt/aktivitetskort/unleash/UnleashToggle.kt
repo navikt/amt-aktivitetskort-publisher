@@ -13,7 +13,11 @@ class UnleashToggle(
 	)
 
 	// her kan vi legge inn de neste tiltakstypene vi skal ta over
-	private val tiltakstyperKometKanskjeErMasterFor = emptyList<Tiltak.Type>()
+	private val tiltakstyperKometKanskjeErMasterFor = listOf(
+		Tiltak.Type.ARBRRHDAG,
+		Tiltak.Type.AVKLARAG,
+		Tiltak.Type.INDOPPFAG,
+	)
 
 	fun erKometMasterForTiltakstype(tiltakstype: Tiltak.Type): Boolean {
 		return tiltakstype in tiltakstyperKometAlltidErMasterFor ||
