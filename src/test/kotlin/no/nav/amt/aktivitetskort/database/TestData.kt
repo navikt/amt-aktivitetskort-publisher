@@ -170,14 +170,6 @@ object TestData {
 	)
 
 	fun Tiltak.toDto(): DeltakerlisteDto.Tiltakstype {
-		val navn = when (this.navn) {
-			"Arbeidsforberedende trening" -> "Arbeidsforberedende trening (AFT)"
-			"Varig tilrettelagt arbeid" -> "Varig tilrettelagt arbeid i skjermet virksomhet"
-			"Arbeidsmarkedsopplæring" -> "Gruppe AMO"
-			"Arbeidsrettet rehabilitering" -> "Arbeidsrettet rehabilitering (dag)"
-			"Digitalt oppfølgingstiltak" -> "Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)"
-			else -> this.navn
-		}
 		return DeltakerlisteDto.Tiltakstype(navn, type.name)
 	}
 }

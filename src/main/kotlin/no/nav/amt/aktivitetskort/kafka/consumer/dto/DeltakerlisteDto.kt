@@ -3,7 +3,6 @@ package no.nav.amt.aktivitetskort.kafka.consumer.dto
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.domain.arenaKodeTilTiltakstype
-import no.nav.amt.aktivitetskort.domain.cleanTiltaksnavn
 import java.util.UUID
 
 data class DeltakerlisteDto(
@@ -17,7 +16,7 @@ data class DeltakerlisteDto(
 		val arenaKode: String,
 	) {
 		fun toModel() = Tiltak(
-			cleanTiltaksnavn(this.navn),
+			this.navn,
 			arenaKodeTilTiltakstype(this.arenaKode),
 		)
 

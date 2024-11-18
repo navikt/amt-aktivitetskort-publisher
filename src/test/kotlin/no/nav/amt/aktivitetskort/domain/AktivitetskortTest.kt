@@ -9,12 +9,12 @@ class AktivitetskortTest {
 	fun `lagTittel - deltakerliste og arrangor - lager riktig tittel basert på type tiltak`() {
 		val arrangor = TestData.arrangor()
 		val deltakerlister =
-			Tiltak.Type.values().map {
+			Tiltak.Type.entries.map {
 				val tiltaksnavn = when (it) {
 					Tiltak.Type.ARBFORB -> "Arbforb Tiltak"
 					Tiltak.Type.ARBRRHDAG -> "ARR"
 					Tiltak.Type.AVKLARAG -> "Avklaringstiltaket"
-					Tiltak.Type.DIGIOPPARB -> "Digi. Oppfølging"
+					Tiltak.Type.DIGIOPPARB -> "Digitalt jobbsøkerkurs"
 					Tiltak.Type.GRUPPEAMO -> "Grupper AMO"
 					Tiltak.Type.JOBBK -> "Jobbklubben"
 					Tiltak.Type.INDOPPFAG -> "Oppfølgingstiltak"
@@ -27,7 +27,7 @@ class AktivitetskortTest {
 		deltakerlister.forEach {
 			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor, true)
 			when (it.tiltak.type) {
-				Tiltak.Type.DIGIOPPARB -> aktivitetskortTittel shouldBe "Digital oppfølging hos ${arrangor.navn}"
+				Tiltak.Type.DIGIOPPARB -> aktivitetskortTittel shouldBe "Digitalt jobbsøkerkurs hos ${arrangor.navn}"
 				Tiltak.Type.JOBBK -> aktivitetskortTittel shouldBe "Jobbsøkerkurs hos ${arrangor.navn}"
 				Tiltak.Type.VASV -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
 				Tiltak.Type.GRUPPEAMO -> aktivitetskortTittel shouldBe "Kurs: ${it.navn}"
