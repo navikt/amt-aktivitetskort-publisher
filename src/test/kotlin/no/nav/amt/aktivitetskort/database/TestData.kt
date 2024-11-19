@@ -8,8 +8,10 @@ import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.Detalj
 import no.nav.amt.aktivitetskort.domain.EndretAv
+import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Kilde
+import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Tag
 import no.nav.amt.aktivitetskort.domain.Tiltak
@@ -23,6 +25,9 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 object TestData {
+	const val VEILEDER_URL_BASEPATH = "https://intern.veileder"
+	const val DELTAKER_URL_BASEPATH = "https://ekstern.deltaker"
+
 	fun melding(
 		deltakerId: UUID = UUID.randomUUID(),
 		deltakerlisteId: UUID = UUID.randomUUID(),
@@ -79,7 +84,20 @@ object TestData {
 		endretTidspunkt = LocalDateTime.now(),
 		avtaltMedNav = true,
 		oppgave = null,
-		handlinger = null,
+		handlinger = listOf(
+			Handling(
+				tekst = "Les mer om din deltakelse",
+				subtekst = "",
+				url = "$VEILEDER_URL_BASEPATH/${deltaker.id}",
+				lenkeType = LenkeType.INTERN,
+			),
+			Handling(
+				tekst = "Les mer om din deltakelse",
+				subtekst = "",
+				url = "$DELTAKER_URL_BASEPATH/${deltaker.id}",
+				lenkeType = LenkeType.EKSTERN,
+			),
+		),
 		detaljer = listOfNotNull(
 			Detalj("Status for deltakelse", deltaker.status.display()),
 			Detalj("Arrangør", arrangor.navn),

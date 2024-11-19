@@ -9,9 +9,7 @@ import io.mockk.verify
 import no.nav.amt.aktivitetskort.client.AktivitetArenaAclClient
 import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
 import no.nav.amt.aktivitetskort.database.TestData
-import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.Kilde
-import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.mock.mockCluster
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
@@ -35,8 +33,6 @@ class AktivitetskortServiceTest {
 	private val aktivitetArenaAclClient = mockk<AktivitetArenaAclClient>()
 	private val amtArenaAclClient = mockk<AmtArenaAclClient>()
 	private val unleash = mockk<DefaultUnleash>()
-	private val veilederUrlBasePath = "https://intern.veileder"
-	private val deltakerUrlBasePath = "https://ekstern.deltaker"
 
 	private val aktivitetskortService = AktivitetskortService(
 		meldingRepository = meldingRepository,
@@ -46,8 +42,8 @@ class AktivitetskortServiceTest {
 		aktivitetArenaAclClient = aktivitetArenaAclClient,
 		amtArenaAclClient = amtArenaAclClient,
 		unleashToggle = UnleashToggle(unleash),
-		veilederUrlBasePath = veilederUrlBasePath,
-		deltakerUrlBasePath = deltakerUrlBasePath,
+		veilederUrlBasePath = TestData.VEILEDER_URL_BASEPATH,
+		deltakerUrlBasePath = TestData.DELTAKER_URL_BASEPATH,
 	)
 
 	@Test
@@ -94,21 +90,6 @@ class AktivitetskortServiceTest {
 		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns aktivitetskordId
 		every { unleash.isEnabled(any()) } returns true
 
-		val forventedeHandlinger = listOf(
-			Handling(
-				tekst = "Les mer om din deltakelse",
-				subtekst = "",
-				url = "$veilederUrlBasePath/${deltaker.id}",
-				lenkeType = LenkeType.INTERN,
-			),
-			Handling(
-				tekst = "Les mer om din deltakelse",
-				subtekst = "",
-				url = "$deltakerUrlBasePath/${deltaker.id}",
-				lenkeType = LenkeType.EKSTERN,
-			),
-		)
-
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
@@ -124,7 +105,7 @@ class AktivitetskortServiceTest {
 		aktivitetskort.endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
 		aktivitetskort.avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
 		aktivitetskort.oppgave shouldBe ctx.aktivitetskort.oppgave
-		aktivitetskort.handlinger shouldBe forventedeHandlinger
+		aktivitetskort.handlinger shouldBe ctx.aktivitetskort.handlinger
 		aktivitetskort.detaljer shouldBe ctx.aktivitetskort.detaljer
 		aktivitetskort.etiketter shouldBe ctx.aktivitetskort.etiketter
 	}
