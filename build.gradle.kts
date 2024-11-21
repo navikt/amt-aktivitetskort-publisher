@@ -26,7 +26,7 @@ val klintVersion = "1.2.1"
 val mockkVersion = "1.13.13"
 val commonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 val tokenSupportVersion = "5.0.11"
-val unleashVersion = "9.2.4"
+val unleashVersion = "9.2.5"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
