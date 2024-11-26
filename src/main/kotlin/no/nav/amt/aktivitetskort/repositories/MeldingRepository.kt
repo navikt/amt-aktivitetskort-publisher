@@ -17,6 +17,7 @@ class MeldingRepository(
 ) {
 	private val rowMapper = RowMapper { rs, _ ->
 		Melding(
+			id = UUID.fromString(rs.getString("id")),
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),
 			deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
@@ -29,8 +30,9 @@ class MeldingRepository(
 	fun upsert(melding: Melding) {
 		template.update(
 			"""
-			INSERT INTO melding(deltaker_id, deltakerliste_id, arrangor_id, melding)
-			VALUES (:deltaker_id,
+			INSERT INTO melding(id, deltaker_id, deltakerliste_id, arrangor_id, melding)
+			VALUES (:id,
+					:deltaker_id,
 					:deltakerliste_id,
 					:arrangor_id,
 					:melding)
@@ -40,6 +42,7 @@ class MeldingRepository(
 													modified_at      = current_timestamp
 			""".trimIndent(),
 			sqlParameters(
+				"id" to melding.aktivitetskort.id,
 				"deltaker_id" to melding.deltakerId,
 				"deltakerliste_id" to melding.deltakerlisteId,
 				"arrangor_id" to melding.arrangorId,

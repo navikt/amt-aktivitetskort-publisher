@@ -33,7 +33,7 @@ object TestData {
 		deltakerlisteId: UUID = UUID.randomUUID(),
 		arrangorId: UUID = UUID.randomUUID(),
 		melding: Aktivitetskort = aktivitetskort(),
-	) = Melding(deltakerId, deltakerlisteId, arrangorId, melding)
+	) = Melding(melding.id, deltakerId, deltakerlisteId, arrangorId, melding)
 
 	fun aktivitetskort(
 		id: UUID = UUID.randomUUID(),
