@@ -17,7 +17,7 @@ class MeldingRepository(
 ) {
 	private val rowMapper = RowMapper { rs, _ ->
 		Melding(
-			id = UUID.fromString(rs.getString("id")),
+			id = rs.getString("id")?.let { UUID.fromString(it) },
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),
 			deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
