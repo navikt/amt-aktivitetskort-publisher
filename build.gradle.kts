@@ -25,7 +25,7 @@ val testcontainersVersion = "1.20.4"
 val klintVersion = "1.2.1"
 val mockkVersion = "1.13.13"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
-val tokenSupportVersion = "5.0.11"
+val tokenSupportVersion = "5.0.13"
 val unleashVersion = "9.2.5"
 
 dependencies {
