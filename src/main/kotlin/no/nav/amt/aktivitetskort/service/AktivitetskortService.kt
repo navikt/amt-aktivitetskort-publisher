@@ -109,6 +109,7 @@ class AktivitetskortService(
 		)
 
 		val melding = Melding(
+			id = aktivitetskortId,
 			deltakerId = deltaker.id,
 			deltakerlisteId = deltakerliste.id,
 			arrangorId = arrangor.id,
