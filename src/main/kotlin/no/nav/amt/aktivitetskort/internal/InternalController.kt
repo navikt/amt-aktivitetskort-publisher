@@ -43,7 +43,7 @@ class InternalController(
 		@PathVariable("deltakerId") deltakerId: UUID,
 	) {
 		if (isInternal(servlet)) {
-			val aktivitetskort = aktivitetskortService.getMelding(
+			val aktivitetskort = aktivitetskortService.getSisteMeldingForDeltaker(
 				deltakerId,
 			)?.aktivitetskort ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Fant ikke melding")
 			aktivitetskortProducer.send(aktivitetskort)
