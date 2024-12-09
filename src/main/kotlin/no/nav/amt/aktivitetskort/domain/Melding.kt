@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 data class Melding(
-	val id: UUID,
+	val id: UUID?,
 	val deltakerId: UUID,
 	val deltakerlisteId: UUID,
 	val arrangorId: UUID,

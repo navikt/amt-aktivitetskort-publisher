@@ -129,12 +129,12 @@ class HendelseServiceTest {
 
 		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
-		every { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
+		every { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
 		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
-		verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
+		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
 		verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
 	}
 
@@ -148,7 +148,7 @@ class HendelseServiceTest {
 		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
-		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
+		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
 	}
 
@@ -162,7 +162,7 @@ class HendelseServiceTest {
 		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
-		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
+		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
 	}
 
@@ -210,12 +210,12 @@ class HendelseServiceTest {
 		val ctx = TestData.MockContext()
 
 		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Modified(ctx.arrangor)
-		every { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) } returns listOf(ctx.aktivitetskort)
+		every { aktivitetskortService.lagAktivitetskort(ctx.arrangor) } returns listOf(ctx.aktivitetskort)
 
 		hendelseService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
 		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
-		verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
+		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.arrangor) }
 		verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
 	}
 
@@ -228,7 +228,7 @@ class HendelseServiceTest {
 		hendelseService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
 		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
-		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
+		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.arrangor) }
 		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
 	}
 
@@ -241,7 +241,7 @@ class HendelseServiceTest {
 		hendelseService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
 		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
-		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
+		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.arrangor) }
 		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
 	}
 }

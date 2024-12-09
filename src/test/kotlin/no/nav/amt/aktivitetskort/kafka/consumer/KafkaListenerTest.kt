@@ -13,12 +13,9 @@ import no.nav.amt.aktivitetskort.utils.JsonUtils
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.testcontainers.shaded.org.awaitility.Awaitility
-import java.time.LocalDate
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class KafkaListenerTest : IntegrationTest() {
@@ -29,11 +26,6 @@ class KafkaListenerTest : IntegrationTest() {
 	lateinit var db: TestDatabaseService
 
 	private val offset: Long = 0
-
-	@BeforeEach
-	fun setup() {
-		db.clean()
-	}
 
 	@Test
 	fun `listen - melding om ny arrangor - arrangor upsertes`() {
@@ -77,7 +69,7 @@ class KafkaListenerTest : IntegrationTest() {
 		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
-		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.melding.id)
+		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -88,12 +80,10 @@ class KafkaListenerTest : IntegrationTest() {
 		)
 
 		AsyncUtils.eventually {
-			ctx.melding.id shouldBe ctx.aktivitetskortId
-			ctx.melding.aktivitetskort.id shouldBe ctx.aktivitetskortId
 			val deltaker = db.deltakerRepository.get(ctx.deltaker.id)!!
 			deltaker shouldBe ctx.deltaker
 
-			val aktivitetskort = db.meldingRepository.getByDeltakerId(deltaker.id).first().aktivitetskort
+			val aktivitetskort = db.meldingRepository.getByDeltakerId(deltaker.id)!!.aktivitetskort
 
 			aktivitetskort.personident shouldBe ctx.aktivitetskort.personident
 			aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
@@ -108,42 +98,6 @@ class KafkaListenerTest : IntegrationTest() {
 			aktivitetskort.handlinger shouldNotBe null
 			aktivitetskort.detaljer shouldBe ctx.aktivitetskort.detaljer
 			aktivitetskort.etiketter shouldBe ctx.aktivitetskort.etiketter
-		}
-	}
-
-	@Test
-	fun `listen - melding om oppdatert deltaker, aktivitetskort får ny id - deltaker upsertes og aktivitetskort opprettes`() {
-		val ctx = TestData.MockContext()
-		val endretDeltaker = ctx.deltaker.copy(
-			sluttdato = LocalDate.now().plusDays(1),
-		)
-		val nyId = UUID.randomUUID()
-		db.arrangorRepository.upsert(ctx.arrangor)
-		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
-		db.deltakerRepository.upsert(ctx.deltaker, -1)
-		db.meldingRepository.upsert(ctx.melding)
-
-		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
-		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, nyId)
-
-		kafkaProducer.send(
-			ProducerRecord(
-				DELTAKER_TOPIC,
-				ctx.deltaker.id.toString(),
-				JsonUtils.toJsonString(endretDeltaker.toDto()),
-			),
-		)
-
-		AsyncUtils.eventually {
-			val deltaker = db.deltakerRepository.get(ctx.deltaker.id)!!
-			deltaker shouldBe endretDeltaker
-
-			val aktivitetskort = db.meldingRepository.getByDeltakerId(deltaker.id).first().aktivitetskort
-			aktivitetskort.id shouldBe nyId
-			aktivitetskort shouldBe ctx.aktivitetskort.copy(
-				id = nyId,
-				sluttDato = endretDeltaker.sluttdato,
-			)
 		}
 	}
 
@@ -167,7 +121,7 @@ class KafkaListenerTest : IntegrationTest() {
 		)
 
 		AsyncUtils.eventually {
-			val aktivitetskort = db.meldingRepository.getByDeltakerId(ctx.deltaker.id).first().aktivitetskort
+			val aktivitetskort = db.meldingRepository.getByDeltakerId(ctx.deltaker.id)!!.aktivitetskort
 			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.AVBRUTT
 
 			db.deltakerRepository.get(ctx.deltaker.id) shouldBe null
@@ -194,7 +148,7 @@ class KafkaListenerTest : IntegrationTest() {
 		)
 
 		AsyncUtils.eventually {
-			val aktivitetskort = db.meldingRepository.getByDeltakerId(ctx.deltaker.id).firstOrNull()!!.aktivitetskort
+			val aktivitetskort = db.meldingRepository.getByDeltakerId(ctx.deltaker.id)!!.aktivitetskort
 			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.FULLFORT
 
 			db.deltakerRepository.get(ctx.deltaker.id) shouldBe null
@@ -220,7 +174,7 @@ class KafkaListenerTest : IntegrationTest() {
 
 		AsyncUtils.eventually {
 			db.deltakerRepository.get(deltaker.id) shouldBe null
-			db.meldingRepository.getByDeltakerId(deltaker.id) shouldBe emptyList()
+			db.meldingRepository.getByDeltakerId(deltaker.id) shouldBe null
 		}
 	}
 }
