@@ -51,6 +51,31 @@ class MeldingRepository(
 		)
 	}
 
+	fun upsertMedNyId(melding: Melding) {
+		template.update(
+			"""
+			INSERT INTO melding(id, deltaker_id, deltakerliste_id, arrangor_id, melding)
+			VALUES (:id,
+					:deltaker_id,
+					:deltakerliste_id,
+					:arrangor_id,
+					:melding)
+			ON CONFLICT (deltaker_id) DO UPDATE SET id = :id,
+													melding          = :melding,
+													deltakerliste_id = :deltakerliste_id,
+													arrangor_id      = :arrangor_id,
+													modified_at      = current_timestamp
+			""".trimIndent(),
+			sqlParameters(
+				"id" to melding.aktivitetskort.id,
+				"deltaker_id" to melding.deltakerId,
+				"deltakerliste_id" to melding.deltakerlisteId,
+				"arrangor_id" to melding.arrangorId,
+				"melding" to melding.aktivitetskort.toPGObject(),
+			),
+		)
+	}
+
 	fun getByDeltakerId(deltakerId: UUID): Melding? = template.query(
 		"SELECT * FROM melding where deltaker_id = :deltaker_id",
 		sqlParameters("deltaker_id" to deltakerId),
