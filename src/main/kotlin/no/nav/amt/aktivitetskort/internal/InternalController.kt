@@ -86,13 +86,17 @@ class InternalController(
 								log.info("Deltaker ${melding.deltakerId} fikk ikke id fra dab. Genererer ny $nyId")
 
 								if (body.skalGenerereNyeMeldinger) {
-									aktivitetskortService.opprettMelding(deltakerId = melding.deltakerId, meldingId = nyId)
-									log.info("Ny melding for deltaker ${melding.deltakerId} opprettet med id $nyId")
+									val generertMelding = aktivitetskortService.opprettMelding(deltakerId = melding.deltakerId, meldingId = nyId)
+									log.info("Ny melding for deltaker ${melding.deltakerId} opprettet med id $nyId, generertMelding: ${generertMelding?.id}")
 								}
 							} else if (it != melding.id) {
 								log.info("Deltaker ${melding.deltakerId} med tidligere meldingId ${melding.id} fikk ny meldingid $it fra dab")
 							} else {
 								log.info("Deltaker ${melding.deltakerId} med tidligere meldingId ${melding.id} fikk beholde meldingsId")
+								if (body.skalGenerereNyeMeldinger) {
+									val generertMelding = aktivitetskortService.opprettMelding(deltakerId = melding.deltakerId)
+									log.info("Ny melding for deltaker ${melding.deltakerId} opprettet med samme id igjen ${generertMelding?.id}=$meldingId")
+								}
 							}
 						}
 				}
