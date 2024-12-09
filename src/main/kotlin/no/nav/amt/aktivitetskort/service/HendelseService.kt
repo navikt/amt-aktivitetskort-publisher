@@ -2,7 +2,9 @@ package no.nav.amt.aktivitetskort.service
 
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
+import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
+import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
@@ -74,7 +76,7 @@ class HendelseService(
 			when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel(arrangor.id))) {
 				is RepositoryResult.Modified -> {
 					log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Oppdatering")
-					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+					aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(result.data))
 				}
 
 				is RepositoryResult.Created -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Opprettelse")
@@ -94,7 +96,7 @@ class HendelseService(
 			when (val result = arrangorRepository.upsert(arrangor.toModel())) {
 				is RepositoryResult.Modified -> {
 					log.info("Ny hendelse for arrangor ${arrangor.id}: Oppdatering")
-					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+					aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(result.data))
 				}
 
 				is RepositoryResult.Created -> log.info("Ny hendelse for arrangør ${arrangor.id}: Opprettelse")
@@ -140,20 +142,25 @@ class HendelseService(
 
 	private fun handterSlettetDeltaker(deltakerId: UUID) {
 		val deltaker = deltakerRepository.get(deltakerId) ?: return
-		val aktivitetStatus = aktivitetskortService.getMelding(deltaker.id)?.aktivitetskort?.aktivitetStatus
 
-		if (skalAvbryteAktivtetskort(aktivitetStatus)) {
-			val avbruttDeltaker = deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.AVBRUTT, null))
-
-			aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(avbruttDeltaker))
-			log.info(
-				"Mottok tombstone for deltaker: $deltakerId som hadde status: ${deltaker.status.type}. " +
-					"Avbrøt deltakelse og aktivitetskort.",
-			)
-		}
+		aktivitetskortService
+			.getSisteMeldingForDeltaker(deltaker.id)
+			?.also { avbrytAktivitetskort(it.aktivitetskort, deltaker) }
 
 		log.info("Mottok tombstone for deltaker: $deltakerId og slettet deltaker")
 		deltakerRepository.delete(deltakerId)
+	}
+
+	private fun avbrytAktivitetskort(aktivitetskort: Aktivitetskort, deltaker: Deltaker) {
+		if (skalAvbryteAktivtetskort(aktivitetskort.aktivitetStatus)) {
+			val avbruttDeltaker = deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.AVBRUTT, null))
+
+			aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(avbruttDeltaker, aktivitetskort.id))
+			log.info(
+				"Mottok tombstone for deltaker: ${deltaker.id} som hadde status: ${deltaker.status.type}. " +
+					"Avbrøt deltakelse og aktivitetskort: ${aktivitetskort.id}.",
+			)
+		}
 	}
 
 	private fun skalAvbryteAktivtetskort(status: AktivitetStatus?): Boolean {
