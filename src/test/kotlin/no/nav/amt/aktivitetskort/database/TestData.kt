@@ -32,8 +32,8 @@ object TestData {
 		deltakerId: UUID = UUID.randomUUID(),
 		deltakerlisteId: UUID = UUID.randomUUID(),
 		arrangorId: UUID = UUID.randomUUID(),
-		aktivitetskort: Aktivitetskort = aktivitetskort(),
-	) = Melding(aktivitetskort.id, deltakerId, deltakerlisteId, arrangorId, aktivitetskort)
+		melding: Aktivitetskort = aktivitetskort(),
+	) = Melding(melding.id, deltakerId, deltakerlisteId, arrangorId, melding)
 
 	fun aktivitetskort(
 		id: UUID = UUID.randomUUID(),
