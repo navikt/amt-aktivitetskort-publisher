@@ -57,6 +57,12 @@ class MeldingRepository(
 		rowMapper,
 	).firstOrNull()
 
+	fun getByMeldingId(meldingId: UUID): List<Melding> = template.query(
+		"SELECT * FROM melding where id = :id",
+		sqlParameters("id" to meldingId),
+		rowMapper,
+	)
+
 	fun getByDeltakerlisteId(deltakerlisteId: UUID): List<Melding> = template.query(
 		"SELECT * FROM melding where deltakerliste_id = :deltakerliste_id",
 		sqlParameters("deltakerliste_id" to deltakerlisteId),

@@ -42,6 +42,8 @@ class AktivitetskortService(
 
 	fun getMelding(deltakerId: UUID) = meldingRepository.getByDeltakerId(deltakerId)
 
+	fun getMeldingerById(meldingId: UUID) = meldingRepository.getByMeldingId(meldingId)
+
 	fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort {
 		val melding = opprettMelding(deltaker)
 
@@ -84,22 +86,22 @@ class AktivitetskortService(
 
 	private fun aktivitetskortIdForDeltaker(deltakerId: UUID) = meldingRepository.getByDeltakerId(deltakerId)?.aktivitetskort?.id
 
-	private fun opprettMelding(deltakerId: UUID): Melding? {
+	fun opprettMelding(deltakerId: UUID, meldingId: UUID? = null): Melding? {
 		val deltaker = deltakerRepository.get(deltakerId)
 		if (deltaker == null) {
 			log.warn("Deltaker med id $deltakerId finnes ikke lenger")
 			return null
 		}
-		return opprettMelding(deltaker)
+		return opprettMelding(deltaker, meldingId)
 	}
 
-	private fun opprettMelding(deltaker: Deltaker): Melding {
+	private fun opprettMelding(deltaker: Deltaker, meldingId: UUID? = null): Melding {
 		val deltakerliste = deltakerlisteRepository.get(deltaker.deltakerlisteId)
 			?: throw RuntimeException("Deltakerliste ${deltaker.deltakerlisteId} finnes ikke")
 		val arrangor = arrangorRepository.get(deltakerliste.arrangorId)
 			?: throw RuntimeException("Arrangør ${deltakerliste.arrangorId} finnes ikke")
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
-		val aktivitetskortId = getAktivitetskortId(deltaker.id)
+		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker.id)
 
 		val aktivitetskort = nyttAktivitetskort(
 			aktivitetskortId,
