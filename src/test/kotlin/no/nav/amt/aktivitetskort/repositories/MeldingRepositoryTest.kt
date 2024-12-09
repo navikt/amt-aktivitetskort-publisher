@@ -14,8 +14,8 @@ class MeldingRepositoryTest : IntegrationTest() {
 	private lateinit var db: TestDatabaseService
 
 	@Test
-	fun `get - finnes ikke - returnerer null`() {
-		db.meldingRepository.getByDeltakerId(UUID.randomUUID()) shouldBe null
+	fun `get - finnes ikke - returnerer tom liste`() {
+		db.meldingRepository.getByDeltakerId(UUID.randomUUID()) shouldBe emptyList()
 	}
 
 	@Test
@@ -27,7 +27,7 @@ class MeldingRepositoryTest : IntegrationTest() {
 			.also { db.insertDeltaker(ctx.deltaker) }
 			.also { db.meldingRepository.upsert(it) }
 
-		db.meldingRepository.getByDeltakerId(melding.deltakerId)!! shouldBe melding
+		db.meldingRepository.getByDeltakerId(melding.deltakerId).first() shouldBe melding
 	}
 
 	@Test
@@ -45,7 +45,7 @@ class MeldingRepositoryTest : IntegrationTest() {
 
 		db.meldingRepository.upsert(updatedMelding)
 
-		val melding = db.meldingRepository.getByDeltakerId(initialMelding.deltakerId)!!
+		val melding = db.meldingRepository.getByDeltakerId(initialMelding.deltakerId).first()
 
 		melding.aktivitetskort shouldBe updatedMelding.aktivitetskort
 	}

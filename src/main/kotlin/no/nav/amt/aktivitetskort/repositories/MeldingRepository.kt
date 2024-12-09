@@ -17,7 +17,7 @@ class MeldingRepository(
 ) {
 	private val rowMapper = RowMapper { rs, _ ->
 		Melding(
-			id = rs.getString("id")?.let { UUID.fromString(it) },
+			id = UUID.fromString(rs.getString("id")),
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),
 			deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
@@ -36,7 +36,7 @@ class MeldingRepository(
 					:deltakerliste_id,
 					:arrangor_id,
 					:melding)
-			ON CONFLICT (deltaker_id) DO UPDATE SET melding          = :melding,
+			ON CONFLICT (id) DO UPDATE SET melding = :melding,
 													deltakerliste_id = :deltakerliste_id,
 													arrangor_id      = :arrangor_id,
 													modified_at      = current_timestamp
@@ -51,20 +51,20 @@ class MeldingRepository(
 		)
 	}
 
-	fun getByDeltakerId(deltakerId: UUID): Melding? = template.query(
-		"SELECT * FROM melding where deltaker_id = :deltaker_id",
+	fun getByDeltakerId(deltakerId: UUID): List<Melding> = template.query(
+		"SELECT * FROM melding where deltaker_id = :deltaker_id order by created_at desc",
 		sqlParameters("deltaker_id" to deltakerId),
 		rowMapper,
-	).firstOrNull()
+	)
 
 	fun getByDeltakerlisteId(deltakerlisteId: UUID): List<Melding> = template.query(
-		"SELECT * FROM melding where deltakerliste_id = :deltakerliste_id",
+		"SELECT DISTINCT ON (deltaker_id), * FROM melding where deltakerliste_id = :deltakerliste_id order by created_at desc",
 		sqlParameters("deltakerliste_id" to deltakerlisteId),
 		rowMapper,
 	)
 
 	fun getByArrangorId(arrangorId: UUID): List<Melding> = template.query(
-		"SELECT * FROM melding where arrangor_id = :arrangor_id",
+		"SELECT DISTINCT ON (deltaker_id), * FROM melding where arrangor_id = :arrangor_id order by created_at desc",
 		sqlParameters("arrangor_id" to arrangorId),
 		rowMapper,
 	)
