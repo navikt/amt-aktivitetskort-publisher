@@ -118,7 +118,11 @@ class AktivitetskortService(
 			aktivitetskort = aktivitetskort,
 		)
 
-		meldingRepository.upsert(melding)
+		if (meldingId == null) {
+			meldingRepository.upsert(melding)
+		} else {
+			meldingRepository.upsertMedNyId(melding)
+		}
 
 		return melding
 	}
