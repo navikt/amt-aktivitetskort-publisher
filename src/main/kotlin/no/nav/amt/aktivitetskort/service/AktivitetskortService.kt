@@ -10,6 +10,7 @@ import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.IKKE_AVTALT_MED_NAV_STATUSER
 import no.nav.amt.aktivitetskort.domain.IdentType
+import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Tiltak
@@ -40,16 +41,9 @@ class AktivitetskortService(
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	fun getMelding(deltakerId: UUID) = meldingRepository.getByDeltakerId(deltakerId)
-
-	fun getMeldingerById(meldingId: UUID) = meldingRepository.getByMeldingId(meldingId)
-
-	fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort {
-		val melding = opprettMelding(deltaker)
-
-		log.info("Opprettet nytt aktivitetskort: ${melding.aktivitetskort.id} for deltaker: ${deltaker.id}")
-		return melding.aktivitetskort
-	}
+	fun getSisteMeldingForDeltaker(deltakerId: UUID) = meldingRepository
+		.getByDeltakerId(deltakerId)
+		.maxByOrNull { it.createdAt }
 
 	fun lagAktivitetskort(deltakerId: UUID): Aktivitetskort {
 		val melding = opprettMelding(deltakerId) ?: throw RuntimeException("Deltaker $deltakerId finnes ikke")
@@ -58,35 +52,81 @@ class AktivitetskortService(
 		return melding.aktivitetskort
 	}
 
-	fun lagAktivitetskort(deltakerliste: Deltakerliste) = meldingRepository
+	fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort {
+		val melding = opprettMelding(deltaker)
+
+		log.info("Opprettet nytt aktivitetskort: ${melding.id} for deltaker: ${deltaker.id}")
+		return melding.aktivitetskort
+	}
+
+	fun oppdaterAktivitetskort(deltaker: Deltaker, meldingId: UUID): Aktivitetskort {
+		val melding = opprettMelding(deltaker, meldingId = meldingId)
+
+		log.info("Opprettet nytt aktivitetskort: ${melding.id} for deltaker: ${deltaker.id}")
+		return melding.aktivitetskort
+	}
+
+	fun oppdaterAktivitetskort(deltakerliste: Deltakerliste) = meldingRepository
 		.getByDeltakerlisteId(deltakerliste.id)
-		.mapNotNull { opprettMelding(it.deltakerId)?.aktivitetskort }
+		.mapNotNull { oppdaterAktivitetskort(it.deltakerId, it.id)?.aktivitetskort }
 		.also { log.info("Opprettet nye aktivitetskort for deltakerliste: ${deltakerliste.id}") }
 
-	fun lagAktivitetskort(arrangor: Arrangor): List<Aktivitetskort> {
+	fun oppdaterAktivitetskort(arrangor: Arrangor): List<Aktivitetskort> {
 		val underordnedeArrangorer = arrangorRepository.getUnderordnedeArrangorer(arrangor.id)
 		val alleOppdaterteArrangorer = listOf(arrangor) + underordnedeArrangorer
 		return alleOppdaterteArrangorer.flatMap { a ->
 			meldingRepository
 				.getByArrangorId(a.id)
 				.filter { it.aktivitetskort.erAktivDeltaker() }
-				.mapNotNull { opprettMelding(it.deltakerId)?.aktivitetskort }
+				.mapNotNull { oppdaterAktivitetskort(it.deltakerId, it.id)?.aktivitetskort }
 				.also { log.info("Opprettet nye aktivitetskort for arrangør: ${a.id}") }
 		}
 	}
 
-	private fun getAktivitetskortId(deltakerId: UUID): UUID {
-		val eksisterendeAktivitetskortId = aktivitetskortIdForDeltaker(deltakerId)
-			?: amtArenaAclClient.getArenaIdForAmtId(deltakerId)
-				?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
+	private fun getAktivitetskortId(deltaker: Deltaker): UUID {
+		// Vi MÅ kalle dab for å generere id for arena deltakere for at de skal generere mappingen
+		// Selv om vi har en aktivitetskort id på deltaker så kan dab ha opprettet en ny pga endringer i oppfølgingsperiode
+		val akasAktivitetskortId = amtArenaAclClient
+			.getArenaIdForAmtId(deltaker.id)
+			?.also { log.info("deltaker ${deltaker.id} er opprettet i arena med id $it. Henter aktivitetskort id fra AKAS..") }
+			?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
+			?.also { log.info("deltaker ${deltaker.id} skal ha aktivitetId: $it") }
 
-		return eksisterendeAktivitetskortId
-			?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id $deltakerId") }
+		val nyesteAktivitetskortForDeltaker = getSisteMeldingForDeltaker(deltaker.id)?.id
+
+		if (deltaker.kilde == Kilde.ARENA && akasAktivitetskortId == null) {
+			log.error("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
+			throw IllegalStateException("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
+		}
+
+		if (akasAktivitetskortId != null &&
+			nyesteAktivitetskortForDeltaker != null &&
+			akasAktivitetskortId != nyesteAktivitetskortForDeltaker
+		) {
+			// En deltaker kan ha flere aktivitetskort dersom gammel deltakelse er gjenbrukt i en ny oppfølgingsperiode
+			// men det er grunn til å tro at vi kan få ny aktivitetskort id selv om deltakeren skulle beholdt
+			// den gamle så disse tilfellene må feilsøkes
+			log.warn(
+				"AKAS returnererte ny aktivitetskortId: $akasAktivitetskortId " +
+					"for person som allerede har aktivitetskort: $nyesteAktivitetskortForDeltaker.",
+			)
+		}
+
+		return akasAktivitetskortId
+			?: nyesteAktivitetskortForDeltaker
+			?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id ${deltaker.id}") }
 	}
 
-	private fun aktivitetskortIdForDeltaker(deltakerId: UUID) = meldingRepository.getByDeltakerId(deltakerId)?.aktivitetskort?.id
+	private fun opprettMelding(deltakerId: UUID): Melding? {
+		val deltaker = deltakerRepository.get(deltakerId)
+		if (deltaker == null) {
+			log.warn("Deltaker med id $deltakerId finnes ikke lenger")
+			return null
+		}
+		return opprettMelding(deltaker)
+	}
 
-	fun opprettMelding(deltakerId: UUID, meldingId: UUID? = null): Melding? {
+	fun oppdaterAktivitetskort(deltakerId: UUID, meldingId: UUID): Melding? {
 		val deltaker = deltakerRepository.get(deltakerId)
 		if (deltaker == null) {
 			log.warn("Deltaker med id $deltakerId finnes ikke lenger")
@@ -101,7 +141,7 @@ class AktivitetskortService(
 		val arrangor = arrangorRepository.get(deltakerliste.arrangorId)
 			?: throw RuntimeException("Arrangør ${deltakerliste.arrangorId} finnes ikke")
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
-		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker.id)
+		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker)
 
 		val aktivitetskort = nyttAktivitetskort(
 			aktivitetskortId,
@@ -118,11 +158,7 @@ class AktivitetskortService(
 			aktivitetskort = aktivitetskort,
 		)
 
-		if (meldingId == null) {
-			meldingRepository.upsert(melding)
-		} else {
-			meldingRepository.upsertMedNyId(melding)
-		}
+		meldingRepository.upsert(melding)
 
 		return melding
 	}
