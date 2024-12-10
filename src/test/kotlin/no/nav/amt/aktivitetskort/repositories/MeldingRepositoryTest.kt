@@ -31,6 +31,30 @@ class MeldingRepositoryTest : IntegrationTest() {
 	}
 
 	@Test
+	fun `getByDeltakerlisteId - henter meldinger på deltakerliste`() {
+		val ctx = TestData.MockContext()
+		val melding = ctx.melding
+			.also { db.insertArrangor(ctx.arrangor) }
+			.also { db.insertDeltakerliste(ctx.deltakerliste) }
+			.also { db.insertDeltaker(ctx.deltaker) }
+			.also { db.meldingRepository.upsert(it) }
+
+		db.meldingRepository.getByDeltakerlisteId(ctx.deltakerliste.id) shouldBe listOf(melding)
+	}
+
+	@Test
+	fun `getByArrangorId - henter meldinger på arrangør`() {
+		val ctx = TestData.MockContext()
+		val melding = ctx.melding
+			.also { db.insertArrangor(ctx.arrangor) }
+			.also { db.insertDeltakerliste(ctx.deltakerliste) }
+			.also { db.insertDeltaker(ctx.deltaker) }
+			.also { db.meldingRepository.upsert(it) }
+
+		db.meldingRepository.getByArrangorId(ctx.arrangor.id) shouldBe listOf(melding)
+	}
+
+	@Test
 	fun `upsert - melding er endret - oppdaterer melding`() {
 		val ctx = TestData.MockContext()
 		val initialMelding = ctx.melding

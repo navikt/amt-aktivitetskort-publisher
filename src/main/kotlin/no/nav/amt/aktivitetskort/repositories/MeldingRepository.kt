@@ -58,13 +58,13 @@ class MeldingRepository(
 	)
 
 	fun getByDeltakerlisteId(deltakerlisteId: UUID): List<Melding> = template.query(
-		"SELECT DISTINCT ON (deltaker_id), * FROM melding where deltakerliste_id = :deltakerliste_id order by created_at desc",
+		"SELECT DISTINCT ON (deltaker_id) * FROM melding where deltakerliste_id = :deltakerliste_id order by deltaker_id, created_at desc",
 		sqlParameters("deltakerliste_id" to deltakerlisteId),
 		rowMapper,
 	)
 
 	fun getByArrangorId(arrangorId: UUID): List<Melding> = template.query(
-		"SELECT DISTINCT ON (deltaker_id), * FROM melding where arrangor_id = :arrangor_id order by created_at desc",
+		"SELECT DISTINCT ON (deltaker_id) * FROM melding where arrangor_id = :arrangor_id order by deltaker_id, created_at desc",
 		sqlParameters("arrangor_id" to arrangorId),
 		rowMapper,
 	)
