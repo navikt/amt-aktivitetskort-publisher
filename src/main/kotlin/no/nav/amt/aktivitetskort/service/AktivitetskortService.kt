@@ -84,6 +84,12 @@ class AktivitetskortService(
 	}
 
 	private fun getAktivitetskortId(deltaker: Deltaker): UUID {
+		val nyesteAktivitetskortForDeltaker = getSisteMeldingForDeltaker(deltaker.id)?.id
+		if (deltaker.kilde == Kilde.KOMET) {
+			return nyesteAktivitetskortForDeltaker
+				?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id ${deltaker.id}") }
+		}
+
 		// Vi MÅ kalle dab for å generere id for arena deltakere for at de skal generere mappingen
 		// Selv om vi har en aktivitetskort id på deltaker så kan dab ha opprettet en ny pga endringer i oppfølgingsperiode
 		val akasAktivitetskortId = amtArenaAclClient
@@ -91,8 +97,6 @@ class AktivitetskortService(
 			?.also { log.info("deltaker ${deltaker.id} er opprettet i arena med id $it. Henter aktivitetskort id fra AKAS..") }
 			?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
 			?.also { log.info("deltaker ${deltaker.id} skal ha aktivitetId: $it") }
-
-		val nyesteAktivitetskortForDeltaker = getSisteMeldingForDeltaker(deltaker.id)?.id
 
 		if (deltaker.kilde == Kilde.ARENA && akasAktivitetskortId == null) {
 			log.error("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
