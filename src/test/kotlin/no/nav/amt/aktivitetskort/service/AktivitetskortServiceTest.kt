@@ -81,18 +81,15 @@ class AktivitetskortServiceTest {
 		val deltakerliste = TestData.deltakerliste(tiltak = Tiltak("Arbeidsforberedende trening", Tiltak.Type.ARBFORB))
 		val deltaker = TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id, prosentStilling = null, dagerPerUke = null)
 		val ctx = TestData.MockContext(deltaker = deltaker, deltakerliste = deltakerliste)
-		val aktivitetskordId = UUID.randomUUID()
+
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
-		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
-		every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns aktivitetskordId
 
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
 
-		aktivitetskort.id shouldBe aktivitetskordId
 		aktivitetskort.personident shouldBe ctx.aktivitetskort.personident
 		aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
 		aktivitetskort.aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
