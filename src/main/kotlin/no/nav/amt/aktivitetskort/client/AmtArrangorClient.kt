@@ -14,7 +14,8 @@ class AmtArrangorClient(
 	private val httpClient: OkHttpClient = baseClient(),
 ) {
 	fun hentArrangor(orgnummer: String): ArrangorMedOverordnetArrangorDto {
-		val request = Request.Builder()
+		val request = Request
+			.Builder()
 			.url("$baseUrl/api/service/arrangor/organisasjonsnummer/$orgnummer")
 			.addHeader("Authorization", "Bearer ${tokenProvider.get()}")
 			.get()
@@ -30,7 +31,8 @@ class AmtArrangorClient(
 	}
 
 	fun hentArrangor(arrangorId: UUID): ArrangorMedOverordnetArrangorDto {
-		val request = Request.Builder()
+		val request = Request
+			.Builder()
 			.url("$baseUrl/api/service/arrangor/$arrangorId")
 			.addHeader("Authorization", "Bearer ${tokenProvider.get()}")
 			.get()

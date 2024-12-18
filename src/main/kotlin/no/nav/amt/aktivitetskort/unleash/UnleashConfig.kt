@@ -17,7 +17,8 @@ class UnleashConfig {
 		@Value("\${app.env.unleashApiToken}") unleashApiToken: String,
 	): Unleash {
 		val appName = "amt-aktivitetskort-publisher"
-		val config = UnleashConfig.builder()
+		val config = UnleashConfig
+			.builder()
 			.appName(appName)
 			.instanceId(appName)
 			.unleashAPI(unleashUrl)

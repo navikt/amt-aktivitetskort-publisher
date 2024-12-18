@@ -20,12 +20,8 @@ class UnleashToggle(
 	// her kan vi legge inn de neste tiltakstypene vi skal ta over
 	private val tiltakstyperKometKanskjeErMasterFor = emptyList<Tiltak.Type>()
 
-	fun erKometMasterForTiltakstype(tiltakstype: Tiltak.Type): Boolean {
-		return tiltakstype in tiltakstyperKometAlltidErMasterFor ||
-			(unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
-	}
+	fun erKometMasterForTiltakstype(tiltakstype: Tiltak.Type): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
+		(unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
 
-	fun skalOppdatereForUendretDeltaker(): Boolean {
-		return unleashClient.isEnabled("amt.oppdater-alle-aktivitetskort")
-	}
+	fun skalOppdatereForUendretDeltaker(): Boolean = unleashClient.isEnabled("amt.oppdater-alle-aktivitetskort")
 }

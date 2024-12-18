@@ -25,24 +25,22 @@ data class Aktivitetskort(
 	val etiketter: List<Tag>,
 	val tiltakstype: Tiltak.Type,
 ) {
-	fun toAktivitetskortDto(): AktivitetskortDto {
-		return AktivitetskortDto(
-			id = id,
-			personIdent = personident,
-			tittel = tittel,
-			aktivitetStatus = aktivitetStatus,
-			startDato = startDato,
-			sluttDato = sluttDato,
-			beskrivelse = beskrivelse,
-			endretAv = endretAv,
-			endretTidspunkt = endretTidspunkt.atZone(ZoneId.systemDefault()),
-			avtaltMedNav = avtaltMedNav,
-			oppgave = oppgave,
-			handlinger = handlinger,
-			detaljer = detaljer,
-			etiketter = etiketter,
-		)
-	}
+	fun toAktivitetskortDto(): AktivitetskortDto = AktivitetskortDto(
+		id = id,
+		personIdent = personident,
+		tittel = tittel,
+		aktivitetStatus = aktivitetStatus,
+		startDato = startDato,
+		sluttDato = sluttDato,
+		beskrivelse = beskrivelse,
+		endretAv = endretAv,
+		endretTidspunkt = endretTidspunkt.atZone(ZoneId.systemDefault()),
+		avtaltMedNav = avtaltMedNav,
+		oppgave = oppgave,
+		handlinger = handlinger,
+		detaljer = detaljer,
+		etiketter = etiketter,
+	)
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
@@ -64,23 +62,21 @@ data class Aktivitetskort(
 			etiketter == other.etiketter
 	}
 
-	override fun hashCode(): Int {
-		return Objects.hash(
-			id,
-			personident,
-			tittel,
-			aktivitetStatus,
-			startDato,
-			sluttDato,
-			beskrivelse,
-			endretAv,
-			avtaltMedNav,
-			oppgave,
-			handlinger,
-			detaljer,
-			etiketter,
-		)
-	}
+	override fun hashCode(): Int = Objects.hash(
+		id,
+		personident,
+		tittel,
+		aktivitetStatus,
+		startDato,
+		sluttDato,
+		beskrivelse,
+		endretAv,
+		avtaltMedNav,
+		oppgave,
+		handlinger,
+		detaljer,
+		etiketter,
+	)
 
 	companion object {
 		fun lagTittel(
@@ -137,9 +133,7 @@ data class Aktivitetskort(
 		}
 	}
 
-	fun erAktivDeltaker(): Boolean {
-		return sluttDato == null || sluttDato.isAfter(LocalDate.now().minusWeeks(2))
-	}
+	fun erAktivDeltaker(): Boolean = sluttDato == null || sluttDato.isAfter(LocalDate.now().minusWeeks(2))
 }
 
 data class Tag(

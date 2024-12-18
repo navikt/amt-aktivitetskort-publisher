@@ -187,7 +187,5 @@ object TestData {
 		overordnetArrangorId = this.overordnetArrangorId,
 	)
 
-	fun Tiltak.toDto(): DeltakerlisteDto.Tiltakstype {
-		return DeltakerlisteDto.Tiltakstype(navn, type.name)
-	}
+	fun Tiltak.toDto(): DeltakerlisteDto.Tiltakstype = DeltakerlisteDto.Tiltakstype(navn, type.name)
 }

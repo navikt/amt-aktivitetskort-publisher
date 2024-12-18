@@ -18,7 +18,8 @@ class AmtArenaAclClient(
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	fun getArenaIdForAmtId(amtId: UUID): Long? {
-		val request = Request.Builder()
+		val request = Request
+			.Builder()
 			.url("$baseUrl/api/v2/translation/$amtId")
 			.header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
 			.header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenProvider.get())

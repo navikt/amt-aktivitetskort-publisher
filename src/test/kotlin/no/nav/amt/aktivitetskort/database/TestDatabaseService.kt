@@ -53,11 +53,9 @@ class TestDatabaseService(
 		}
 	}
 
-	fun feilmeldingErLagret(key: UUID): Boolean {
-		return namedParameterJdbcTemplate.queryForObject(
-			"SELECT exists(SELECT 1 from feilmelding where key = :key)",
-			sqlParameters("key" to key),
-			Boolean::class.java,
-		) ?: false
-	}
+	fun feilmeldingErLagret(key: UUID): Boolean = namedParameterJdbcTemplate.queryForObject(
+		"SELECT exists(SELECT 1 from feilmelding where key = :key)",
+		sqlParameters("key" to key),
+		Boolean::class.java,
+	) ?: false
 }
