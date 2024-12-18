@@ -33,7 +33,8 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 
 	@Test
 	fun `upsert - finnes - returnerer NoChange Result`() {
-		val deltakerliste = TestData.deltakerliste()
+		val deltakerliste = TestData
+			.deltakerliste()
 			.also { db.insertArrangor(TestData.arrangor(it.arrangorId)) }
 			.also { db.deltakerlisteRepository.upsert(it) }
 
@@ -46,7 +47,8 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 
 	@Test
 	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
-		val initialDeltakerliste = TestData.deltakerliste()
+		val initialDeltakerliste = TestData
+			.deltakerliste()
 			.also { db.insertArrangor(TestData.arrangor(it.arrangorId)) }
 			.also { db.deltakerlisteRepository.upsert(it) }
 
@@ -64,10 +66,12 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 
 	@Test
 	fun `upsert - endret arrangor - returnerer Modified Result og oppdaterer database`() {
-		val initialDeltakerliste = TestData.deltakerliste()
+		val initialDeltakerliste = TestData
+			.deltakerliste()
 			.also { db.insertArrangor(TestData.arrangor(it.arrangorId)) }
 			.also { db.deltakerlisteRepository.upsert(it) }
-		val nyArrangor = TestData.arrangor()
+		val nyArrangor = TestData
+			.arrangor()
 			.also { db.insertArrangor(it) }
 
 		val updatedDeltakerliste = initialDeltakerliste.copy(

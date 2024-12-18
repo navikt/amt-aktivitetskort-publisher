@@ -30,40 +30,42 @@ class DeltakerlisteRepository(
 
 		if (old == deltakerliste) return RepositoryResult.NoChange()
 
-		val new = template.query(
-			"""
-			INSERT INTO deltakerliste(id, tiltaksnavn, tiltakstype, navn, arrangor_id)
-			VALUES (:id,
-					:tiltaksnavn,
-					:tiltakstype,
-					:navn,
-					:arrangor_id
-					)
-			ON CONFLICT (id) DO UPDATE SET
-				tiltaksnavn = :tiltaksnavn,
-				tiltakstype = :tiltakstype,
-			    navn = :navn,
-				arrangor_id = :arrangor_id
-			RETURNING *
-			""".trimIndent(),
-			sqlParameters(
-				"id" to deltakerliste.id,
-				"tiltaksnavn" to deltakerliste.tiltak.navn,
-				"tiltakstype" to deltakerliste.tiltak.type.name,
-				"navn" to deltakerliste.navn,
-				"arrangor_id" to deltakerliste.arrangorId,
-			),
-			rowMapper,
-		).first()
+		val new = template
+			.query(
+				"""
+				INSERT INTO deltakerliste(id, tiltaksnavn, tiltakstype, navn, arrangor_id)
+				VALUES (:id,
+						:tiltaksnavn,
+						:tiltakstype,
+						:navn,
+						:arrangor_id
+						)
+				ON CONFLICT (id) DO UPDATE SET
+					tiltaksnavn = :tiltaksnavn,
+					tiltakstype = :tiltakstype,
+				    navn = :navn,
+					arrangor_id = :arrangor_id
+				RETURNING *
+				""".trimIndent(),
+				sqlParameters(
+					"id" to deltakerliste.id,
+					"tiltaksnavn" to deltakerliste.tiltak.navn,
+					"tiltakstype" to deltakerliste.tiltak.type.name,
+					"navn" to deltakerliste.navn,
+					"arrangor_id" to deltakerliste.arrangorId,
+				),
+				rowMapper,
+			).first()
 
 		if (old == null) return RepositoryResult.Created(new)
 
 		return RepositoryResult.Modified(new)
 	}
 
-	fun get(id: UUID): Deltakerliste? = template.query(
-		"SELECT * from deltakerliste where id = :id",
-		sqlParameters("id" to id),
-		rowMapper,
-	).firstOrNull()
+	fun get(id: UUID): Deltakerliste? = template
+		.query(
+			"SELECT * from deltakerliste where id = :id",
+			sqlParameters("id" to id),
+			rowMapper,
+		).firstOrNull()
 }

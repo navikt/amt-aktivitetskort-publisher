@@ -167,15 +167,13 @@ class AktivitetskortService(
 		return melding
 	}
 
-	private fun getArrangorForAktivitetskort(arrangor: Arrangor, overordnetArrangor: Arrangor?): Arrangor {
-		return if (overordnetArrangor == null) {
+	private fun getArrangorForAktivitetskort(arrangor: Arrangor, overordnetArrangor: Arrangor?): Arrangor = if (overordnetArrangor == null) {
+		arrangor
+	} else {
+		if (overordnetArrangor.navn == "Ukjent Virksomhet") {
 			arrangor
 		} else {
-			if (overordnetArrangor.navn == "Ukjent Virksomhet") {
-				arrangor
-			} else {
-				overordnetArrangor
-			}
+			overordnetArrangor
 		}
 	}
 

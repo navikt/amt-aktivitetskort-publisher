@@ -9,14 +9,16 @@ class MetricsService(
 	private val registry: MeterRegistry,
 ) {
 	fun incMottattFeilmelding(errorType: String) {
-		Counter.builder("amt_aktvkortpublisher_feilmelding")
+		Counter
+			.builder("amt_aktvkortpublisher_feilmelding")
 			.tags("feiltype", errorType)
 			.register(registry)
 			.increment()
 	}
 
 	fun incSendtAktivitetskort() {
-		Counter.builder("amt_aktvkortpublisher_sendt")
+		Counter
+			.builder("amt_aktvkortpublisher_sendt")
 			.register(registry)
 			.increment()
 	}
