@@ -30,7 +30,8 @@ class IntegrationTest {
 
 	fun serverUrl() = "http://localhost:$port"
 
-	private val client = OkHttpClient.Builder()
+	private val client = OkHttpClient
+		.Builder()
 		.callTimeout(Duration.ofMinutes(5))
 		.build()
 
@@ -93,7 +94,8 @@ class IntegrationTest {
 		body: RequestBody? = null,
 		headers: Map<String, String> = emptyMap(),
 	): Response {
-		val reqBuilder = Request.Builder()
+		val reqBuilder = Request
+			.Builder()
 			.url("${serverUrl()}$path")
 			.method(method, body)
 

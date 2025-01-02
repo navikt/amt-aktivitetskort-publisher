@@ -93,7 +93,10 @@ class KafkaListenerTest : IntegrationTest() {
 			val deltaker = db.deltakerRepository.get(ctx.deltaker.id)!!
 			deltaker shouldBe ctx.deltaker
 
-			val aktivitetskort = db.meldingRepository.getByDeltakerId(deltaker.id).first().aktivitetskort
+			val aktivitetskort = db.meldingRepository
+				.getByDeltakerId(deltaker.id)
+				.first()
+				.aktivitetskort
 
 			aktivitetskort.personident shouldBe ctx.aktivitetskort.personident
 			aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
@@ -138,7 +141,10 @@ class KafkaListenerTest : IntegrationTest() {
 			val deltaker = db.deltakerRepository.get(ctx.deltaker.id)!!
 			deltaker shouldBe endretDeltaker
 
-			val aktivitetskort = db.meldingRepository.getByDeltakerId(deltaker.id).first().aktivitetskort
+			val aktivitetskort = db.meldingRepository
+				.getByDeltakerId(deltaker.id)
+				.first()
+				.aktivitetskort
 			aktivitetskort.id shouldBe nyId
 			aktivitetskort shouldBe ctx.aktivitetskort.copy(
 				id = nyId,
@@ -167,7 +173,10 @@ class KafkaListenerTest : IntegrationTest() {
 		)
 
 		AsyncUtils.eventually {
-			val aktivitetskort = db.meldingRepository.getByDeltakerId(ctx.deltaker.id).first().aktivitetskort
+			val aktivitetskort = db.meldingRepository
+				.getByDeltakerId(ctx.deltaker.id)
+				.first()
+				.aktivitetskort
 			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.AVBRUTT
 
 			db.deltakerRepository.get(ctx.deltaker.id) shouldBe null
@@ -194,7 +203,10 @@ class KafkaListenerTest : IntegrationTest() {
 		)
 
 		AsyncUtils.eventually {
-			val aktivitetskort = db.meldingRepository.getByDeltakerId(ctx.deltaker.id).firstOrNull()!!.aktivitetskort
+			val aktivitetskort = db.meldingRepository
+				.getByDeltakerId(ctx.deltaker.id)
+				.firstOrNull()!!
+				.aktivitetskort
 			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.FULLFORT
 
 			db.deltakerRepository.get(ctx.deltaker.id) shouldBe null

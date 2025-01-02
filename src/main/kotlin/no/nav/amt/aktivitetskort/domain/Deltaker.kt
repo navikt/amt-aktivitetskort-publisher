@@ -32,32 +32,26 @@ data class Deltaker(
 			kilde == other.kilde
 	}
 
-	private fun isEqual(dagerPerUke: Float?, otherDagerPerUke: Float?): Boolean {
-		return (dagerPerUke == otherDagerPerUke) ||
-			(dagerPerUke == null && otherDagerPerUke == 0.0F) ||
-			(dagerPerUke == 0.0F && otherDagerPerUke == null)
-	}
+	private fun isEqual(dagerPerUke: Float?, otherDagerPerUke: Float?): Boolean = (dagerPerUke == otherDagerPerUke) ||
+		(dagerPerUke == null && otherDagerPerUke == 0.0F) ||
+		(dagerPerUke == 0.0F && otherDagerPerUke == null)
 
-	private fun isEqual(prosentStilling: Double?, otherProsentStilling: Double?): Boolean {
-		return (prosentStilling == otherProsentStilling) ||
-			(prosentStilling == null && otherProsentStilling == 0.0) ||
-			(prosentStilling == 0.0 && otherProsentStilling == null)
-	}
+	private fun isEqual(prosentStilling: Double?, otherProsentStilling: Double?): Boolean = (prosentStilling == otherProsentStilling) ||
+		(prosentStilling == null && otherProsentStilling == 0.0) ||
+		(prosentStilling == 0.0 && otherProsentStilling == null)
 
-	override fun hashCode(): Int {
-		return Objects.hash(
-			id,
-			personident,
-			deltakerlisteId,
-			status,
-			dagerPerUke,
-			prosentStilling,
-			oppstartsdato,
-			sluttdato,
-			deltarPaKurs,
-			kilde,
-		)
-	}
+	override fun hashCode(): Int = Objects.hash(
+		id,
+		personident,
+		deltakerlisteId,
+		status,
+		dagerPerUke,
+		prosentStilling,
+		oppstartsdato,
+		sluttdato,
+		deltarPaKurs,
+		kilde,
+	)
 }
 
 data class DeltakerStatus(

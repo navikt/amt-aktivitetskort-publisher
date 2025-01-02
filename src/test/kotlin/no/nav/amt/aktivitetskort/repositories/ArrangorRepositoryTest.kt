@@ -51,7 +51,8 @@ class ArrangorRepositoryTest : IntegrationTest() {
 
 	@Test
 	fun `upsert - finnes - returnerer NoChange Result`() {
-		val arrangor = TestData.arrangor()
+		val arrangor = TestData
+			.arrangor()
 			.also { db.arrangorRepository.upsert(it) }
 
 		when (val result = db.arrangorRepository.upsert(arrangor)) {
@@ -63,7 +64,8 @@ class ArrangorRepositoryTest : IntegrationTest() {
 
 	@Test
 	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
-		val initialArrangor = TestData.arrangor()
+		val initialArrangor = TestData
+			.arrangor()
 			.also { db.arrangorRepository.upsert(it) }
 
 		val updatedArrangor = initialArrangor.copy(

@@ -9,7 +9,6 @@ class ApplicationSetupTest : IntegrationTest() {
 		sendRequest(
 			"GET",
 			"/internal/health/readiness",
-		)
-			.also { it.code shouldBe 200 }
+		).also { it.code shouldBe 200 }
 	}
 }

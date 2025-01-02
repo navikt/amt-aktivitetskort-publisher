@@ -163,14 +163,12 @@ class HendelseService(
 		}
 	}
 
-	private fun skalAvbryteAktivtetskort(status: AktivitetStatus?): Boolean {
-		return when (status) {
-			AktivitetStatus.FORSLAG,
-			AktivitetStatus.PLANLAGT,
-			AktivitetStatus.GJENNOMFORES,
-			-> true
+	private fun skalAvbryteAktivtetskort(status: AktivitetStatus?): Boolean = when (status) {
+		AktivitetStatus.FORSLAG,
+		AktivitetStatus.PLANLAGT,
+		AktivitetStatus.GJENNOMFORES,
+		-> true
 
-			else -> false
-		}
+		else -> false
 	}
 }

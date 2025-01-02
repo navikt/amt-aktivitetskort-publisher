@@ -58,7 +58,8 @@ class DeltakerRepository(
 
 		if (deltaker == old?.deltaker && !unleashToggle.skalOppdatereForUendretDeltaker()) return RepositoryResult.NoChange()
 
-		if (deltaker.status.type in AVSLUTTENDE_STATUSER && deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&
+		if (deltaker.status.type in AVSLUTTENDE_STATUSER &&
+			deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&
 			!skalKorrigereTidligereDeltaker(old?.deltaker)
 		) {
 			log.info("Ignorerer deltaker som er avsluttet før aktivitetsplanen ble lansert, id ${deltaker.id}")
@@ -136,15 +137,15 @@ class DeltakerRepository(
 
 	fun get(id: UUID): Deltaker? = getDeltakerMedOffset(id)?.deltaker
 
-	private fun skalKorrigereTidligereDeltaker(lagretDeltaker: Deltaker?): Boolean {
-		return !(lagretDeltaker == null || lagretDeltaker.status.type in AVSLUTTENDE_STATUSER)
-	}
+	private fun skalKorrigereTidligereDeltaker(lagretDeltaker: Deltaker?): Boolean =
+		!(lagretDeltaker == null || lagretDeltaker.status.type in AVSLUTTENDE_STATUSER)
 
-	private fun getDeltakerMedOffset(id: UUID): DeltakerMedOffset? = template.query(
-		"SELECT * from deltaker where id = :id",
-		sqlParameters("id" to id),
-		rowMapper,
-	).firstOrNull()
+	private fun getDeltakerMedOffset(id: UUID): DeltakerMedOffset? = template
+		.query(
+			"SELECT * from deltaker where id = :id",
+			sqlParameters("id" to id),
+			rowMapper,
+		).firstOrNull()
 
 	fun delete(id: UUID) {
 		val sql = "DELETE FROM deltaker WHERE id = :id"

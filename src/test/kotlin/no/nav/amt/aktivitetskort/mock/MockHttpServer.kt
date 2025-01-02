@@ -10,9 +10,7 @@ import java.util.UUID
 
 private val requestBodyCache = mutableMapOf<RecordedRequest, String>()
 
-fun RecordedRequest.getBodyAsString(): String {
-	return requestBodyCache.getOrPut(this) { this.body.readUtf8() }
-}
+fun RecordedRequest.getBodyAsString(): String = requestBodyCache.getOrPut(this) { this.body.readUtf8() }
 
 abstract class MockHttpServer(
 	private val name: String,
@@ -55,8 +53,8 @@ abstract class MockHttpServer(
 		return id
 	}
 
-	fun addResponseHandler(predicate: (req: RecordedRequest) -> Boolean, response: MockResponse): UUID {
-		return addResponseHandler(predicate) { response }
+	fun addResponseHandler(predicate: (req: RecordedRequest) -> Boolean, response: MockResponse): UUID = addResponseHandler(predicate) {
+		response
 	}
 
 	fun addResponseHandler(path: String, response: MockResponse): UUID {
@@ -69,24 +67,21 @@ abstract class MockHttpServer(
 		lastRequestCount = server.requestCount
 	}
 
-	fun serverUrl(): String {
-		return server.url("").toString().removeSuffix("/")
-	}
+	fun serverUrl(): String = server.url("").toString().removeSuffix("/")
 
-	fun latestRequest(): RecordedRequest {
-		return server.takeRequest()
-	}
+	fun latestRequest(): RecordedRequest = server.takeRequest()
 
-	fun requestCount(): Int {
-		return server.requestCount - lastRequestCount
-	}
+	fun requestCount(): Int = server.requestCount - lastRequestCount
 
 	fun shutdown() {
 		server.shutdown()
 	}
 
 	fun getRequestCount(id: UUID): Int {
-		val responseCount = responses.entries.find { it.value.id == id }?.value?.count
+		val responseCount = responses.entries
+			.find { it.value.id == id }
+			?.value
+			?.count
 			?: throw IllegalStateException("No request with id $id")
 
 		return responseCount
@@ -96,10 +91,9 @@ abstract class MockHttpServer(
 		responses.clear()
 	}
 
-	private fun printHeaders(headers: Headers): String {
-		return headers.map { "		${it.first} : ${it.second}" }
-			.joinToString("\n")
-	}
+	private fun printHeaders(headers: Headers): String = headers
+		.map { "		${it.first} : ${it.second}" }
+		.joinToString("\n")
 
 	private data class ResponseHolder(
 		val id: UUID,
