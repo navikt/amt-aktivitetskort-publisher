@@ -196,14 +196,18 @@ class AktivitetskortService(
 		endretAv = EndretAv("amt-aktivitetskort-publisher", IdentType.SYSTEM),
 		endretTidspunkt = LocalDateTime.now(),
 		avtaltMedNav = deltaker.status.type !in IKKE_AVTALT_MED_NAV_STATUSER,
-		oppgave = oppgaver(deltaker, deltakerliste),
+		oppgave = oppgaver(deltaker, deltakerliste, arrangor),
 		handlinger = getHandlinger(deltaker, deltakerliste.tiltak.type),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
 		tiltakstype = deltakerliste.tiltak.type,
 	)
 
-	private fun oppgaver(deltaker: Deltaker, deltakerliste: Deltakerliste): OppgaveWrapper? {
+	private fun oppgaver(
+		deltaker: Deltaker,
+		deltakerliste: Deltakerliste,
+		arrangor: Arrangor,
+	): OppgaveWrapper? {
 		if (!unleashToggle.erKometMasterForTiltakstype(deltakerliste.tiltak.type)) {
 			return null
 		}
@@ -214,8 +218,8 @@ class AktivitetskortService(
 		return OppgaveWrapper(
 			ekstern = Oppgave(
 				tekst = "Du har mottatt et utkast til påmelding",
-				subtekst = "Før vi sender dette til Muligheter AS vil vi gjerne at du leser gjennom. " +
-					"Hvis du godkjenner utkastet blir du meldt på, vedtaket fattes og Muligheter AS mottar informasjon.",
+				subtekst = "Før vi sender dette til ${arrangor.navn} vil vi gjerne at du leser gjennom. " +
+					"Hvis du godkjenner utkastet blir du meldt på, vedtaket fattes og ${arrangor.navn} mottar informasjon.",
 				url = deltaker.deltakerUrl(),
 			),
 			intern = null,
