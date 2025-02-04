@@ -59,21 +59,22 @@ class InternalController(
 	@GetMapping("/resend/")
 	fun resendSistMeldinger(
 		servlet: HttpServletRequest,
-		@RequestBody body: DeltakereBody
+		@RequestBody body: DeltakereBody,
 	) {
 		if (isInternal(servlet)) {
 			body.deltakere.forEach { deltakerId ->
 				val aktivitetskort = aktivitetskortService
-					.getSisteMeldingForDeltaker(deltakerId)?.aktivitetskort
+					.getSisteMeldingForDeltaker(deltakerId)
+					?.aktivitetskort
 					?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Fant ikke melding")
 				aktivitetskortProducer.send(aktivitetskort)
 				log.info("Resendte siste aktivitetskort for deltaker med id $deltakerId")
 			}
-
 		} else {
 			throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 		}
 	}
+
 	data class DeltakereBody(
 		val deltakere: List<UUID>,
 	)
