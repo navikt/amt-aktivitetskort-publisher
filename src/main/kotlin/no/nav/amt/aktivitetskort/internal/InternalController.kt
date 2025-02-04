@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
@@ -53,6 +54,29 @@ class InternalController(
 			throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 		}
 	}
+
+	@Unprotected
+	@GetMapping("/resend/")
+	fun resendSistMeldinger(
+		servlet: HttpServletRequest,
+		@RequestBody body: DeltakereBody
+	) {
+		if (isInternal(servlet)) {
+			body.deltakere.forEach { deltakerId ->
+				val aktivitetskort = aktivitetskortService
+					.getSisteMeldingForDeltaker(deltakerId)?.aktivitetskort
+					?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Fant ikke melding")
+				aktivitetskortProducer.send(aktivitetskort)
+				log.info("Resendte siste aktivitetskort for deltaker med id $deltakerId")
+			}
+
+		} else {
+			throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+		}
+	}
+	data class DeltakereBody(
+		val deltakere: List<UUID>,
+	)
 
 	private fun isInternal(servlet: HttpServletRequest): Boolean = servlet.remoteAddr == "127.0.0.1"
 }
