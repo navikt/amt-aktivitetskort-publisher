@@ -5,6 +5,7 @@ import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
+import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.Handling
@@ -13,6 +14,8 @@ import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
+import no.nav.amt.aktivitetskort.domain.Oppgave
+import no.nav.amt.aktivitetskort.domain.OppgaveWrapper
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -193,12 +196,35 @@ class AktivitetskortService(
 		endretAv = EndretAv("amt-aktivitetskort-publisher", IdentType.SYSTEM),
 		endretTidspunkt = LocalDateTime.now(),
 		avtaltMedNav = deltaker.status.type !in IKKE_AVTALT_MED_NAV_STATUSER,
-		oppgave = null,
+		oppgave = oppgaver(deltaker, deltakerliste, arrangor),
 		handlinger = getHandlinger(deltaker, deltakerliste.tiltak.type),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
 		tiltakstype = deltakerliste.tiltak.type,
 	)
+
+	private fun oppgaver(
+		deltaker: Deltaker,
+		deltakerliste: Deltakerliste,
+		arrangor: Arrangor,
+	): OppgaveWrapper? {
+		if (!unleashToggle.erKometMasterForTiltakstype(deltakerliste.tiltak.type)) {
+			return null
+		}
+		if (deltaker.status.type != DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
+			return null
+		}
+
+		return OppgaveWrapper(
+			ekstern = Oppgave(
+				tekst = "Du har mottatt et utkast til påmelding",
+				subtekst = "Før vi sender dette til ${arrangor.navn} vil vi gjerne at du leser gjennom. " +
+					"Hvis du godkjenner utkastet blir du meldt på, vedtaket fattes og ${arrangor.navn} mottar informasjon.",
+				url = deltaker.deltakerUrl(),
+			),
+			intern = null,
+		)
+	}
 
 	private fun getHandlinger(deltaker: Deltaker, tiltakstype: Tiltak.Type): List<Handling>? {
 		if (!unleashToggle.erKometMasterForTiltakstype(tiltakstype)) {
@@ -214,9 +240,11 @@ class AktivitetskortService(
 			Handling(
 				tekst = "Les mer om din deltakelse",
 				subtekst = "",
-				url = "$deltakerUrlBasePath/${deltaker.id}",
+				url = deltaker.deltakerUrl(),
 				lenkeType = LenkeType.EKSTERN,
 			),
 		)
 	}
+
+	private fun Deltaker.deltakerUrl() = "$deltakerUrlBasePath/${this.id}"
 }
