@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.client
 
+import no.nav.amt.aktivitetskort.exceptions.IllegalUpdateException
 import no.nav.amt.aktivitetskort.utils.JsonUtils
 import no.nav.common.rest.client.RestClient.baseClient
 import okhttp3.OkHttpClient
@@ -36,8 +37,8 @@ class AmtArenaAclClient(
 			if (hentArenaIdV2Response.arenaId != null) {
 				return hentArenaIdV2Response.arenaId.toLong()
 			} else if (hentArenaIdV2Response.arenaHistId != null) {
-				log.info("amtId $amtId tilhører histdeltaker med id ${hentArenaIdV2Response.arenaHistId}")
-				return null
+				log.error("amtId $amtId tilhører histdeltaker med id ${hentArenaIdV2Response.arenaHistId}")
+				throw IllegalUpdateException("amtId $amtId tilhører histdeltaker med id ${hentArenaIdV2Response.arenaHistId}")
 			} else {
 				log.warn("Fant ikke arenaId eller arenaHistId for deltaker med id $amtId")
 				return null

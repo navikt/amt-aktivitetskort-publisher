@@ -144,12 +144,13 @@ class AktivitetskortServiceTest {
 		}
 
 	@Test
-	fun `lagAktivitetskort(deltaker) - oppdatering på hist deltaker - feiler stille`() {
+	fun `lagAktivitetskort(deltaker) - oppdatering på hist deltaker - kaster exception`() {
 		val ctx = TestData.MockContext()
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
-		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns null
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } throws IllegalUpdateException("Noe gikk galt")
+
 		assertThrows<IllegalUpdateException> {
 			aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 		}

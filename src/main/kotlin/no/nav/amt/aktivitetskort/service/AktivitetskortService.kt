@@ -17,7 +17,6 @@ import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Oppgave
 import no.nav.amt.aktivitetskort.domain.OppgaveWrapper
 import no.nav.amt.aktivitetskort.domain.Tiltak
-import no.nav.amt.aktivitetskort.exceptions.IllegalUpdateException
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
@@ -104,7 +103,7 @@ class AktivitetskortService(
 
 		if (deltaker.kilde == Kilde.ARENA && akasAktivitetskortId == null) {
 			log.error("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
-			throw IllegalUpdateException("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
+			throw IllegalStateException("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
 		}
 
 		if (akasAktivitetskortId != null &&
