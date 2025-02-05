@@ -142,6 +142,7 @@ class AktivitetskortServiceTest {
 			verify(exactly = 1) { meldingRepository.upsert(any()) }
 			verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
 		}
+
 	@Test
 	fun `lagAktivitetskort(deltaker) - oppdatering på hist deltaker - feiler stille`() {
 		val ctx = TestData.MockContext()
@@ -156,6 +157,7 @@ class AktivitetskortServiceTest {
 		verify(exactly = 0) { meldingRepository.upsert(any()) }
 		verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
 	}
+
 	@Test
 	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, aktivitetskort finnes - gjenbruker aktivitetskortId`() = mockCluster {
 		val deltakerliste = TestData.deltakerliste(tiltak = Tiltak("Arbeidsforberedende trening", Tiltak.Type.ARBFORB))
