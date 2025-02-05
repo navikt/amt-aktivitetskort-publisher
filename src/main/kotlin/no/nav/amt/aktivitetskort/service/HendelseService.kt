@@ -6,6 +6,7 @@ import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.exceptions.IllegalUpdateException
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
@@ -48,12 +49,21 @@ class HendelseService(
 			when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
 				is RepositoryResult.Modified -> {
 					log.info("Ny hendelse for deltaker ${deltaker.id}: Oppdatering")
-					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+					try {
+						aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+					} catch (e: IllegalUpdateException) {
+						log.warn("Kan ikke opprette aktivitetskort for deltaker ${result.data.id}")
+					}
 				}
 
 				is RepositoryResult.Created -> {
 					log.info("Ny hendelse for deltaker ${deltaker.id}: Opprettelse")
-					aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+
+					try {
+						aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
+					} catch (e: IllegalUpdateException) {
+						log.warn("Kan ikke opprette aktivitetskort for deltaker ${result.data.id}")
+					}
 				}
 
 				is RepositoryResult.NoChange -> {
