@@ -11,6 +11,7 @@ import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.Tiltak
+import no.nav.amt.aktivitetskort.exceptions.IllegalUpdateException
 import no.nav.amt.aktivitetskort.mock.mockCluster
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -141,7 +142,20 @@ class AktivitetskortServiceTest {
 			verify(exactly = 1) { meldingRepository.upsert(any()) }
 			verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
 		}
+	@Test
+	fun `lagAktivitetskort(deltaker) - oppdatering på hist deltaker - feiler stille`() {
+		val ctx = TestData.MockContext()
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
+		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
+		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns null
+		assertThrows<IllegalUpdateException> {
+			aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+		}
 
+		verify(exactly = 0) { meldingRepository.upsert(any()) }
+		verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
+	}
 	@Test
 	fun `lagAktivitetskort(deltaker) - deltaker opprettet utenfor arena, aktivitetskort finnes - gjenbruker aktivitetskortId`() = mockCluster {
 		val deltakerliste = TestData.deltakerliste(tiltak = Tiltak("Arbeidsforberedende trening", Tiltak.Type.ARBFORB))
