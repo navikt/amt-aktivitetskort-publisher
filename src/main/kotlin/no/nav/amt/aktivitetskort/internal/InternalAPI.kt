@@ -16,11 +16,11 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/internal")
-class InternalController(
+class InternalAPI(
 	private val aktivitetskortService: AktivitetskortService,
 	private val aktivitetskortProducer: AktivitetskortProducer,
 ) {
-	private val log = LoggerFactory.getLogger(InternalController::class.java)
+	private val log = LoggerFactory.getLogger(InternalAPI::class.java)
 
 	@Unprotected
 	@GetMapping("/publiser/{deltakerId}")

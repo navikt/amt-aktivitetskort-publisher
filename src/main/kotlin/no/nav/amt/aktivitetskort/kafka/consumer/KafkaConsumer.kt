@@ -1,7 +1,7 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
 import no.nav.amt.aktivitetskort.service.FeilmeldingService
-import no.nav.amt.aktivitetskort.service.HendelseService
+import no.nav.amt.aktivitetskort.service.KafkaConsumerService
 import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJson
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
@@ -18,8 +18,8 @@ const val AKTIVITETSKORT_TOPIC = "dab.aktivitetskort-v1.1"
 const val SOURCE = "TEAM_KOMET"
 
 @Component
-class KafkaListener(
-	val hendelseService: HendelseService,
+class KafkaConsumer(
+	val kafkaConsumerService: KafkaConsumerService,
 	val feilmeldingService: FeilmeldingService,
 ) {
 	@KafkaListener(
@@ -28,17 +28,17 @@ class KafkaListener(
 	)
 	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
 		when (record.topic()) {
-			ARRANGOR_TOPIC -> hendelseService.arrangorHendelse(
+			ARRANGOR_TOPIC -> kafkaConsumerService.arrangorHendelse(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },
 			)
 
-			DELTAKERLISTE_TOPIC -> hendelseService.deltakerlisteHendelse(
+			DELTAKERLISTE_TOPIC -> kafkaConsumerService.deltakerlisteHendelse(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },
 			)
 
-			DELTAKER_TOPIC -> hendelseService.deltakerHendelse(
+			DELTAKER_TOPIC -> kafkaConsumerService.deltakerHendelse(
 				id = UUID.fromString(record.key()),
 				deltaker = record.value()?.let { fromJson(it) },
 				offset = record.offset(),

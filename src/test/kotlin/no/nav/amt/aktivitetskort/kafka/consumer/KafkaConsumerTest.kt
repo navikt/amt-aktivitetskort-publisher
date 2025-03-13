@@ -21,7 +21,7 @@ import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-class KafkaListenerTest : IntegrationTest() {
+class KafkaConsumerTest : IntegrationTest() {
 	@Autowired
 	lateinit var kafkaProducer: KafkaProducer<String, String?>
 
