@@ -22,7 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.util.UUID
 
 @Service
-class HendelseService(
+class KafkaConsumerService(
 	private val arrangorRepository: ArrangorRepository,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val deltakerRepository: DeltakerRepository,

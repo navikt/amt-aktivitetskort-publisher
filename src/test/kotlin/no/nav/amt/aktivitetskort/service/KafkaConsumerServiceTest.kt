@@ -24,7 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.util.UUID
 import java.util.function.Consumer
 
-class HendelseServiceTest {
+class KafkaConsumerServiceTest {
 	private val arrangorRepository = mockk<ArrangorRepository>()
 	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
 	private val deltakerRepository = mockk<DeltakerRepository>()
@@ -35,7 +35,7 @@ class HendelseServiceTest {
 
 	private val offset: Long = 0
 
-	private val hendelseService = HendelseService(
+	private val kafkaConsumerService = KafkaConsumerService(
 		arrangorRepository = arrangorRepository,
 		deltakerlisteRepository = deltakerlisteRepository,
 		deltakerRepository = deltakerRepository,
@@ -59,7 +59,7 @@ class HendelseServiceTest {
 		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Modified(ctx.deltaker)
 		every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
 
-		hendelseService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
+		kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
 		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
@@ -73,7 +73,7 @@ class HendelseServiceTest {
 		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Created(ctx.deltaker)
 		every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
 
-		hendelseService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
+		kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
 		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
@@ -86,7 +86,7 @@ class HendelseServiceTest {
 
 		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.NoChange()
 
-		hendelseService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
+		kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
 		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
@@ -100,7 +100,7 @@ class HendelseServiceTest {
 
 		every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.NoChange()
 
-		hendelseService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
+		kafkaConsumerService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
 
 		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
 		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
@@ -116,7 +116,7 @@ class HendelseServiceTest {
 		every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.Modified(mockDeltaker)
 		every { aktivitetskortService.lagAktivitetskort(mockDeltaker) } returns mockAktivitetskort
 
-		hendelseService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
+		kafkaConsumerService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
 
 		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
 		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
@@ -131,7 +131,7 @@ class HendelseServiceTest {
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
 		every { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
-		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
+		kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
@@ -145,7 +145,7 @@ class HendelseServiceTest {
 		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 
-		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
+		kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
@@ -159,7 +159,7 @@ class HendelseServiceTest {
 		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
 
-		hendelseService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
+		kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
 
 		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
@@ -176,7 +176,7 @@ class HendelseServiceTest {
 			virksomhetsnummer = arrangor.organisasjonsnummer,
 		)
 
-		hendelseService.deltakerlisteHendelse(deltakerlisteDto.id, deltakerlisteDto)
+		kafkaConsumerService.deltakerlisteHendelse(deltakerlisteDto.id, deltakerlisteDto)
 
 		verify(exactly = 0) { arrangorRepository.get(arrangor.organisasjonsnummer) }
 		verify(exactly = 0) { deltakerlisteRepository.upsert(any()) }
@@ -198,7 +198,7 @@ class HendelseServiceTest {
 		)
 		every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
 
-		hendelseService.deltakerlisteHendelse(deltakerliste.id, deltakerliste.toDto(arrangor))
+		kafkaConsumerService.deltakerlisteHendelse(deltakerliste.id, deltakerliste.toDto(arrangor))
 
 		verify(exactly = 2) { arrangorRepository.get(arrangor.organisasjonsnummer) }
 		verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) }
@@ -212,7 +212,7 @@ class HendelseServiceTest {
 		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Modified(ctx.arrangor)
 		every { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) } returns listOf(ctx.aktivitetskort)
 
-		hendelseService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
+		kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
 		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
 		verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
@@ -225,7 +225,7 @@ class HendelseServiceTest {
 
 		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Created(ctx.arrangor)
 
-		hendelseService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
+		kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
 		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
 		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
@@ -238,7 +238,7 @@ class HendelseServiceTest {
 
 		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.NoChange()
 
-		hendelseService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
+		kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
 		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
 		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
