@@ -150,7 +150,7 @@ class AktivitetskortService(
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
 		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker)
 
-		val aktivitetskort = nyttAktivitetskort(
+		val aktivitetskort = lagAktivitetskort(
 			aktivitetskortId,
 			deltaker,
 			deltakerliste,
@@ -180,7 +180,7 @@ class AktivitetskortService(
 		}
 	}
 
-	private fun nyttAktivitetskort(
+	private fun lagAktivitetskort(
 		id: UUID,
 		deltaker: Deltaker,
 		deltakerliste: Deltakerliste,
