@@ -3,13 +3,16 @@ package no.nav.amt.aktivitetskort.database
 import no.nav.amt.aktivitetskort.database.TestData.arrangor
 import no.nav.amt.aktivitetskort.database.TestData.deltaker
 import no.nav.amt.aktivitetskort.database.TestData.deltakerliste
+import no.nav.amt.aktivitetskort.database.TestData.oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
+import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
+import no.nav.amt.aktivitetskort.repositories.OppfolgingsperiodeRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.aktivitetskort.utils.sqlParameters
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -25,6 +28,7 @@ class TestDatabaseService(
 	val deltakerRepository: DeltakerRepository,
 	private val datasource: DataSource,
 	private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
+	val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
 ) {
 	fun clean() = DbTestDataUtils.cleanDatabase(datasource)
 
@@ -36,6 +40,9 @@ class TestDatabaseService(
 			is RepositoryResult.NoChange -> deltaker
 		}
 	}
+
+	fun insertAktivOppfolgingsperiode(id: UUID = UUID.randomUUID()): Oppfolgingsperiode =
+		oppfolgingsperiodeRepository.upsert(oppfolgingsperiode(id))
 
 	fun insertArrangor(arrangor: Arrangor = arrangor()) = when (val result = arrangorRepository.upsert(arrangor)) {
 		is RepositoryResult.Created -> result.data

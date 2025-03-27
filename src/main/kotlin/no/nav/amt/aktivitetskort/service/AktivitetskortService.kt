@@ -2,6 +2,7 @@ package no.nav.amt.aktivitetskort.service
 
 import no.nav.amt.aktivitetskort.client.AktivitetArenaAclClient
 import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
+import no.nav.amt.aktivitetskort.client.VeilarboppfolgingClient
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
@@ -14,6 +15,7 @@ import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
+import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Oppgave
 import no.nav.amt.aktivitetskort.domain.OppgaveWrapper
 import no.nav.amt.aktivitetskort.domain.Tiltak
@@ -21,12 +23,14 @@ import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
+import no.nav.amt.aktivitetskort.repositories.OppfolgingsperiodeRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -39,6 +43,9 @@ class AktivitetskortService(
 	private val aktivitetArenaAclClient: AktivitetArenaAclClient,
 	private val amtArenaAclClient: AmtArenaAclClient,
 	private val unleashToggle: UnleashToggle,
+	private val veilarboppfolgingClient: VeilarboppfolgingClient,
+	private val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
+	private val transactionTemplate: TransactionTemplate,
 	@Value("\${veilederurl.basepath}") private val veilederUrlBasePath: String,
 	@Value("\${deltakerurl.basepath}") private val deltakerUrlBasePath: String,
 ) {
@@ -86,42 +93,29 @@ class AktivitetskortService(
 		}
 	}
 
-	private fun getAktivitetskortId(deltaker: Deltaker): UUID {
-		val nyesteAktivitetskortForDeltaker = getSisteMeldingForDeltaker(deltaker.id)?.id
+	private fun getAktivitetskortId(deltaker: Deltaker, oppfolgingsperiode: Oppfolgingsperiode): UUID {
+		val nyesteAktivitetskortForDeltaker = getSisteMeldingForDeltaker(deltaker.id)
+		val nyesteAktivitetskortId = nyesteAktivitetskortForDeltaker?.id
+
 		if (deltaker.kilde == Kilde.KOMET) {
-			return nyesteAktivitetskortForDeltaker
+			if (nyesteAktivitetskortForDeltaker?.oppfolgingperiode != null &&
+				oppfolgingsperiode.id != nyesteAktivitetskortForDeltaker.oppfolgingperiode
+			) {
+				log.info("Oppretter nytt aktivitetskort på deltaker ${deltaker.id} som har fått ny oppfølgingsperiode.")
+				return UUID.randomUUID()
+			}
+			return nyesteAktivitetskortId
 				?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id ${deltaker.id}") }
 		}
 
 		// Vi MÅ kalle dab for å generere id for arena deltakere for at de skal generere mappingen
 		// Selv om vi har en aktivitetskort id på deltaker så kan dab ha opprettet en ny pga endringer i oppfølgingsperiode
-		val akasAktivitetskortId = amtArenaAclClient
+		return amtArenaAclClient
 			.getArenaIdForAmtId(deltaker.id)
 			?.also { log.info("deltaker ${deltaker.id} er opprettet i arena med id $it. Henter aktivitetskort id fra AKAS..") }
 			?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
 			?.also { log.info("deltaker ${deltaker.id} skal ha aktivitetId: $it") }
-
-		if (deltaker.kilde == Kilde.ARENA && akasAktivitetskortId == null) {
-			log.error("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
-			throw IllegalStateException("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
-		}
-
-		if (akasAktivitetskortId != null &&
-			nyesteAktivitetskortForDeltaker != null &&
-			akasAktivitetskortId != nyesteAktivitetskortForDeltaker
-		) {
-			// En deltaker kan ha flere aktivitetskort dersom gammel deltakelse er gjenbrukt i en ny oppfølgingsperiode
-			// men det er grunn til å tro at vi kan få ny aktivitetskort id selv om deltakeren skulle beholdt
-			// den gamle så disse tilfellene må feilsøkes
-			log.warn(
-				"AKAS returnererte ny aktivitetskortId: $akasAktivitetskortId " +
-					"for person som allerede har aktivitetskort: $nyesteAktivitetskortForDeltaker.",
-			)
-		}
-
-		return akasAktivitetskortId
-			?: nyesteAktivitetskortForDeltaker
-			?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id ${deltaker.id}") }
+			?: throw IllegalStateException("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
 	}
 
 	private fun opprettMelding(deltakerId: UUID): Melding? {
@@ -148,7 +142,8 @@ class AktivitetskortService(
 		val arrangor = arrangorRepository.get(deltakerliste.arrangorId)
 			?: throw RuntimeException("Arrangør ${deltakerliste.arrangorId} finnes ikke")
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
-		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker)
+		val oppfolgingsperiode = veilarboppfolgingClient.hentOppfolgingperiode(deltaker.personident)
+		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker, oppfolgingsperiode)
 
 		val aktivitetskort = lagAktivitetskort(
 			aktivitetskortId,
@@ -163,10 +158,12 @@ class AktivitetskortService(
 			deltakerlisteId = deltakerliste.id,
 			arrangorId = arrangor.id,
 			aktivitetskort = aktivitetskort,
+			oppfolgingperiode = oppfolgingsperiode.id,
 		)
-
-		meldingRepository.upsert(melding)
-
+		transactionTemplate.executeWithoutResult {
+			oppfolgingsperiodeRepository.upsert(oppfolgingsperiode)
+			meldingRepository.upsert(melding)
+		}
 		return melding
 	}
 

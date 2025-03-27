@@ -5,6 +5,7 @@ import no.nav.amt.aktivitetskort.database.SingletonPostgresContainer
 import no.nav.amt.aktivitetskort.mock.MockAktivitetArenaAclServer
 import no.nav.amt.aktivitetskort.mock.MockAmtArenaAclServer
 import no.nav.amt.aktivitetskort.mock.MockMachineToMachineServer
+import no.nav.amt.aktivitetskort.mock.MockVeilarboppfolgingServer
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -39,6 +40,7 @@ class IntegrationTest {
 		val mockAktivitetArenaAclServer = MockAktivitetArenaAclServer()
 		val mockAmtArenaAclServer = MockAmtArenaAclServer()
 		val mockMachineToMachineServer = MockMachineToMachineServer()
+		val mockVeilarboppfolgingServer = MockVeilarboppfolgingServer()
 
 		@JvmStatic
 		@AfterAll
@@ -75,6 +77,10 @@ class IntegrationTest {
 
 			registry.add("amt.arrangor.url") { "" }
 			registry.add("amt.arrangor.scope") { "test.amt-arrangor" }
+
+			mockVeilarboppfolgingServer.start()
+			registry.add("veilarboppfolging.url") { mockVeilarboppfolgingServer.serverUrl() }
+			registry.add("veilarboppfolging.scope") { "test.veilarboppfolging" }
 
 			mockAktivitetArenaAclServer.start()
 			registry.add("aktivitet.arena-acl.url") { mockAktivitetArenaAclServer.serverUrl() }

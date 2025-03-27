@@ -60,6 +60,9 @@ spec:
         - application: aktivitet-arena-acl
           namespace: dab
           cluster: prod-gcp
+        - application: veilarboppfolging
+          namespace: poao
+          cluster: prod-gcp
       external:
         - host: amt-unleash-api.nav.cloud.nais.io
   envFrom:
@@ -77,6 +80,10 @@ spec:
       value: http://aktivitet-arena-acl.dab.svc.cluster.local
     - name: AKTIVITET_ARENA_ACL_SCOPE
       value: api://prod-gcp.dab.aktivitet-arena-acl/.default
+    - name: VEILARBOPPFOLGING_SCOPE
+      value: api://prod-gcp.poao.veilarboppfolging/.default
+    - name: VEILARBOPPFOLGING_URL
+      value: http://veilarboppfolging.poao
     - name: VEILEDERURL_BASEPATH
       value: https://veilarbpersonflate.intern.nav.no/arbeidsmarkedstiltak/deltakelse/deltaker
     - name: DELTAKERURL_BASEPATH
