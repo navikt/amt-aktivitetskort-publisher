@@ -19,6 +19,7 @@ import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Oppgave
 import no.nav.amt.aktivitetskort.domain.OppgaveWrapper
 import no.nav.amt.aktivitetskort.domain.Tiltak
+import no.nav.amt.aktivitetskort.exceptions.IngenOppfolgingsperiodeException
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
@@ -56,9 +57,14 @@ class AktivitetskortService(
 		.maxByOrNull { it.createdAt }
 
 	fun lagAktivitetskort(deltakerId: UUID): Aktivitetskort {
-		val melding = opprettMelding(deltakerId) ?: throw RuntimeException("Deltaker $deltakerId finnes ikke")
+		val deltaker = deltakerRepository.get(deltakerId)
+		if (deltaker == null) {
+			log.error("Deltaker med id $deltakerId finnes ikke")
+			throw RuntimeException("Deltaker $deltakerId finnes ikke")
+		}
 
-		log.info("Opprettet nytt aktivitetskort: ${melding.aktivitetskort.id} for deltaker: $deltakerId")
+		val melding = opprettMelding(deltaker) ?: throw RuntimeException("Aktivitetskort på deltaker $deltakerId ble ikke opprettet")
+
 		return melding.aktivitetskort
 	}
 
@@ -136,15 +142,16 @@ class AktivitetskortService(
 		return opprettMelding(deltaker, meldingId)
 	}
 
-	private fun opprettMelding(deltaker: Deltaker, meldingId: UUID? = null): Melding {
+	fun opprettMelding(deltaker: Deltaker, meldingId: UUID? = null): Melding {
 		val deltakerliste = deltakerlisteRepository.get(deltaker.deltakerlisteId)
 			?: throw RuntimeException("Deltakerliste ${deltaker.deltakerlisteId} finnes ikke")
 		val arrangor = arrangorRepository.get(deltakerliste.arrangorId)
 			?: throw RuntimeException("Arrangør ${deltakerliste.arrangorId} finnes ikke")
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
 		val oppfolgingsperiode = veilarboppfolgingClient.hentOppfolgingperiode(deltaker.personident)
-		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker, oppfolgingsperiode)
+			?: throw IngenOppfolgingsperiodeException("Kan ikke opprette aktivitetskort på deltaker ${deltaker.id} som ikke er under oppfølging")
 
+		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker, oppfolgingsperiode)
 		val aktivitetskort = lagAktivitetskort(
 			aktivitetskortId,
 			deltaker,
@@ -164,6 +171,8 @@ class AktivitetskortService(
 			oppfolgingsperiodeRepository.upsert(oppfolgingsperiode)
 			meldingRepository.upsert(melding)
 		}
+
+		log.info("Opprettet nytt aktivitetskort: ${melding.aktivitetskort.id} for deltaker: ${deltaker.id}")
 		return melding
 	}
 

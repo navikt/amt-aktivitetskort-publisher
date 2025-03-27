@@ -7,6 +7,7 @@ import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.exceptions.IllegalUpdateException
+import no.nav.amt.aktivitetskort.exceptions.IngenOppfolgingsperiodeException
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
@@ -52,7 +53,9 @@ class KafkaConsumerService(
 					try {
 						aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
 					} catch (e: IllegalUpdateException) {
-						log.warn("Kan ikke opprette aktivitetskort for deltaker ${result.data.id}")
+						log.warn("Kan ikke opprette aktivitetskort for deltaker ${result.data.id}", e)
+					} catch (e: IngenOppfolgingsperiodeException) {
+						log.warn(e.message)
 					}
 				}
 

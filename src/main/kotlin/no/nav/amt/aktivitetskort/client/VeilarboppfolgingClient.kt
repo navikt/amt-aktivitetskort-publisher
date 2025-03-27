@@ -21,7 +21,7 @@ class VeilarboppfolgingClient(
 		private val mediaTypeJson = "application/json".toMediaType()
 	}
 
-	fun hentOppfolgingperiode(fnr: String): Oppfolgingsperiode {
+	fun hentOppfolgingperiode(fnr: String): Oppfolgingsperiode? {
 		val personRequestJson = toJsonString(PersonRequest(fnr))
 		val request = Request
 			.Builder()
@@ -35,7 +35,7 @@ class VeilarboppfolgingClient(
 			if (!response.isSuccessful) {
 				throw RuntimeException("Uventet status ved hent status-kall mot veilarboppfolging ${response.code}")
 			}
-			val body = response.body?.string() ?: throw RuntimeException("Body mangler i hent status-respons fra veilarboppfolging")
+			val body = response.body?.string() ?: return null
 
 			return JsonUtils.fromJson<OppfolgingPeriodeDTO>(body).toModel()
 		}
