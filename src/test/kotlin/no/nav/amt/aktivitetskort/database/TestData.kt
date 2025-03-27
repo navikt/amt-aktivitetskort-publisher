@@ -13,6 +13,7 @@ import no.nav.amt.aktivitetskort.domain.IdentType
 import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
+import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Tag
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
@@ -33,7 +34,8 @@ object TestData {
 		deltakerlisteId: UUID = UUID.randomUUID(),
 		arrangorId: UUID = UUID.randomUUID(),
 		aktivitetskort: Aktivitetskort = aktivitetskort(),
-	) = Melding(aktivitetskort.id, deltakerId, deltakerlisteId, arrangorId, aktivitetskort)
+		oppfolgingsperiode: UUID? = null,
+	) = Melding(aktivitetskort.id, deltakerId, deltakerlisteId, arrangorId, aktivitetskort, oppfolgingsperiode)
 
 	fun aktivitetskort(
 		id: UUID = UUID.randomUUID(),
@@ -130,6 +132,12 @@ object TestData {
 		kilde,
 	)
 
+	fun oppfolgingsperiode(
+		id: UUID = UUID.randomUUID(),
+		startDato: LocalDateTime = LocalDateTime.now().minusWeeks(4),
+		sluttdato: LocalDateTime? = null,
+	) = Oppfolgingsperiode(id, startDato = startDato, sluttDato = sluttdato)
+
 	fun arrangor(
 		id: UUID = UUID.randomUUID(),
 		organisasjonsnummer: String = (100_000_000..900_000_000).random().toString(),
@@ -150,7 +158,8 @@ object TestData {
 		val arrangor: Arrangor = arrangor(id = deltakerliste.arrangorId),
 		val aktivitetskortId: UUID = UUID.randomUUID(),
 		val aktivitetskort: Aktivitetskort = aktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor),
-		val melding: Melding = melding(deltaker.id, deltakerliste.id, arrangor.id, aktivitetskort),
+		val oppfolgingsperiodeId: UUID? = null,
+		val melding: Melding = melding(deltaker.id, deltakerliste.id, arrangor.id, aktivitetskort, oppfolgingsperiodeId),
 	) {
 		fun deltakerlisteDto() = DeltakerlisteDto(
 			id = this.deltakerliste.id,

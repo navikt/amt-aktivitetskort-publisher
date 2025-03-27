@@ -22,6 +22,7 @@ class MeldingRepository(
 			deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
 			aktivitetskort = JsonUtils.fromJson(rs.getString("melding")),
+			oppfolgingperiode = rs.getString("oppfolgingsperiode")?.let { UUID.fromString(it) },
 			createdAt = rs.getZonedDateTime("created_at"),
 			modifiedAt = rs.getZonedDateTime("modified_at"),
 		)
@@ -30,15 +31,17 @@ class MeldingRepository(
 	fun upsert(melding: Melding) {
 		template.update(
 			"""
-			INSERT INTO melding(id, deltaker_id, deltakerliste_id, arrangor_id, melding)
+			INSERT INTO melding(id, deltaker_id, deltakerliste_id, arrangor_id, melding, oppfolgingsperiode)
 			VALUES (:id,
 					:deltaker_id,
 					:deltakerliste_id,
 					:arrangor_id,
-					:melding)
+					:melding,
+					:oppfolgingsperiode)
 			ON CONFLICT (id) DO UPDATE SET melding = :melding,
 													deltakerliste_id = :deltakerliste_id,
 													arrangor_id      = :arrangor_id,
+													oppfolgingsperiode = :oppfolgingsperiode,
 													modified_at      = current_timestamp
 			""".trimIndent(),
 			sqlParameters(
@@ -46,6 +49,7 @@ class MeldingRepository(
 				"deltaker_id" to melding.deltakerId,
 				"deltakerliste_id" to melding.deltakerlisteId,
 				"arrangor_id" to melding.arrangorId,
+				"oppfolgingsperiode" to melding.oppfolgingperiode,
 				"melding" to melding.aktivitetskort.toPGObject(),
 			),
 		)

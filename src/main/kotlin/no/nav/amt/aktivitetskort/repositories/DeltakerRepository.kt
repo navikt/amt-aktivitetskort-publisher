@@ -45,22 +45,22 @@ class DeltakerRepository(
 	}
 
 	fun upsert(deltaker: Deltaker, offset: Long): RepositoryResult<Deltaker> {
-		val old = getDeltakerMedOffset(deltaker.id)
+		val oldDeltaker = getDeltakerMedOffset(deltaker.id)
 
-		if (old != null && old.offset > offset) {
-			log.info("Har lagret melding med offset ${old.offset} for deltaker ${deltaker.id}, ignorerer offset $offset")
+		if (oldDeltaker != null && oldDeltaker.offset > offset) {
+			log.info("Har lagret melding med offset ${oldDeltaker.offset} for deltaker ${deltaker.id}, ignorerer offset $offset")
 			return RepositoryResult.NoChange()
 		}
 
-		if (old == null && deltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
+		if (oldDeltaker == null && deltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
 			return RepositoryResult.NoChange()
 		}
 
-		if (deltaker == old?.deltaker && !unleashToggle.skalOppdatereForUendretDeltaker()) return RepositoryResult.NoChange()
+		if (deltaker == oldDeltaker?.deltaker && !unleashToggle.skalOppdatereForUendretDeltaker()) return RepositoryResult.NoChange()
 
 		if (deltaker.status.type in AVSLUTTENDE_STATUSER &&
 			deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&
-			!skalKorrigereTidligereDeltaker(old?.deltaker)
+			!skalKorrigereTidligereDeltaker(oldDeltaker?.deltaker)
 		) {
 			log.info("Ignorerer deltaker som er avsluttet før aktivitetsplanen ble lansert, id ${deltaker.id}")
 			return RepositoryResult.NoChange()
@@ -130,7 +130,7 @@ class DeltakerRepository(
 
 		val new = template.query(sql, parameters, rowMapper).first()
 
-		if (old == null) return RepositoryResult.Created(new.deltaker)
+		if (oldDeltaker == null) return RepositoryResult.Created(new.deltaker)
 
 		return RepositoryResult.Modified(new.deltaker)
 	}

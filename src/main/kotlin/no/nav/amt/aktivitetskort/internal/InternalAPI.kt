@@ -1,7 +1,9 @@
 package no.nav.amt.aktivitetskort.internal
 
 import jakarta.servlet.http.HttpServletRequest
+import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
+import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.service.AktivitetskortService
 import no.nav.security.token.support.core.api.Unprotected
 import org.slf4j.LoggerFactory
@@ -19,6 +21,7 @@ import java.util.UUID
 class InternalAPI(
 	private val aktivitetskortService: AktivitetskortService,
 	private val aktivitetskortProducer: AktivitetskortProducer,
+	private val deltakerRepository: DeltakerRepository,
 ) {
 	private val log = LoggerFactory.getLogger(InternalAPI::class.java)
 
@@ -30,8 +33,50 @@ class InternalAPI(
 	) {
 		if (isInternal(servlet)) {
 			val aktivitetskort = aktivitetskortService.lagAktivitetskort(deltakerId)
+
 			aktivitetskortProducer.send(aktivitetskort)
 			log.info("Publiserte aktivitetskort for deltaker med id $deltakerId")
+		} else {
+			throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+		}
+	}
+
+	@Unprotected
+	@GetMapping("/opprett-nye-kort")
+	fun opprettAktivitetskortForDeltaker(
+		servlet: HttpServletRequest,
+		@RequestBody body: DeltakereBody,
+	) {
+		// Skal kun brukes i spesielle tilfeller hvor vi vet at det gamle kortet hører til en tidligere oppfølgingsperiode
+		// og det ikke er opprettet nytt kort fordi vi tidligere ikke sjekket oppfølgingsperiode
+		if (isInternal(servlet)) {
+			body.deltakere.forEach { deltakerId ->
+				val deltaker = deltakerRepository.get(deltakerId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+				val sisteMelding = aktivitetskortService.getSisteMeldingForDeltaker(deltakerId)
+					?: throw ResponseStatusException(
+						HttpStatus.INTERNAL_SERVER_ERROR,
+						"Denne deltakelsen har ingen tidligere meldinger og skal opprettes",
+					)
+				if (sisteMelding.oppfolgingperiode != null) {
+					throw ResponseStatusException(
+						HttpStatus.FORBIDDEN,
+						"Siste melding for deltaker $deltakerId har oppfølgingsperiode ${sisteMelding.oppfolgingperiode}." +
+							"Endepunktet skal kun brukes for meldinger uten info om oppfølgingsperiode",
+					)
+				}
+				if (deltaker.kilde == Kilde.ARENA) {
+					throw ResponseStatusException(
+						HttpStatus.FORBIDDEN,
+						"Det er ikke tillatt å opprette kort med dette endepunktet på arenadeltakere. Id på disse skal hentes fra dab",
+					)
+				}
+				log.info("Siste melding for deltaker med id $deltakerId, er ${sisteMelding.id}")
+
+				val melding = aktivitetskortService.opprettMelding(deltaker = deltaker, UUID.randomUUID())
+				aktivitetskortProducer.send(melding.aktivitetskort)
+
+				log.info("Publiserte nytt aktivitetskort ${melding.id} for deltaker med id $deltakerId")
+			}
 		} else {
 			throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 		}

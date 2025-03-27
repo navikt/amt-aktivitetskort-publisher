@@ -9,6 +9,7 @@ data class Melding(
 	val deltakerlisteId: UUID,
 	val arrangorId: UUID,
 	val aktivitetskort: Aktivitetskort,
+	val oppfolgingperiode: UUID?,
 	val createdAt: ZonedDateTime = ZonedDateTime.now(),
 	val modifiedAt: ZonedDateTime = ZonedDateTime.now(),
 ) {

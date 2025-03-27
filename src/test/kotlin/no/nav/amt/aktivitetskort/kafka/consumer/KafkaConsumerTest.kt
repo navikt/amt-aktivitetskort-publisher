@@ -33,6 +33,7 @@ class KafkaConsumerTest : IntegrationTest() {
 	@BeforeEach
 	fun setup() {
 		db.clean()
+		mockAktivitetArenaAclServer.clearResponses()
 	}
 
 	@Test
@@ -78,6 +79,7 @@ class KafkaConsumerTest : IntegrationTest() {
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.melding.id)
+		mockVeilarboppfolgingServer.addResponse()
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -115,8 +117,8 @@ class KafkaConsumerTest : IntegrationTest() {
 	}
 
 	@Test
-	fun `listen - melding om oppdatert deltaker, aktivitetskort får ny id - deltaker upsertes og aktivitetskort opprettes`() {
-		val ctx = TestData.MockContext()
+	fun `listen - melding om oppdatert deltaker, dab sender ny id - nytt aktivitetskort opprettes med mottatt id`() {
+		val ctx = TestData.MockContext(oppfolgingsperiodeId = null)
 		val endretDeltaker = ctx.deltaker.copy(
 			sluttdato = LocalDate.now().plusDays(1),
 		)
@@ -128,6 +130,7 @@ class KafkaConsumerTest : IntegrationTest() {
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, nyId)
+		mockVeilarboppfolgingServer.addResponse()
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -143,10 +146,13 @@ class KafkaConsumerTest : IntegrationTest() {
 
 			val aktivitetskort = db.meldingRepository
 				.getByDeltakerId(deltaker.id)
+
+			aktivitetskort.size shouldBe 2
+			val nyttAktivitetskort = aktivitetskort
 				.first()
 				.aktivitetskort
-			aktivitetskort.id shouldBe nyId
-			aktivitetskort shouldBe ctx.aktivitetskort.copy(
+			nyttAktivitetskort.id shouldBe nyId
+			nyttAktivitetskort shouldBe ctx.aktivitetskort.copy(
 				id = nyId,
 				sluttDato = endretDeltaker.sluttdato,
 			)
@@ -155,14 +161,16 @@ class KafkaConsumerTest : IntegrationTest() {
 
 	@Test
 	fun `listen - tombstone for deltaker som har aktivt aktivitetskort - deltaker slettes og aktivitetskort avbrytes`() {
-		val ctx = TestData.MockContext()
+		val ctx = TestData.MockContext(oppfolgingsperiodeId = UUID.randomUUID())
 		db.arrangorRepository.upsert(ctx.arrangor)
 		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
 		db.deltakerRepository.upsert(ctx.deltaker, offset)
+		db.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId!!)
 		db.meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
+		mockVeilarboppfolgingServer.addResponse()
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -185,10 +193,14 @@ class KafkaConsumerTest : IntegrationTest() {
 
 	@Test
 	fun `listen - tombstone for deltaker som har inaktivt aktivitetskort - deltaker slettes og aktivitetskort endres ikke`() {
-		val ctx = TestData.MockContext(deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, null)))
+		val ctx = TestData.MockContext(
+			oppfolgingsperiodeId = UUID.randomUUID(),
+			deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, null)),
+		)
 		db.arrangorRepository.upsert(ctx.arrangor)
 		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
 		db.deltakerRepository.upsert(ctx.deltaker, offset)
+		db.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId!!)
 		db.meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
