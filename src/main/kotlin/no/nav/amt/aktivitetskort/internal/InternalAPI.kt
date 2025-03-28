@@ -64,15 +64,21 @@ class InternalAPI(
 							"Endepunktet skal kun brukes for meldinger uten info om oppfølgingsperiode",
 					)
 				}
+				var nyAktivitetskortId = UUID.randomUUID()
 				if (deltaker.kilde == Kilde.ARENA) {
-					throw ResponseStatusException(
-						HttpStatus.FORBIDDEN,
-						"Det er ikke tillatt å opprette kort med dette endepunktet på arenadeltakere. Id på disse skal hentes fra dab",
-					)
+					val aktivitetskortIdFraDab = aktivitetskortService.hentAktivitetskortIdForArenaDeltaker(deltakerId)
+					if (aktivitetskortIdFraDab != sisteMelding.id) {
+						// Hvis vi får ny id fra dab så har de allerede laget et kort i en ny periode
+						nyAktivitetskortId = aktivitetskortIdFraDab
+					}
 				}
-				log.info("Siste melding for deltaker med id $deltakerId, er ${sisteMelding.id}")
 
-				val melding = aktivitetskortService.opprettMelding(deltaker = deltaker, UUID.randomUUID())
+				log.info(
+					"Siste melding for deltaker med id $deltakerId," +
+						" er ${sisteMelding.id}. Oppretter ny melding med id $nyAktivitetskortId Kilde=${deltaker.kilde}",
+				)
+
+				val melding = aktivitetskortService.opprettMelding(deltaker = deltaker, nyAktivitetskortId)
 				aktivitetskortProducer.send(melding.aktivitetskort)
 
 				log.info("Publiserte nytt aktivitetskort ${melding.id} for deltaker med id $deltakerId")
