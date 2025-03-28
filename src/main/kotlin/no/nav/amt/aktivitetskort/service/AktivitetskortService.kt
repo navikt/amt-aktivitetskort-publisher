@@ -63,9 +63,7 @@ class AktivitetskortService(
 			throw RuntimeException("Deltaker $deltakerId finnes ikke")
 		}
 
-		val melding = opprettMelding(deltaker) ?: throw RuntimeException("Aktivitetskort på deltaker $deltakerId ble ikke opprettet")
-
-		return melding.aktivitetskort
+		return opprettMelding(deltaker).aktivitetskort
 	}
 
 	fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort {
@@ -114,23 +112,18 @@ class AktivitetskortService(
 				?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id ${deltaker.id}") }
 		}
 
+		return hentAktivitetskortIdForArenaDeltaker(deltaker.id)
+	}
+
+	fun hentAktivitetskortIdForArenaDeltaker(deltakerId: UUID): UUID {
 		// Vi MÅ kalle dab for å generere id for arena deltakere for at de skal generere mappingen
 		// Selv om vi har en aktivitetskort id på deltaker så kan dab ha opprettet en ny pga endringer i oppfølgingsperiode
 		return amtArenaAclClient
-			.getArenaIdForAmtId(deltaker.id)
-			?.also { log.info("deltaker ${deltaker.id} er opprettet i arena med id $it. Henter aktivitetskort id fra AKAS..") }
+			.getArenaIdForAmtId(deltakerId)
+			?.also { log.info("deltaker $deltakerId er opprettet i arena med id $it. Henter aktivitetskort id fra AKAS..") }
 			?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
-			?.also { log.info("deltaker ${deltaker.id} skal ha aktivitetId: $it") }
-			?: throw IllegalStateException("Arenadeltaker ${deltaker.id} fikk ikke id fra AKAS")
-	}
-
-	private fun opprettMelding(deltakerId: UUID): Melding? {
-		val deltaker = deltakerRepository.get(deltakerId)
-		if (deltaker == null) {
-			log.warn("Deltaker med id $deltakerId finnes ikke lenger")
-			return null
-		}
-		return opprettMelding(deltaker)
+			?.also { log.info("deltaker $deltakerId skal ha aktivitetId: $it") }
+			?: throw IllegalStateException("Arenadeltaker $deltakerId fikk ikke id fra AKAS")
 	}
 
 	fun oppdaterAktivitetskort(deltakerId: UUID, meldingId: UUID): Melding? {
