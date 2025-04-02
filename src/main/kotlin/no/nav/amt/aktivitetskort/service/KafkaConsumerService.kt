@@ -6,8 +6,6 @@ import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
-import no.nav.amt.aktivitetskort.exceptions.IllegalUpdateException
-import no.nav.amt.aktivitetskort.exceptions.IngenOppfolgingsperiodeException
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
@@ -50,23 +48,21 @@ class KafkaConsumerService(
 			when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
 				is RepositoryResult.Modified -> {
 					log.info("Ny hendelse for deltaker ${deltaker.id}: Oppdatering")
-					try {
-						aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
-					} catch (e: IllegalUpdateException) {
-						log.warn("Kan ikke opprette aktivitetskort for deltaker ${result.data.id}", e)
-					} catch (e: IngenOppfolgingsperiodeException) {
-						log.warn(e.message)
+					val aktivitetskort = aktivitetskortService.lagAktivitetskort(result.data)
+					if (aktivitetskort == null) {
+						log.error("aktivitetskort for deltaker ${deltaker.id} ble ikke oppdatert")
+						return@executeWithoutResult
 					}
+					aktivitetskortProducer.send(aktivitetskort)
 				}
-
 				is RepositoryResult.Created -> {
 					log.info("Ny hendelse for deltaker ${deltaker.id}: Opprettelse")
-
-					try {
-						aktivitetskortProducer.send(aktivitetskortService.lagAktivitetskort(result.data))
-					} catch (e: IllegalUpdateException) {
-						log.warn("Kan ikke opprette aktivitetskort for deltaker ${result.data.id}")
+					val aktivitetskort = aktivitetskortService.lagAktivitetskort(result.data)
+					if (aktivitetskort == null) {
+						log.error("aktivitetskort for deltaker ${deltaker.id} ble ikke opprettet")
+						return@executeWithoutResult
 					}
+					aktivitetskortProducer.send(aktivitetskort)
 				}
 
 				is RepositoryResult.NoChange -> {

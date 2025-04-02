@@ -91,7 +91,7 @@ class AktivitetskortServiceTest {
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
 
-		aktivitetskort.id shouldBe aktivitetskordId
+		aktivitetskort!!.id shouldBe aktivitetskordId
 		aktivitetskort.personident shouldBe ctx.aktivitetskort.personident
 		aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
 		aktivitetskort.aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
@@ -123,7 +123,7 @@ class AktivitetskortServiceTest {
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
 
-		aktivitetskort.personident shouldBe ctx.aktivitetskort.personident
+		aktivitetskort!!.personident shouldBe ctx.aktivitetskort.personident
 		aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
 		aktivitetskort.aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
 		aktivitetskort.startDato shouldBe ctx.aktivitetskort.startDato
@@ -240,7 +240,7 @@ class AktivitetskortServiceTest {
 		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
-		aktivitetskort.id shouldNotBe ctx.aktivitetskort.id
+		aktivitetskort?.id shouldNotBe ctx.aktivitetskort.id
 	}
 
 	@Test
