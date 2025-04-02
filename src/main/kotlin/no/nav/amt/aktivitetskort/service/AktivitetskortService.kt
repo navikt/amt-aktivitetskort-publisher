@@ -66,11 +66,11 @@ class AktivitetskortService(
 		return opprettMelding(deltaker).aktivitetskort
 	}
 
-	fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort {
-		val melding = opprettMelding(deltaker)
+	fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort? {
+		val melding = tryOpprettMelding(deltaker)
 
-		log.info("Opprettet nytt aktivitetskort: ${melding.id} for deltaker: ${deltaker.id}")
-		return melding.aktivitetskort
+		log.info("Opprettet nytt aktivitetskort: ${melding?.id} for deltaker: ${deltaker.id}")
+		return melding?.aktivitetskort
 	}
 
 	fun oppdaterAktivitetskort(deltaker: Deltaker, meldingId: UUID): Aktivitetskort {
@@ -132,7 +132,16 @@ class AktivitetskortService(
 			log.warn("Deltaker med id $deltakerId finnes ikke lenger")
 			return null
 		}
-		return opprettMelding(deltaker, meldingId)
+		return tryOpprettMelding(deltaker, meldingId)
+	}
+
+	fun tryOpprettMelding(deltaker: Deltaker, meldingId: UUID? = null): Melding? {
+		try {
+			return opprettMelding(deltaker, meldingId)
+		} catch (e: IngenOppfolgingsperiodeException) {
+			log.error("Kan ikke opprette aktivitetskort for deltaker ${deltaker.id}", e)
+		}
+		return null
 	}
 
 	fun opprettMelding(deltaker: Deltaker, meldingId: UUID? = null): Melding {
