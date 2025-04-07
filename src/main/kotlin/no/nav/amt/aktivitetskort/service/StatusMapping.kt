@@ -5,11 +5,10 @@ import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tag
 
 object StatusMapping {
-	private val FORSLAG_STATUS = listOf(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
+	private val FORSLAG_STATUS = listOf(DeltakerStatus.Type.UTKAST_TIL_PAMELDING, DeltakerStatus.Type.SOKT_INN)
 
 	private val PLANLEGGES_STATUS = listOf(
 		DeltakerStatus.Type.PABEGYNT_REGISTRERING,
-		DeltakerStatus.Type.SOKT_INN,
 		DeltakerStatus.Type.VURDERES,
 		DeltakerStatus.Type.VENTER_PA_OPPSTART,
 		DeltakerStatus.Type.VENTELISTE,
@@ -71,8 +70,16 @@ object StatusMapping {
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.FEILREGISTRERT,
 		)
-		DeltakerStatus.Type.AVBRUTT -> null
-		DeltakerStatus.Type.FULLFORT -> null
+		DeltakerStatus.Type.AVBRUTT -> Tag(
+			tekst = "Avbrutt",
+			sentiment = Tag.Sentiment.NEUTRAL,
+			kode = Tag.Kode.AVBRUTT,
+		)
+		DeltakerStatus.Type.FULLFORT -> Tag(
+			tekst = "Fullført",
+			sentiment = Tag.Sentiment.NEUTRAL,
+			kode = Tag.Kode.FULLFORT,
+		)
 		DeltakerStatus.Type.PABEGYNT_REGISTRERING -> Tag(
 			tekst = "Søkt inn",
 			sentiment = Tag.Sentiment.NEUTRAL,
