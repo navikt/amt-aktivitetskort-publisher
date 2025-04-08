@@ -150,6 +150,8 @@ data class Tag(
 		UTKAST_TIL_PAMELDING,
 		AVBRUTT_UTKAST,
 		FEILREGISTRERT,
+		AVBRUTT,
+		FULLFORT,
 	}
 
 	enum class Sentiment {

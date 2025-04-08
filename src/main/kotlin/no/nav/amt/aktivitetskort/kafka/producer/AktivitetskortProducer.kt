@@ -21,14 +21,15 @@ class AktivitetskortProducer(
 
 	fun send(aktivitetskort: List<Aktivitetskort>) {
 		aktivitetskort.forEach {
+			val messageId = UUID.randomUUID().toString()
 			val payload = AktivitetskortPayload(
 				messageId = UUID.randomUUID(),
 				aktivitetskortType = it.tiltakstype,
 				aktivitetskort = it.toAktivitetskortDto(),
 			)
 			template.send(AKTIVITETSKORT_TOPIC, it.id.toString(), JsonUtils.toJsonString(payload)).get()
+			log.info("Sendte aktivtetskort til aktivitetsplanen: ${it.id}} messageId: $messageId")
 			metricsService.incSendtAktivitetskort()
 		}
-		log.info("Sendte aktivtetskort til aktivitetsplanen: ${aktivitetskort.joinToString { it.id.toString() }}")
 	}
 }
