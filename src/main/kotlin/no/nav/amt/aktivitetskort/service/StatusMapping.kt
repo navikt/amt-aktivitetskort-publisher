@@ -5,10 +5,11 @@ import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tag
 
 object StatusMapping {
-	private val FORSLAG_STATUS = listOf(DeltakerStatus.Type.UTKAST_TIL_PAMELDING, DeltakerStatus.Type.SOKT_INN)
+	private val FORSLAG_STATUS = listOf(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
 
 	private val PLANLEGGES_STATUS = listOf(
 		DeltakerStatus.Type.PABEGYNT_REGISTRERING,
+		DeltakerStatus.Type.SOKT_INN,
 		DeltakerStatus.Type.VURDERES,
 		DeltakerStatus.Type.VENTER_PA_OPPSTART,
 		DeltakerStatus.Type.VENTELISTE,
