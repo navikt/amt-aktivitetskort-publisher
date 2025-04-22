@@ -21,7 +21,7 @@ class UnleashToggle(
 	private val tiltakstyperKometKanskjeErMasterFor = listOf(
 		Tiltak.Type.GRUPPEAMO,
 		Tiltak.Type.GRUFAGYRKE,
-		Tiltak.Type.JOBBK
+		Tiltak.Type.JOBBK,
 	)
 
 	fun erKometMasterForTiltakstype(tiltakstype: Tiltak.Type): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
