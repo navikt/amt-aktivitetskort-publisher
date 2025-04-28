@@ -233,22 +233,20 @@ class AktivitetskortService(
 		)
 	}
 
-	private fun getHandlinger(deltaker: Deltaker): List<Handling> {
-		return listOf(
-			Handling(
-				tekst = "Les mer om din deltakelse",
-				subtekst = "",
-				url = "$veilederUrlBasePath/${deltaker.id}",
-				lenkeType = LenkeType.INTERN,
-			),
-			Handling(
-				tekst = "Les mer om din deltakelse",
-				subtekst = "",
-				url = deltaker.deltakerUrl(),
-				lenkeType = LenkeType.EKSTERN,
-			),
-		)
-	}
+	private fun getHandlinger(deltaker: Deltaker): List<Handling> = listOf(
+		Handling(
+			tekst = "Les mer om din deltakelse",
+			subtekst = "",
+			url = "$veilederUrlBasePath/${deltaker.id}",
+			lenkeType = LenkeType.INTERN,
+		),
+		Handling(
+			tekst = "Les mer om din deltakelse",
+			subtekst = "",
+			url = deltaker.deltakerUrl(),
+			lenkeType = LenkeType.EKSTERN,
+		),
+	)
 
 	private fun Deltaker.deltakerUrl() = "$deltakerUrlBasePath/${this.id}"
 }
