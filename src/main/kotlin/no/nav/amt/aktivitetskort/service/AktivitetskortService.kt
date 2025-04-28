@@ -18,7 +18,6 @@ import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Oppgave
 import no.nav.amt.aktivitetskort.domain.OppgaveWrapper
-import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.exceptions.IngenOppfolgingsperiodeException
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -205,7 +204,7 @@ class AktivitetskortService(
 		endretTidspunkt = LocalDateTime.now(),
 		avtaltMedNav = deltaker.status.type !in IKKE_AVTALT_MED_NAV_STATUSER,
 		oppgave = oppgaver(deltaker, deltakerliste, arrangor),
-		handlinger = getHandlinger(deltaker, deltakerliste.tiltak.type),
+		handlinger = getHandlinger(deltaker),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
 		tiltakstype = deltakerliste.tiltak.type,
@@ -234,10 +233,7 @@ class AktivitetskortService(
 		)
 	}
 
-	private fun getHandlinger(deltaker: Deltaker, tiltakstype: Tiltak.Type): List<Handling>? {
-		if (!unleashToggle.erKometMasterForTiltakstype(tiltakstype)) {
-			return null
-		}
+	private fun getHandlinger(deltaker: Deltaker): List<Handling> {
 		return listOf(
 			Handling(
 				tekst = "Les mer om din deltakelse",
