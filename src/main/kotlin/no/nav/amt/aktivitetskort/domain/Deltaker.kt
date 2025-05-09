@@ -101,6 +101,8 @@ data class DeltakerStatus(
 		AVLYST_KONTRAKT,
 		UTDANNING,
 		SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT,
+		KRAV_IKKE_OPPFYLT,
+		KURS_FULLT,
 		;
 
 		fun display() = when (this) {
@@ -113,6 +115,8 @@ data class DeltakerStatus(
 			AVLYST_KONTRAKT -> "Avlyst kontrakt"
 			UTDANNING -> "Utdanning"
 			SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT -> "Samarbeidet med arrangøren er avbrutt"
+			KRAV_IKKE_OPPFYLT -> "Krav for deltakelse er ikke oppfylt"
+			KURS_FULLT -> "Kurset er fullt"
 		}
 	}
 
