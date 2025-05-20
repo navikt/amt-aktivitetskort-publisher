@@ -177,7 +177,7 @@ class AktivitetskortService(
 		return melding
 	}
 
-	private fun getArrangorForAktivitetskort(arrangor: Arrangor, overordnetArrangor: Arrangor?): Arrangor = if (overordnetArrangor == null) {
+	private fun getArrangorForAktivitetskort(arrangor: Arrangor, overordnetArrangor: Arrangor?) = if (overordnetArrangor == null) {
 		arrangor
 	} else {
 		if (overordnetArrangor.navn == "Ukjent Virksomhet") {
@@ -237,10 +237,7 @@ class AktivitetskortService(
 	private fun oppgavetekst(deltaker: Deltaker, arrangor: Arrangor): Pair<String, String> = if (deltaker.deltarPaKurs) {
 		Pair(
 			"Du har mottatt et utkast til søknad",
-			"Før søknaden sendes, vil vi gjerne at du leser gjennom. For å avgjøre hvem som skal få plass, " +
-				"kan Nav be om hjelp til vurdering fra arrangøren av kurset. " +
-				"Arrangør eller Nav vil kontakte deg hvis det er behov for et møte. " +
-				"Hvis du godkjenner utkastet blir søknaden sendt inn.",
+			"Før søknaden sendes vil vi gjerne at du leser gjennom. Hvis du godkjenner utkastet blir søknaden sendt inn.",
 		)
 	} else {
 		Pair(
