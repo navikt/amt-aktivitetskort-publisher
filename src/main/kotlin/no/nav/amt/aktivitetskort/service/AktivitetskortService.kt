@@ -18,6 +18,7 @@ import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Oppgave
 import no.nav.amt.aktivitetskort.domain.OppgaveWrapper
+import no.nav.amt.aktivitetskort.exceptions.HistoriskArenaDeltakerException
 import no.nav.amt.aktivitetskort.exceptions.IngenOppfolgingsperiodeException
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -68,14 +69,12 @@ class AktivitetskortService(
 	fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort? {
 		val melding = tryOpprettMelding(deltaker)
 
-		log.info("Opprettet nytt aktivitetskort: ${melding?.id} for deltaker: ${deltaker.id}")
 		return melding?.aktivitetskort
 	}
 
-	fun oppdaterAktivitetskort(deltaker: Deltaker, meldingId: UUID): Aktivitetskort {
+	fun oppdaterAktivitetskortForSlettetdeltaker(deltaker: Deltaker, meldingId: UUID): Aktivitetskort {
 		val melding = opprettMelding(deltaker, meldingId = meldingId)
 
-		log.info("Opprettet nytt aktivitetskort: ${melding.id} for deltaker: ${deltaker.id}")
 		return melding.aktivitetskort
 	}
 
@@ -139,6 +138,8 @@ class AktivitetskortService(
 			return opprettMelding(deltaker, meldingId)
 		} catch (e: IngenOppfolgingsperiodeException) {
 			log.error("Kan ikke opprette aktivitetskort for deltaker ${deltaker.id}", e)
+		} catch (e: HistoriskArenaDeltakerException) {
+			log.error("Kan ikke opprette aktivitetskort for historisk arena deltaker ${deltaker.id}")
 		}
 		return null
 	}

@@ -1,5 +1,5 @@
 package no.nav.amt.aktivitetskort.exceptions
 
-class IllegalUpdateException(
+class HistoriskArenaDeltakerException(
 	message: String,
 ) : Exception(message)
