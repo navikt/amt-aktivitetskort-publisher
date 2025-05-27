@@ -164,7 +164,7 @@ class KafkaConsumerService(
 		if (skalAvbryteAktivtetskort(aktivitetskort.aktivitetStatus)) {
 			val avbruttDeltaker = deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.AVBRUTT, null))
 
-			aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(avbruttDeltaker, aktivitetskort.id))
+			aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskortForSlettetdeltaker(avbruttDeltaker, aktivitetskort.id))
 			log.info(
 				"Mottok tombstone for deltaker: ${deltaker.id} som hadde status: ${deltaker.status.type}. " +
 					"Avbrøt deltakelse og aktivitetskort: ${aktivitetskort.id}.",

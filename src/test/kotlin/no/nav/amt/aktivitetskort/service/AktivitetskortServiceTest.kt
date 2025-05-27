@@ -14,7 +14,7 @@ import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Tiltak
-import no.nav.amt.aktivitetskort.exceptions.IllegalUpdateException
+import no.nav.amt.aktivitetskort.exceptions.HistoriskArenaDeltakerException
 import no.nav.amt.aktivitetskort.mock.mockCluster
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -177,20 +177,15 @@ class AktivitetskortServiceTest {
 	}
 
 	@Test
-	fun `lagAktivitetskort(deltaker) - oppdatering på hist deltaker - kaster exception`() {
+	fun `lagAktivitetskort(deltaker) - oppdatering på hist deltaker - oppretter ikke aktivitetskort`() {
 		val ctx = TestData.MockContext()
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
-		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } throws IllegalUpdateException("Noe gikk galt")
+		every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } throws HistoriskArenaDeltakerException("Noe gikk galt")
 		every { veilarboppfolgingClient.hentOppfolgingperiode(ctx.deltaker.personident) } returns nyPeriode
 
-		assertThrows<IllegalUpdateException> {
-			aktivitetskortService.lagAktivitetskort(ctx.deltaker)
-		}
-
-		verify(exactly = 0) { meldingRepository.upsert(any()) }
-		verify(exactly = 0) { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) }
+		aktivitetskortService.lagAktivitetskort(ctx.deltaker) shouldBe null
 	}
 
 	@Test
