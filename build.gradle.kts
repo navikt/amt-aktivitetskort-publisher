@@ -3,7 +3,7 @@ plugins {
 
 	id("org.springframework.boot") version "3.5.3"
 	id("io.spring.dependency-management") version "1.1.7"
-	id("org.jlleitschuh.gradle.ktlint") version "12.3.0"
+	id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
 	kotlin("plugin.spring") version kotlinVersion
 	kotlin("jvm") version kotlinVersion
 }
@@ -18,7 +18,7 @@ repositories {
 }
 
 val logstashEncoderVersion = "8.1"
-val okHttpVersion = "5.0.0"
+val okHttpVersion = "5.1.0"
 val kafkaClientsVersion = "4.0.0"
 val kotestVersion = "5.9.1"
 val testcontainersVersion = "1.21.3"
