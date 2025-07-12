@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldNotBe
 import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
-import no.nav.amt.aktivitetskort.database.TestDatabaseService
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.utils.AsyncUtils
@@ -15,24 +14,18 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.testcontainers.shaded.org.awaitility.Awaitility
 import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-class KafkaConsumerTest : IntegrationTest() {
-	@Autowired
-	lateinit var kafkaProducer: KafkaProducer<String, String?>
-
-	@Autowired
-	lateinit var db: TestDatabaseService
-
+class KafkaConsumerTest(
+	private val kafkaProducer: KafkaProducer<String, String?>,
+) : IntegrationTest() {
 	private val offset: Long = 0
 
 	@BeforeEach
 	fun setup() {
-		db.clean()
 		mockAktivitetArenaAclServer.clearResponses()
 	}
 
@@ -49,14 +42,14 @@ class KafkaConsumerTest : IntegrationTest() {
 		)
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			db.arrangorRepository.get(arrangor.id) != null
+			testDatabase.arrangorRepository.get(arrangor.id) != null
 		}
 	}
 
 	@Test
 	fun `listen - melding om ny deltakerliste - deltakerliste upsertes`() {
 		val ctx = TestData.MockContext()
-		db.arrangorRepository.upsert(ctx.arrangor)
+		testDatabase.arrangorRepository.upsert(ctx.arrangor)
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -67,15 +60,15 @@ class KafkaConsumerTest : IntegrationTest() {
 		)
 
 		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			db.deltakerlisteRepository.get(ctx.deltakerliste.id) != null
+			testDatabase.deltakerlisteRepository.get(ctx.deltakerliste.id) != null
 		}
 	}
 
 	@Test
 	fun `listen - melding om ny deltaker - deltaker upsertes og aktivitetskort opprettes`() {
 		val ctx = TestData.MockContext()
-		db.arrangorRepository.upsert(ctx.arrangor)
-		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
+		testDatabase.arrangorRepository.upsert(ctx.arrangor)
+		testDatabase.deltakerlisteRepository.upsert(ctx.deltakerliste)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.melding.id)
@@ -92,10 +85,10 @@ class KafkaConsumerTest : IntegrationTest() {
 		AsyncUtils.eventually {
 			ctx.melding.id shouldBe ctx.aktivitetskortId
 			ctx.melding.aktivitetskort.id shouldBe ctx.aktivitetskortId
-			val deltaker = db.deltakerRepository.get(ctx.deltaker.id)!!
+			val deltaker = testDatabase.deltakerRepository.get(ctx.deltaker.id)!!
 			deltaker shouldBe ctx.deltaker
 
-			val aktivitetskort = db.meldingRepository
+			val aktivitetskort = testDatabase.meldingRepository
 				.getByDeltakerId(deltaker.id)
 				.first()
 				.aktivitetskort
@@ -123,10 +116,10 @@ class KafkaConsumerTest : IntegrationTest() {
 			sluttdato = LocalDate.now().plusDays(1),
 		)
 		val nyId = UUID.randomUUID()
-		db.arrangorRepository.upsert(ctx.arrangor)
-		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
-		db.deltakerRepository.upsert(ctx.deltaker, -1)
-		db.meldingRepository.upsert(ctx.melding)
+		testDatabase.arrangorRepository.upsert(ctx.arrangor)
+		testDatabase.deltakerlisteRepository.upsert(ctx.deltakerliste)
+		testDatabase.deltakerRepository.upsert(ctx.deltaker, -1)
+		testDatabase.meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, nyId)
@@ -141,10 +134,10 @@ class KafkaConsumerTest : IntegrationTest() {
 		)
 
 		AsyncUtils.eventually {
-			val deltaker = db.deltakerRepository.get(ctx.deltaker.id)!!
+			val deltaker = testDatabase.deltakerRepository.get(ctx.deltaker.id)!!
 			deltaker shouldBe endretDeltaker
 
-			val aktivitetskort = db.meldingRepository
+			val aktivitetskort = testDatabase.meldingRepository
 				.getByDeltakerId(deltaker.id)
 
 			aktivitetskort.size shouldBe 2
@@ -162,11 +155,11 @@ class KafkaConsumerTest : IntegrationTest() {
 	@Test
 	fun `listen - tombstone for deltaker som har aktivt aktivitetskort - deltaker slettes og aktivitetskort avbrytes`() {
 		val ctx = TestData.MockContext(oppfolgingsperiodeId = UUID.randomUUID())
-		db.arrangorRepository.upsert(ctx.arrangor)
-		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
-		db.deltakerRepository.upsert(ctx.deltaker, offset)
-		db.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId!!)
-		db.meldingRepository.upsert(ctx.melding)
+		testDatabase.arrangorRepository.upsert(ctx.arrangor)
+		testDatabase.deltakerlisteRepository.upsert(ctx.deltakerliste)
+		testDatabase.deltakerRepository.upsert(ctx.deltaker, offset)
+		testDatabase.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId!!)
+		testDatabase.meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
@@ -181,13 +174,13 @@ class KafkaConsumerTest : IntegrationTest() {
 		)
 
 		AsyncUtils.eventually {
-			val aktivitetskort = db.meldingRepository
+			val aktivitetskort = testDatabase.meldingRepository
 				.getByDeltakerId(ctx.deltaker.id)
 				.first()
 				.aktivitetskort
 			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.AVBRUTT
 
-			db.deltakerRepository.get(ctx.deltaker.id) shouldBe null
+			testDatabase.deltakerRepository.get(ctx.deltaker.id) shouldBe null
 		}
 	}
 
@@ -197,11 +190,11 @@ class KafkaConsumerTest : IntegrationTest() {
 			oppfolgingsperiodeId = UUID.randomUUID(),
 			deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, null)),
 		)
-		db.arrangorRepository.upsert(ctx.arrangor)
-		db.deltakerlisteRepository.upsert(ctx.deltakerliste)
-		db.deltakerRepository.upsert(ctx.deltaker, offset)
-		db.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId!!)
-		db.meldingRepository.upsert(ctx.melding)
+		testDatabase.arrangorRepository.upsert(ctx.arrangor)
+		testDatabase.deltakerlisteRepository.upsert(ctx.deltakerliste)
+		testDatabase.deltakerRepository.upsert(ctx.deltaker, offset)
+		testDatabase.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId!!)
+		testDatabase.meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
@@ -215,13 +208,13 @@ class KafkaConsumerTest : IntegrationTest() {
 		)
 
 		AsyncUtils.eventually {
-			val aktivitetskort = db.meldingRepository
+			val aktivitetskort = testDatabase.meldingRepository
 				.getByDeltakerId(ctx.deltaker.id)
 				.firstOrNull()!!
 				.aktivitetskort
 			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.FULLFORT
 
-			db.deltakerRepository.get(ctx.deltaker.id) shouldBe null
+			testDatabase.deltakerRepository.get(ctx.deltaker.id) shouldBe null
 		}
 	}
 
@@ -230,9 +223,9 @@ class KafkaConsumerTest : IntegrationTest() {
 		val deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.PABEGYNT_REGISTRERING, null))
 		val deltakerliste = TestData.deltakerliste(deltaker.deltakerlisteId)
 		val arrangor = TestData.arrangor(deltakerliste.arrangorId)
-		db.arrangorRepository.upsert(arrangor)
-		db.deltakerlisteRepository.upsert(deltakerliste)
-		db.deltakerRepository.upsert(deltaker, offset)
+		testDatabase.arrangorRepository.upsert(arrangor)
+		testDatabase.deltakerlisteRepository.upsert(deltakerliste)
+		testDatabase.deltakerRepository.upsert(deltaker, offset)
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -243,8 +236,8 @@ class KafkaConsumerTest : IntegrationTest() {
 		)
 
 		AsyncUtils.eventually {
-			db.deltakerRepository.get(deltaker.id) shouldBe null
-			db.meldingRepository.getByDeltakerId(deltaker.id) shouldBe emptyList()
+			testDatabase.deltakerRepository.get(deltaker.id) shouldBe null
+			testDatabase.meldingRepository.getByDeltakerId(deltaker.id) shouldBe emptyList()
 		}
 	}
 }
