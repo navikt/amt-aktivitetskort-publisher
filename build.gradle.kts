@@ -63,6 +63,7 @@ dependencies {
 
 	testImplementation(kotlin("test"))
 	testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude("com.vaadin.external.google", "android-json")
 	}
@@ -74,14 +75,22 @@ dependencies {
 	testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 }
 
-tasks.test {
-	useJUnitPlatform()
-}
-
 kotlin {
 	jvmToolchain(21)
+	compilerOptions {
+		freeCompilerArgs.add("-Xjsr305=strict")
+	}
 }
 
-configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-	version.set(klintVersion)
+ktlint {
+	version = klintVersion
+}
+
+tasks.jar {
+	enabled = false
+}
+
+tasks.test {
+	useJUnitPlatform()
+	jvmArgs("-Xshare:off")
 }

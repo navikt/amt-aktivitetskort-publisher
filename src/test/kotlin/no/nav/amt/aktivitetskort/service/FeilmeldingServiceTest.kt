@@ -2,21 +2,15 @@ package no.nav.amt.aktivitetskort.service
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.IntegrationTest
-import no.nav.amt.aktivitetskort.database.TestDatabaseService
 import no.nav.amt.aktivitetskort.kafka.consumer.SOURCE
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.AktivitetskortFeilmelding
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class FeilmeldingServiceTest : IntegrationTest() {
-	@Autowired
-	lateinit var feilmeldingService: FeilmeldingService
-
-	@Autowired
-	lateinit var db: TestDatabaseService
-
+class FeilmeldingServiceTest(
+	private val feilmeldingService: FeilmeldingService,
+) : IntegrationTest() {
 	@Test
 	fun `handleFeilmelding - feilmelding med TEAM_KOMET som source - feilmelding lagres`() {
 		val key = UUID.randomUUID()
@@ -31,7 +25,7 @@ class FeilmeldingServiceTest : IntegrationTest() {
 
 		feilmeldingService.handleFeilmelding(key, feilmelding)
 
-		db.feilmeldingErLagret(key) shouldBe true
+		testDatabase.feilmeldingErLagret(key) shouldBe true
 	}
 
 	@Test
@@ -48,6 +42,6 @@ class FeilmeldingServiceTest : IntegrationTest() {
 
 		feilmeldingService.handleFeilmelding(key, feilmelding)
 
-		db.feilmeldingErLagret(key) shouldBe false
+		testDatabase.feilmeldingErLagret(key) shouldBe false
 	}
 }

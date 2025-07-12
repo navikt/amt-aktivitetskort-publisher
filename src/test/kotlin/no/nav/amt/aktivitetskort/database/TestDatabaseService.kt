@@ -18,7 +18,6 @@ import no.nav.amt.aktivitetskort.utils.sqlParameters
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
 import java.util.UUID
-import javax.sql.DataSource
 
 @Service
 class TestDatabaseService(
@@ -26,12 +25,9 @@ class TestDatabaseService(
 	val arrangorRepository: ArrangorRepository,
 	val deltakerlisteRepository: DeltakerlisteRepository,
 	val deltakerRepository: DeltakerRepository,
-	private val datasource: DataSource,
 	private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
 	val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
 ) {
-	fun clean() = DbTestDataUtils.cleanDatabase(datasource)
-
 	fun insertDeltaker(deltaker: Deltaker = deltaker(), offset: Long = 0): Deltaker {
 		insertDeltakerliste(deltakerliste(id = deltaker.deltakerlisteId))
 		return when (val result = deltakerRepository.upsert(deltaker, offset)) {

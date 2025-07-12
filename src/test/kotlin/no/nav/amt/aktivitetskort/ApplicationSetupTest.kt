@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 
 class ApplicationSetupTest : IntegrationTest() {
 	@Test
-	fun `Applcation starts and answers`() {
+	fun `Application starts and answers`() {
 		sendRequest(
 			"GET",
 			"/internal/health/readiness",
