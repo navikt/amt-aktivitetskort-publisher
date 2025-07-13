@@ -3,7 +3,6 @@ package no.nav.amt.aktivitetskort.repositories
 import io.getunleash.FakeUnleash
 import io.kotest.assertions.fail
 import io.kotest.matchers.shouldBe
-import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
@@ -13,8 +12,9 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DeltakerRepositoryTest(
+	private val deltakerRepository: DeltakerRepository,
 	private val unleashClient: FakeUnleash,
-) : IntegrationTest() {
+) : RepositoryTestBase() {
 	@BeforeEach
 	fun setup() {
 		unleashClient.disableAll()
@@ -22,7 +22,7 @@ class DeltakerRepositoryTest(
 
 	@Test
 	fun `get - finnes ikke - returnerer null`() {
-		testDatabase.deltakerRepository.get(UUID.randomUUID()) shouldBe null
+		deltakerRepository.get(UUID.randomUUID()) shouldBe null
 	}
 
 	@Test
@@ -30,12 +30,12 @@ class DeltakerRepositoryTest(
 		val deltaker = TestData
 			.deltaker()
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-		when (val result = testDatabase.deltakerRepository.upsert(deltaker, 0)) {
+		when (val result = deltakerRepository.upsert(deltaker, 0)) {
 			is RepositoryResult.Created -> result.data shouldBe deltaker
 			else -> fail("Should be Created, was $result")
 		}
 
-		testDatabase.deltakerRepository.get(deltaker.id) shouldBe deltaker
+		deltakerRepository.get(deltaker.id) shouldBe deltaker
 	}
 
 	@Test
@@ -43,9 +43,9 @@ class DeltakerRepositoryTest(
 		val deltaker = TestData
 			.deltaker(dagerPerUke = null, prosentStilling = null)
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { testDatabase.deltakerRepository.upsert(it, 0) }
+			.also { deltakerRepository.upsert(it, 0) }
 
-		when (val result = testDatabase.deltakerRepository.upsert(deltaker, 1)) {
+		when (val result = deltakerRepository.upsert(deltaker, 1)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
@@ -58,9 +58,9 @@ class DeltakerRepositoryTest(
 		val deltaker = TestData
 			.deltaker(dagerPerUke = null, prosentStilling = null)
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { testDatabase.deltakerRepository.upsert(it, 0) }
+			.also { deltakerRepository.upsert(it, 0) }
 
-		when (val result = testDatabase.deltakerRepository.upsert(deltaker, 1)) {
+		when (val result = deltakerRepository.upsert(deltaker, 1)) {
 			is RepositoryResult.Created -> fail("Should be Modified, was $result")
 			is RepositoryResult.Modified -> {}
 			is RepositoryResult.NoChange -> fail("Should be Modified, was $result")
@@ -72,18 +72,18 @@ class DeltakerRepositoryTest(
 		val initialDeltaker = TestData
 			.deltaker()
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { testDatabase.deltakerRepository.upsert(it, 0) }
+			.also { deltakerRepository.upsert(it, 0) }
 
 		val updatedDeltaker = initialDeltaker.copy(
 			personident = "UPDATED",
 		)
 
-		when (val result = testDatabase.deltakerRepository.upsert(updatedDeltaker, 1)) {
+		when (val result = deltakerRepository.upsert(updatedDeltaker, 1)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedDeltaker
 			else -> fail("Should be Modified, was $result")
 		}
 
-		testDatabase.deltakerRepository.get(initialDeltaker.id) shouldBe updatedDeltaker
+		deltakerRepository.get(initialDeltaker.id) shouldBe updatedDeltaker
 	}
 
 	@Test
@@ -91,19 +91,19 @@ class DeltakerRepositoryTest(
 		val initialDeltaker = TestData
 			.deltaker()
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { testDatabase.deltakerRepository.upsert(it, 1) }
+			.also { deltakerRepository.upsert(it, 1) }
 
 		val tidligereVersjonAvDeltaker = initialDeltaker.copy(
 			personident = "UTDATERT",
 		)
 
-		when (val result = testDatabase.deltakerRepository.upsert(tidligereVersjonAvDeltaker, 0)) {
+		when (val result = deltakerRepository.upsert(tidligereVersjonAvDeltaker, 0)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
 		}
 
-		testDatabase.deltakerRepository.get(initialDeltaker.id) shouldBe initialDeltaker
+		deltakerRepository.get(initialDeltaker.id) shouldBe initialDeltaker
 	}
 
 	@Test
@@ -111,14 +111,14 @@ class DeltakerRepositoryTest(
 		val initialDeltaker = TestData
 			.deltaker()
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { testDatabase.deltakerRepository.upsert(it, 1) }
+			.also { deltakerRepository.upsert(it, 1) }
 
-		when (val result = testDatabase.deltakerRepository.upsert(initialDeltaker, 1)) {
+		when (val result = deltakerRepository.upsert(initialDeltaker, 1)) {
 			is RepositoryResult.NoChange -> {}
 			else -> fail("Should be NoChange, was $result")
 		}
 
-		testDatabase.deltakerRepository.get(initialDeltaker.id) shouldBe initialDeltaker
+		deltakerRepository.get(initialDeltaker.id) shouldBe initialDeltaker
 	}
 
 	@Test
@@ -126,15 +126,15 @@ class DeltakerRepositoryTest(
 		val initialDeltaker = TestData
 			.deltaker()
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { testDatabase.deltakerRepository.upsert(it, 1) }
+			.also { deltakerRepository.upsert(it, 1) }
 
-		when (val result = testDatabase.deltakerRepository.upsert(initialDeltaker, 2)) {
+		when (val result = deltakerRepository.upsert(initialDeltaker, 2)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
 		}
 
-		testDatabase.deltakerRepository.get(initialDeltaker.id) shouldBe initialDeltaker
+		deltakerRepository.get(initialDeltaker.id) shouldBe initialDeltaker
 	}
 
 	@Test
@@ -143,12 +143,12 @@ class DeltakerRepositoryTest(
 			.deltaker()
 			.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-		when (val result = testDatabase.deltakerRepository.upsert(deltaker, 0)) {
+		when (val result = deltakerRepository.upsert(deltaker, 0)) {
 			is RepositoryResult.NoChange -> {}
 			else -> fail("Should be NoChange, was $result")
 		}
 
-		testDatabase.deltakerRepository.get(deltaker.id) shouldBe null
+		deltakerRepository.get(deltaker.id) shouldBe null
 	}
 
 	@Test
@@ -156,18 +156,18 @@ class DeltakerRepositoryTest(
 		val initialDeltaker = TestData
 			.deltaker()
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { testDatabase.deltakerRepository.upsert(it, 0) }
+			.also { deltakerRepository.upsert(it, 0) }
 
 		val updatedDeltaker = initialDeltaker.copy(
 			status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null),
 		)
 
-		when (val result = testDatabase.deltakerRepository.upsert(updatedDeltaker, 1)) {
+		when (val result = deltakerRepository.upsert(updatedDeltaker, 1)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedDeltaker
 			else -> fail("Should be Modified, was $result")
 		}
 
-		testDatabase.deltakerRepository.get(initialDeltaker.id) shouldBe updatedDeltaker
+		deltakerRepository.get(initialDeltaker.id) shouldBe updatedDeltaker
 	}
 
 	@Test
@@ -178,12 +178,12 @@ class DeltakerRepositoryTest(
 				sluttdato = LocalDate.of(2017, 11, 30),
 				status = DeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Aarsak.FATT_JOBB),
 			).also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-		when (val result = testDatabase.deltakerRepository.upsert(deltaker, 0)) {
+		when (val result = deltakerRepository.upsert(deltaker, 0)) {
 			is RepositoryResult.NoChange -> {}
 			else -> fail("Should be NoChange, was $result")
 		}
 
-		testDatabase.deltakerRepository.get(deltaker.id) shouldBe null
+		deltakerRepository.get(deltaker.id) shouldBe null
 	}
 
 	@Test
@@ -194,7 +194,7 @@ class DeltakerRepositoryTest(
 				sluttdato = null,
 				status = DeltakerStatus(DeltakerStatus.Type.DELTAR, null),
 			).also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
-			.also { testDatabase.deltakerRepository.upsert(it, 0) }
+			.also { deltakerRepository.upsert(it, 0) }
 
 		val updatedDeltaker = initialDeltaker.copy(
 			oppstartsdato = LocalDate.of(2017, 10, 1),
@@ -202,11 +202,11 @@ class DeltakerRepositoryTest(
 			status = DeltakerStatus(DeltakerStatus.Type.FULLFORT, DeltakerStatus.Aarsak.ANNET),
 		)
 
-		when (val result = testDatabase.deltakerRepository.upsert(updatedDeltaker, 1)) {
+		when (val result = deltakerRepository.upsert(updatedDeltaker, 1)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedDeltaker
 			else -> fail("Should be Modified, was $result")
 		}
 
-		testDatabase.deltakerRepository.get(initialDeltaker.id) shouldBe updatedDeltaker
+		deltakerRepository.get(initialDeltaker.id) shouldBe updatedDeltaker
 	}
 }

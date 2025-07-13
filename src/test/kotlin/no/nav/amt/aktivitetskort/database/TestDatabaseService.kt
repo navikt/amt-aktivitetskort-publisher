@@ -11,7 +11,6 @@ import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
-import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.repositories.OppfolgingsperiodeRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.aktivitetskort.utils.sqlParameters
@@ -21,12 +20,11 @@ import java.util.UUID
 
 @Service
 class TestDatabaseService(
-	val meldingRepository: MeldingRepository,
-	val arrangorRepository: ArrangorRepository,
-	val deltakerlisteRepository: DeltakerlisteRepository,
-	val deltakerRepository: DeltakerRepository,
+	private val arrangorRepository: ArrangorRepository,
+	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val deltakerRepository: DeltakerRepository,
 	private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
-	val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
+	private val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
 ) {
 	fun insertDeltaker(deltaker: Deltaker = deltaker(), offset: Long = 0): Deltaker {
 		insertDeltakerliste(deltakerliste(id = deltaker.deltakerlisteId))

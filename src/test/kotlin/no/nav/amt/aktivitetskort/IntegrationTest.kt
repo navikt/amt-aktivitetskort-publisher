@@ -4,10 +4,12 @@ import no.nav.amt.aktivitetskort.mock.MockAktivitetArenaAclServer
 import no.nav.amt.aktivitetskort.mock.MockAmtArenaAclServer
 import no.nav.amt.aktivitetskort.mock.MockMachineToMachineServer
 import no.nav.amt.aktivitetskort.mock.MockVeilarboppfolgingServer
+import no.nav.amt.aktivitetskort.repositories.RepositoryTestBase
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import org.awaitility.Awaitility
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -16,6 +18,7 @@ import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.utility.DockerImageName
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest(classes = [Application::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 abstract class IntegrationTest : RepositoryTestBase() {
@@ -28,6 +31,10 @@ abstract class IntegrationTest : RepositoryTestBase() {
 		.Builder()
 		.callTimeout(Duration.ofMinutes(5))
 		.build()
+
+	init {
+		Awaitility.setDefaultTimeout(10, TimeUnit.SECONDS)
+	}
 
 	companion object {
 		val mockAktivitetArenaAclServer = MockAktivitetArenaAclServer()

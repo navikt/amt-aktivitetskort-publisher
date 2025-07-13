@@ -1,5 +1,6 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -8,20 +9,27 @@ import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
-import no.nav.amt.aktivitetskort.utils.AsyncUtils
+import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
+import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
+import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
+import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.utils.JsonUtils
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.testcontainers.shaded.org.awaitility.Awaitility
 import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class KafkaConsumerTest(
 	private val kafkaProducer: KafkaProducer<String, String?>,
+	private val arrangorRepository: ArrangorRepository,
+	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val deltakerRepository: DeltakerRepository,
+	private val meldingRepository: MeldingRepository,
 ) : IntegrationTest() {
 	private val offset: Long = 0
 
@@ -42,15 +50,15 @@ class KafkaConsumerTest(
 			),
 		)
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			testDatabase.arrangorRepository.get(arrangor.id) != null
+		await().atMost(5, TimeUnit.SECONDS).until {
+			arrangorRepository.get(arrangor.id) != null
 		}
 	}
 
 	@Test
 	fun `listen - melding om ny deltakerliste - deltakerliste upsertes`() {
 		val ctx = TestData.MockContext()
-		testDatabase.arrangorRepository.upsert(ctx.arrangor)
+		arrangorRepository.upsert(ctx.arrangor)
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -60,16 +68,16 @@ class KafkaConsumerTest(
 			),
 		)
 
-		Awaitility.await().atMost(5, TimeUnit.SECONDS).until {
-			testDatabase.deltakerlisteRepository.get(ctx.deltakerliste.id) != null
+		await().atMost(5, TimeUnit.SECONDS).until {
+			deltakerlisteRepository.get(ctx.deltakerliste.id) != null
 		}
 	}
 
 	@Test
 	fun `listen - melding om ny deltaker - deltaker upsertes og aktivitetskort opprettes`() {
 		val ctx = TestData.MockContext()
-		testDatabase.arrangorRepository.upsert(ctx.arrangor)
-		testDatabase.deltakerlisteRepository.upsert(ctx.deltakerliste)
+		arrangorRepository.upsert(ctx.arrangor)
+		deltakerlisteRepository.upsert(ctx.deltakerliste)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.melding.id)
@@ -83,32 +91,34 @@ class KafkaConsumerTest(
 			),
 		)
 
-		AsyncUtils.eventually {
+		await().untilAsserted {
 			ctx.melding.id shouldBe ctx.aktivitetskortId
 			ctx.melding.aktivitetskort.id shouldBe ctx.aktivitetskortId
-			val deltaker = testDatabase.deltakerRepository.get(ctx.deltaker.id)
+			val deltaker = deltakerRepository.get(ctx.deltaker.id)
 
 			deltaker.shouldNotBeNull()
 			deltaker shouldBe ctx.deltaker
 
-			val aktivitetskort = testDatabase.meldingRepository
+			val aktivitetskort = meldingRepository
 				.getByDeltakerId(deltaker.id)
 				.first()
 				.aktivitetskort
 
-			aktivitetskort.personident shouldBe ctx.aktivitetskort.personident
-			aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
-			aktivitetskort.aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
-			aktivitetskort.startDato shouldBe ctx.aktivitetskort.startDato
-			aktivitetskort.sluttDato shouldBe ctx.aktivitetskort.sluttDato
-			aktivitetskort.beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
-			aktivitetskort.endretAv shouldBe ctx.aktivitetskort.endretAv
-			aktivitetskort.endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
-			aktivitetskort.avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
-			aktivitetskort.oppgave shouldBe ctx.aktivitetskort.oppgave
-			aktivitetskort.handlinger shouldNotBe null
-			aktivitetskort.detaljer shouldBe ctx.aktivitetskort.detaljer
-			aktivitetskort.etiketter shouldBe ctx.aktivitetskort.etiketter
+			assertSoftly(aktivitetskort) {
+				personident shouldBe ctx.aktivitetskort.personident
+				tittel shouldBe ctx.aktivitetskort.tittel
+				aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
+				startDato shouldBe ctx.aktivitetskort.startDato
+				sluttDato shouldBe ctx.aktivitetskort.sluttDato
+				beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
+				endretAv shouldBe ctx.aktivitetskort.endretAv
+				endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
+				avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
+				oppgave shouldBe ctx.aktivitetskort.oppgave
+				handlinger shouldNotBe null
+				detaljer shouldBe ctx.aktivitetskort.detaljer
+				etiketter shouldBe ctx.aktivitetskort.etiketter
+			}
 		}
 	}
 
@@ -119,10 +129,10 @@ class KafkaConsumerTest(
 			sluttdato = LocalDate.now().plusDays(1),
 		)
 		val nyId = UUID.randomUUID()
-		testDatabase.arrangorRepository.upsert(ctx.arrangor)
-		testDatabase.deltakerlisteRepository.upsert(ctx.deltakerliste)
-		testDatabase.deltakerRepository.upsert(ctx.deltaker, -1)
-		testDatabase.meldingRepository.upsert(ctx.melding)
+		arrangorRepository.upsert(ctx.arrangor)
+		deltakerlisteRepository.upsert(ctx.deltakerliste)
+		deltakerRepository.upsert(ctx.deltaker, -1)
+		meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, nyId)
@@ -136,12 +146,12 @@ class KafkaConsumerTest(
 			),
 		)
 
-		AsyncUtils.eventually {
-			val deltaker = testDatabase.deltakerRepository.get(ctx.deltaker.id)
+		await().untilAsserted {
+			val deltaker = deltakerRepository.get(ctx.deltaker.id)
 			deltaker.shouldNotBeNull()
 			deltaker shouldBe endretDeltaker
 
-			val aktivitetskort = testDatabase.meldingRepository
+			val aktivitetskort = meldingRepository
 				.getByDeltakerId(deltaker.id)
 
 			aktivitetskort.size shouldBe 2
@@ -161,11 +171,11 @@ class KafkaConsumerTest(
 		val ctx = TestData.MockContext(oppfolgingsperiodeId = UUID.randomUUID())
 		ctx.oppfolgingsperiodeId.shouldNotBeNull()
 
-		testDatabase.arrangorRepository.upsert(ctx.arrangor)
-		testDatabase.deltakerlisteRepository.upsert(ctx.deltakerliste)
-		testDatabase.deltakerRepository.upsert(ctx.deltaker, offset)
+		arrangorRepository.upsert(ctx.arrangor)
+		deltakerlisteRepository.upsert(ctx.deltakerliste)
+		deltakerRepository.upsert(ctx.deltaker, offset)
 		testDatabase.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId)
-		testDatabase.meldingRepository.upsert(ctx.melding)
+		meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
@@ -179,14 +189,14 @@ class KafkaConsumerTest(
 			),
 		)
 
-		AsyncUtils.eventually {
-			val aktivitetskort = testDatabase.meldingRepository
+		await().untilAsserted {
+			val aktivitetskort = meldingRepository
 				.getByDeltakerId(ctx.deltaker.id)
 				.first()
 				.aktivitetskort
 			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.AVBRUTT
 
-			testDatabase.deltakerRepository.get(ctx.deltaker.id) shouldBe null
+			deltakerRepository.get(ctx.deltaker.id) shouldBe null
 		}
 	}
 
@@ -198,11 +208,11 @@ class KafkaConsumerTest(
 		)
 		ctx.oppfolgingsperiodeId.shouldNotBeNull()
 
-		testDatabase.arrangorRepository.upsert(ctx.arrangor)
-		testDatabase.deltakerlisteRepository.upsert(ctx.deltakerliste)
-		testDatabase.deltakerRepository.upsert(ctx.deltaker, offset)
+		arrangorRepository.upsert(ctx.arrangor)
+		deltakerlisteRepository.upsert(ctx.deltakerliste)
+		deltakerRepository.upsert(ctx.deltaker, offset)
 		testDatabase.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId)
-		testDatabase.meldingRepository.upsert(ctx.melding)
+		meldingRepository.upsert(ctx.melding)
 
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
@@ -215,14 +225,14 @@ class KafkaConsumerTest(
 			),
 		)
 
-		AsyncUtils.eventually {
-			val aktivitetskort = testDatabase.meldingRepository
+		await().untilAsserted {
+			val aktivitetskort = meldingRepository
 				.getByDeltakerId(ctx.deltaker.id)
 				.first()
 				.aktivitetskort
 
 			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.FULLFORT
-			testDatabase.deltakerRepository.get(ctx.deltaker.id) shouldBe null
+			deltakerRepository.get(ctx.deltaker.id) shouldBe null
 		}
 	}
 
@@ -231,9 +241,9 @@ class KafkaConsumerTest(
 		val deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.PABEGYNT_REGISTRERING, null))
 		val deltakerliste = TestData.deltakerliste(deltaker.deltakerlisteId)
 		val arrangor = TestData.arrangor(deltakerliste.arrangorId)
-		testDatabase.arrangorRepository.upsert(arrangor)
-		testDatabase.deltakerlisteRepository.upsert(deltakerliste)
-		testDatabase.deltakerRepository.upsert(deltaker, offset)
+		arrangorRepository.upsert(arrangor)
+		deltakerlisteRepository.upsert(deltakerliste)
+		deltakerRepository.upsert(deltaker, offset)
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -243,9 +253,9 @@ class KafkaConsumerTest(
 			),
 		)
 
-		AsyncUtils.eventually {
-			testDatabase.deltakerRepository.get(deltaker.id) shouldBe null
-			testDatabase.meldingRepository.getByDeltakerId(deltaker.id) shouldBe emptyList()
+		await().untilAsserted {
+			deltakerRepository.get(deltaker.id) shouldBe null
+			meldingRepository.getByDeltakerId(deltaker.id) shouldBe emptyList()
 		}
 	}
 }

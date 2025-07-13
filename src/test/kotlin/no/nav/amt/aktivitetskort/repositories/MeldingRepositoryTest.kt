@@ -1,16 +1,17 @@
 package no.nav.amt.aktivitetskort.repositories
 
 import io.kotest.matchers.shouldBe
-import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class MeldingRepositoryTest : IntegrationTest() {
+class MeldingRepositoryTest(
+	private val meldingRepository: MeldingRepository,
+) : RepositoryTestBase() {
 	@Test
 	fun `get - finnes ikke - returnerer tom liste`() {
-		testDatabase.meldingRepository.getByDeltakerId(UUID.randomUUID()) shouldBe emptyList()
+		meldingRepository.getByDeltakerId(UUID.randomUUID()) shouldBe emptyList()
 	}
 
 	@Test
@@ -20,9 +21,9 @@ class MeldingRepositoryTest : IntegrationTest() {
 			.also { testDatabase.insertArrangor(ctx.arrangor) }
 			.also { testDatabase.insertDeltakerliste(ctx.deltakerliste) }
 			.also { testDatabase.insertDeltaker(ctx.deltaker) }
-			.also { testDatabase.meldingRepository.upsert(it) }
+			.also { meldingRepository.upsert(it) }
 
-		testDatabase.meldingRepository.getByDeltakerId(melding.deltakerId).first() shouldBe melding
+		meldingRepository.getByDeltakerId(melding.deltakerId).first() shouldBe melding
 	}
 
 	@Test
@@ -32,9 +33,9 @@ class MeldingRepositoryTest : IntegrationTest() {
 			.also { testDatabase.insertArrangor(ctx.arrangor) }
 			.also { testDatabase.insertDeltakerliste(ctx.deltakerliste) }
 			.also { testDatabase.insertDeltaker(ctx.deltaker) }
-			.also { testDatabase.meldingRepository.upsert(it) }
+			.also { meldingRepository.upsert(it) }
 
-		testDatabase.meldingRepository.getByDeltakerlisteId(ctx.deltakerliste.id) shouldBe listOf(melding)
+		meldingRepository.getByDeltakerlisteId(ctx.deltakerliste.id) shouldBe listOf(melding)
 	}
 
 	@Test
@@ -44,9 +45,9 @@ class MeldingRepositoryTest : IntegrationTest() {
 			.also { testDatabase.insertArrangor(ctx.arrangor) }
 			.also { testDatabase.insertDeltakerliste(ctx.deltakerliste) }
 			.also { testDatabase.insertDeltaker(ctx.deltaker) }
-			.also { testDatabase.meldingRepository.upsert(it) }
+			.also { meldingRepository.upsert(it) }
 
-		testDatabase.meldingRepository.getByArrangorId(ctx.arrangor.id) shouldBe listOf(melding)
+		meldingRepository.getByArrangorId(ctx.arrangor.id) shouldBe listOf(melding)
 	}
 
 	@Test
@@ -56,15 +57,15 @@ class MeldingRepositoryTest : IntegrationTest() {
 			.also { testDatabase.insertArrangor(ctx.arrangor) }
 			.also { testDatabase.insertDeltakerliste(ctx.deltakerliste) }
 			.also { testDatabase.insertDeltaker(ctx.deltaker) }
-			.also { testDatabase.meldingRepository.upsert(it) }
+			.also { meldingRepository.upsert(it) }
 
 		val updatedMelding = initialMelding.copy(
 			aktivitetskort = initialMelding.aktivitetskort.copy(sluttDato = LocalDate.now()),
 		)
 
-		testDatabase.meldingRepository.upsert(updatedMelding)
+		meldingRepository.upsert(updatedMelding)
 
-		val melding = testDatabase.meldingRepository.getByDeltakerId(initialMelding.deltakerId).first()
+		val melding = meldingRepository.getByDeltakerId(initialMelding.deltakerId).first()
 
 		melding.aktivitetskort shouldBe updatedMelding.aktivitetskort
 	}

@@ -1,17 +1,26 @@
-package no.nav.amt.aktivitetskort
+package no.nav.amt.aktivitetskort.repositories
 
+import no.nav.amt.aktivitetskort.IntegrationTestConfig
 import no.nav.amt.aktivitetskort.database.DbTestDataUtils
 import no.nav.amt.aktivitetskort.database.SingletonPostgresContainer
 import no.nav.amt.aktivitetskort.database.TestDatabaseService
 import org.junit.jupiter.api.AfterEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureJdbc
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestConstructor
 import javax.sql.DataSource
 
 @ActiveProfiles("test")
+@SpringBootTest(
+	classes = [
+		ArrangorRepository::class, DeltakerlisteRepository::class, DeltakerRepository::class,
+		FeilmeldingRepository::class, MeldingRepository::class, OppfolgingsperiodeRepository::class,
+		IntegrationTestConfig::class, TestDatabaseService::class,
+	],
+)
 @AutoConfigureJdbc
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 abstract class RepositoryTestBase {

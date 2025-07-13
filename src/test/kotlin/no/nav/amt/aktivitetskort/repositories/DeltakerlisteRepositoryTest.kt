@@ -2,28 +2,29 @@ package no.nav.amt.aktivitetskort.repositories
 
 import io.kotest.assertions.fail
 import io.kotest.matchers.shouldBe
-import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
-class DeltakerlisteRepositoryTest : IntegrationTest() {
+class DeltakerlisteRepositoryTest(
+	private val deltakerlisteRepository: DeltakerlisteRepository,
+) : RepositoryTestBase() {
 	@Test
 	fun `get - finnes ikke - returnerer null`() {
-		testDatabase.deltakerlisteRepository.get(UUID.randomUUID()) shouldBe null
+		deltakerlisteRepository.get(UUID.randomUUID()) shouldBe null
 	}
 
 	@Test
 	fun `upsert - finnes ikke - returnerer Created Result - finnes in database`() {
 		val deltakerliste = TestData.deltakerliste()
 		testDatabase.insertArrangor(TestData.arrangor(deltakerliste.arrangorId))
-		when (val result = testDatabase.deltakerlisteRepository.upsert(deltakerliste)) {
+		when (val result = deltakerlisteRepository.upsert(deltakerliste)) {
 			is RepositoryResult.Created -> result.data shouldBe deltakerliste
 			else -> fail("Should be Created, was $result")
 		}
 
-		testDatabase.deltakerlisteRepository.get(deltakerliste.id) shouldBe deltakerliste
+		deltakerlisteRepository.get(deltakerliste.id) shouldBe deltakerliste
 	}
 
 	@Test
@@ -31,9 +32,9 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 		val deltakerliste = TestData
 			.deltakerliste()
 			.also { testDatabase.insertArrangor(TestData.arrangor(it.arrangorId)) }
-			.also { testDatabase.deltakerlisteRepository.upsert(it) }
+			.also { deltakerlisteRepository.upsert(it) }
 
-		when (val result = testDatabase.deltakerlisteRepository.upsert(deltakerliste)) {
+		when (val result = deltakerlisteRepository.upsert(deltakerliste)) {
 			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
 			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
 			is RepositoryResult.NoChange -> {}
@@ -45,18 +46,18 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 		val initialDeltakerliste = TestData
 			.deltakerliste()
 			.also { testDatabase.insertArrangor(TestData.arrangor(it.arrangorId)) }
-			.also { testDatabase.deltakerlisteRepository.upsert(it) }
+			.also { deltakerlisteRepository.upsert(it) }
 
 		val updatedDeltakerliste = initialDeltakerliste.copy(
 			navn = "UPDATED",
 		)
 
-		when (val result = testDatabase.deltakerlisteRepository.upsert(updatedDeltakerliste)) {
+		when (val result = deltakerlisteRepository.upsert(updatedDeltakerliste)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedDeltakerliste
 			else -> fail("Should be Modified, was $result")
 		}
 
-		testDatabase.deltakerlisteRepository.get(initialDeltakerliste.id) shouldBe updatedDeltakerliste
+		deltakerlisteRepository.get(initialDeltakerliste.id) shouldBe updatedDeltakerliste
 	}
 
 	@Test
@@ -64,7 +65,7 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 		val initialDeltakerliste = TestData
 			.deltakerliste()
 			.also { testDatabase.insertArrangor(TestData.arrangor(it.arrangorId)) }
-			.also { testDatabase.deltakerlisteRepository.upsert(it) }
+			.also { deltakerlisteRepository.upsert(it) }
 		val nyArrangor = TestData
 			.arrangor()
 			.also { testDatabase.insertArrangor(it) }
@@ -73,11 +74,11 @@ class DeltakerlisteRepositoryTest : IntegrationTest() {
 			arrangorId = nyArrangor.id,
 		)
 
-		when (val result = testDatabase.deltakerlisteRepository.upsert(updatedDeltakerliste)) {
+		when (val result = deltakerlisteRepository.upsert(updatedDeltakerliste)) {
 			is RepositoryResult.Modified -> result.data shouldBe updatedDeltakerliste
 			else -> fail("Should be Modified, was $result")
 		}
 
-		testDatabase.deltakerlisteRepository.get(initialDeltakerliste.id) shouldBe updatedDeltakerliste
+		deltakerlisteRepository.get(initialDeltakerliste.id) shouldBe updatedDeltakerliste
 	}
 }
