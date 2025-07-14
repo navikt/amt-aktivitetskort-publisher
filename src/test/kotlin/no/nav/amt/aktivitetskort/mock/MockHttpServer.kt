@@ -42,7 +42,7 @@ abstract class MockHttpServer(
 					return response.response.invoke(request)
 				}
 			}
-		} catch (e: IllegalArgumentException) {
+		} catch (_: IllegalArgumentException) {
 			log.info("${javaClass.simpleName} is already started")
 		}
 	}
@@ -91,9 +91,7 @@ abstract class MockHttpServer(
 		responses.clear()
 	}
 
-	private fun printHeaders(headers: Headers): String = headers
-		.map { "		${it.first} : ${it.second}" }
-		.joinToString("\n")
+	private fun printHeaders(headers: Headers): String = headers.joinToString("\n") { "		${it.first} : ${it.second}" }
 
 	private data class ResponseHolder(
 		val id: UUID,

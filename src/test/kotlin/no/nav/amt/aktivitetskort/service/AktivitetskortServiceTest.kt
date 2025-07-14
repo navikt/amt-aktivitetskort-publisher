@@ -1,7 +1,9 @@
 package no.nav.amt.aktivitetskort.service
 
 import io.getunleash.DefaultUnleash
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
@@ -91,20 +93,22 @@ class AktivitetskortServiceTest {
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
 
-		aktivitetskort!!.id shouldBe aktivitetskordId
-		aktivitetskort.personident shouldBe ctx.aktivitetskort.personident
-		aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
-		aktivitetskort.aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
-		aktivitetskort.startDato shouldBe ctx.aktivitetskort.startDato
-		aktivitetskort.sluttDato shouldBe ctx.aktivitetskort.sluttDato
-		aktivitetskort.beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
-		aktivitetskort.endretAv shouldBe ctx.aktivitetskort.endretAv
-		aktivitetskort.endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
-		aktivitetskort.avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
-		aktivitetskort.oppgave shouldBe ctx.aktivitetskort.oppgave
-		aktivitetskort.handlinger shouldBe ctx.aktivitetskort.handlinger
-		aktivitetskort.detaljer shouldBe ctx.aktivitetskort.detaljer
-		aktivitetskort.etiketter shouldBe ctx.aktivitetskort.etiketter
+		assertSoftly(aktivitetskort.shouldNotBeNull()) {
+			id shouldBe aktivitetskordId
+			personident shouldBe ctx.aktivitetskort.personident
+			tittel shouldBe ctx.aktivitetskort.tittel
+			aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
+			startDato shouldBe ctx.aktivitetskort.startDato
+			sluttDato shouldBe ctx.aktivitetskort.sluttDato
+			beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
+			endretAv shouldBe ctx.aktivitetskort.endretAv
+			endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
+			avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
+			oppgave shouldBe ctx.aktivitetskort.oppgave
+			handlinger shouldBe ctx.aktivitetskort.handlinger
+			detaljer shouldBe ctx.aktivitetskort.detaljer
+			etiketter shouldBe ctx.aktivitetskort.etiketter
+		}
 	}
 
 	@Test
@@ -123,19 +127,21 @@ class AktivitetskortServiceTest {
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
 
-		aktivitetskort!!.personident shouldBe ctx.aktivitetskort.personident
-		aktivitetskort.tittel shouldBe ctx.aktivitetskort.tittel
-		aktivitetskort.aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
-		aktivitetskort.startDato shouldBe ctx.aktivitetskort.startDato
-		aktivitetskort.sluttDato shouldBe ctx.aktivitetskort.sluttDato
-		aktivitetskort.beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
-		aktivitetskort.endretAv shouldBe ctx.aktivitetskort.endretAv
-		aktivitetskort.endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
-		aktivitetskort.avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
-		aktivitetskort.oppgave shouldBe ctx.aktivitetskort.oppgave
-		aktivitetskort.handlinger shouldBe ctx.aktivitetskort.handlinger
-		aktivitetskort.detaljer shouldBe ctx.aktivitetskort.detaljer
-		aktivitetskort.etiketter shouldBe ctx.aktivitetskort.etiketter
+		assertSoftly(aktivitetskort.shouldNotBeNull()) {
+			personident shouldBe ctx.aktivitetskort.personident
+			tittel shouldBe ctx.aktivitetskort.tittel
+			aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
+			startDato shouldBe ctx.aktivitetskort.startDato
+			sluttDato shouldBe ctx.aktivitetskort.sluttDato
+			beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
+			endretAv shouldBe ctx.aktivitetskort.endretAv
+			endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
+			avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
+			oppgave shouldBe ctx.aktivitetskort.oppgave
+			handlinger shouldBe ctx.aktivitetskort.handlinger
+			detaljer shouldBe ctx.aktivitetskort.detaljer
+			etiketter shouldBe ctx.aktivitetskort.etiketter
+		}
 	}
 
 	@Test

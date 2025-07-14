@@ -1,17 +1,16 @@
 package no.nav.amt.aktivitetskort
 
 import io.getunleash.FakeUnleash
+import io.getunleash.Unleash
+import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 
-@Profile("test")
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class IntegrationTestConfig {
 	@Bean
-	fun unleashClient(): FakeUnleash {
-		val fakeUnleash = FakeUnleash()
-		fakeUnleash.enableAll()
-		return fakeUnleash
-	}
+	fun unleashClient() = FakeUnleash().apply { enableAll() }
+
+	@Bean
+	fun unleashToggle(unleash: Unleash) = UnleashToggle(unleash)
 }
