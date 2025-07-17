@@ -12,7 +12,6 @@ import okhttp3.Response
 import org.awaitility.Awaitility
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.kafka.KafkaContainer
@@ -42,19 +41,18 @@ abstract class IntegrationTest : RepositoryTestBase() {
 		val mockMachineToMachineServer = MockMachineToMachineServer()
 		val mockVeilarboppfolgingServer = MockVeilarboppfolgingServer()
 
-		@ServiceConnection
-		@Suppress("unused")
-		private val kafkaContainer = KafkaContainer(DockerImageName.parse("apache/kafka"))
-			.apply {
-				// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
-				start()
-				System.setProperty("KAFKA_BROKERS", bootstrapServers)
-			}
-
 		@JvmStatic
 		@DynamicPropertySource
 		@Suppress("unused")
 		fun registerProperties(registry: DynamicPropertyRegistry) {
+			KafkaContainer(DockerImageName.parse("apache/kafka"))
+				.withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9092,BROKER://:9093,CONTROLLER://:9094")
+				// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
+				.apply {
+					start()
+					System.setProperty("KAFKA_BROKERS", bootstrapServers)
+				}
+
 			mockMachineToMachineServer.start()
 			registry.add("nais.env.azureOpenIdConfigTokenEndpoint") {
 				mockMachineToMachineServer.serverUrl() + MockMachineToMachineServer.TOKEN_PATH

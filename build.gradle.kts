@@ -28,6 +28,12 @@ val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
 val tokenSupportVersion = "5.0.30"
 val unleashVersion = "11.0.2"
 
+dependencyManagement {
+	imports {
+		mavenBom("org.testcontainers:testcontainers-bom:$testcontainersVersion")
+	}
+}
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -63,15 +69,13 @@ dependencies {
 
 	testImplementation(kotlin("test"))
 	testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
-	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude("com.vaadin.external.google", "android-json")
 	}
 
-	testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
-	testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
-	testImplementation("org.testcontainers:kafka:$testcontainersVersion")
-	testImplementation("io.mockk:mockk:$mockkVersion")
+	testImplementation("org.testcontainers:postgresql")
+	testImplementation("org.testcontainers:kafka")
+	testImplementation("io.mockk:mockk-jvm:$mockkVersion")
 	testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 }
 
