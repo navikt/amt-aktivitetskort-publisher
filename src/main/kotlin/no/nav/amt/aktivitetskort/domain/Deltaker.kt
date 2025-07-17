@@ -120,11 +120,10 @@ data class DeltakerStatus(
 		}
 	}
 
-	fun display(): String {
-		if (this.aarsak != null) {
-			return "${this.type.display()} - årsak: ${this.aarsak.display().lowercase()}"
-		}
-		return this.type.display()
+	fun display(): String = if (this.aarsak != null) {
+		"${this.type.display()} - årsak: ${this.aarsak.display().lowercase()}"
+	} else {
+		this.type.display()
 	}
 }
 
