@@ -25,7 +25,7 @@ class AmtArrangorClient(
 			if (!response.isSuccessful) {
 				throw RuntimeException("Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.code}")
 			}
-			val body = response.body?.string() ?: throw RuntimeException("Body is missing")
+			val body = response.body.string()
 			return JsonUtils.fromJson<ArrangorMedOverordnetArrangorDto>(body)
 		}
 	}
@@ -42,7 +42,7 @@ class AmtArrangorClient(
 			if (!response.isSuccessful) {
 				throw RuntimeException("Kunne ikke hente arrangør med id $arrangorId fra amt-arrangør. Status=${response.code}")
 			}
-			val body = response.body?.string() ?: throw RuntimeException("Body is missing")
+			val body = response.body.string()
 			return JsonUtils.fromJson<ArrangorMedOverordnetArrangorDto>(body)
 		}
 	}

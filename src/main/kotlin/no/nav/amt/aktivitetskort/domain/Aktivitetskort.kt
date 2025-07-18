@@ -125,10 +125,10 @@ data class Aktivitetskort(
 					deltaker.prosentStilling?.let { Detalj(label, fmtProsent(it)) }
 
 				!harProsentStilling ->
-					deltaker.dagerPerUke?.let { Detalj(label, fmtDager(it)) }
+					Detalj(label, fmtDager(deltaker.dagerPerUke))
 
 				else ->
-					Detalj(label, "${fmtProsent(deltaker.prosentStilling!!)} ${fmtDager(deltaker.dagerPerUke!!)}")
+					Detalj(label, "${fmtProsent(deltaker.prosentStilling)} ${fmtDager(deltaker.dagerPerUke)}")
 			}
 		}
 	}

@@ -14,17 +14,16 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.listener.ContainerProperties
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class KafkaConfig(
-	@Value("\${KAFKA_BROKERS}") private val kafkaBrokers: String,
-	@Value("\${KAFKA_SECURITY_PROTOCOL:SSL}") private val kafkaSecurityProtocol: String,
-	@Value("\${KAFKA_TRUSTSTORE_PATH}") private val kafkaTruststorePath: String,
-	@Value("\${KAFKA_CREDSTORE_PASSWORD}") private val kafkaCredstorePassword: String,
-	@Value("\${KAFKA_KEYSTORE_PATH}") private val kafkaKeystorePath: String,
-	@Value("\${kafka.auto-offset-reset}") private val kafkaAutoOffsetReset: String,
+	@Value($$"${KAFKA_BROKERS}") private val kafkaBrokers: String,
+	@Value($$"${KAFKA_SECURITY_PROTOCOL:SSL}") private val kafkaSecurityProtocol: String,
+	@Value($$"${KAFKA_TRUSTSTORE_PATH}") private val kafkaTruststorePath: String,
+	@Value($$"${KAFKA_CREDSTORE_PASSWORD}") private val kafkaCredstorePassword: String,
+	@Value($$"${KAFKA_KEYSTORE_PATH}") private val kafkaKeystorePath: String,
+	@Value($$"${kafka.auto-offset-reset}") private val kafkaAutoOffsetReset: String,
 ) {
 	private val javaKeyStore = "JKS"
 	private val pkcs12 = "PKCS12"
@@ -67,8 +66,5 @@ class KafkaConfig(
 	}
 
 	@Bean
-	fun kafkaProducerFactory(): ProducerFactory<String, String> = DefaultKafkaProducerFactory(commonConfig())
-
-	@Bean
-	fun kafkaTemplate(): KafkaTemplate<String, String> = KafkaTemplate(kafkaProducerFactory())
+	fun kafkaTemplate(): KafkaTemplate<String, String> = KafkaTemplate(DefaultKafkaProducerFactory(commonConfig()))
 }
