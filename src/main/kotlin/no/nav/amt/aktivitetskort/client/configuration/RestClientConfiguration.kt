@@ -11,23 +11,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableJwtTokenValidation
-class RestClientConfiguration(
-	@Value("\${amt.arena-acl.url}") private val amtArenaAclUrl: String,
-	@Value("\${amt.arena-acl.scope}") private val amtArenaAclScope: String,
-	@Value("\${amt.arrangor.url}") private val amtArrangorUrl: String,
-	@Value("\${amt.arrangor.scope}") private val amtArrangorScope: String,
-	@Value("\${aktivitet.arena-acl.url}") private val aktivitetArenaAclUrl: String,
-	@Value("\${aktivitet.arena-acl.scope}") private val aktivitetArenaAclScope: String,
-	@Value("\${veilarboppfolging.url}") private val veilarboppfolgingUrl: String,
-	@Value("\${veilarboppfolging.scope}") private val veilarboppfolgingScope: String,
-) {
+class RestClientConfiguration {
 	@Bean
 	fun machineToMachineTokenClient(
-		@Value("\${nais.env.azureAppClientId}") azureAdClientId: String,
-		@Value("\${nais.env.azureOpenIdConfigTokenEndpoint}") azureTokenEndpoint: String,
-		@Value("\${nais.env.azureAppJWK}") azureAdJWK: String,
+		@Value($$"${nais.env.azureAppClientId}") azureAdClientId: String,
+		@Value($$"${nais.env.azureOpenIdConfigTokenEndpoint}") azureTokenEndpoint: String,
+		@Value($$"${nais.env.azureAppJWK}") azureAdJWK: String,
 	): MachineToMachineTokenClient = AzureAdTokenClientBuilder
 		.builder()
 		.withClientId(azureAdClientId)
@@ -36,25 +27,41 @@ class RestClientConfiguration(
 		.buildMachineToMachineTokenClient()
 
 	@Bean
-	fun amtArenaAclClient(machineToMachineTokenClient: MachineToMachineTokenClient) = AmtArenaAclClient(
+	fun amtArenaAclClient(
+		machineToMachineTokenClient: MachineToMachineTokenClient,
+		@Value($$"${amt.arena-acl.url}") amtArenaAclUrl: String,
+		@Value($$"${amt.arena-acl.scope}") amtArenaAclScope: String,
+	) = AmtArenaAclClient(
 		baseUrl = amtArenaAclUrl,
 		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(amtArenaAclScope) },
 	)
 
 	@Bean
-	fun amtArrangorClient(machineToMachineTokenClient: MachineToMachineTokenClient) = AmtArrangorClient(
+	fun amtArrangorClient(
+		machineToMachineTokenClient: MachineToMachineTokenClient,
+		@Value($$"${amt.arrangor.url}") amtArrangorUrl: String,
+		@Value($$"${amt.arrangor.scope}") amtArrangorScope: String,
+	) = AmtArrangorClient(
 		baseUrl = amtArrangorUrl,
 		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(amtArrangorScope) },
 	)
 
 	@Bean
-	fun aktivitetArenaAclClient(machineToMachineTokenClient: MachineToMachineTokenClient) = AktivitetArenaAclClient(
+	fun aktivitetArenaAclClient(
+		machineToMachineTokenClient: MachineToMachineTokenClient,
+		@Value($$"${aktivitet.arena-acl.url}") aktivitetArenaAclUrl: String,
+		@Value($$"${aktivitet.arena-acl.scope}") aktivitetArenaAclScope: String,
+	) = AktivitetArenaAclClient(
 		baseUrl = aktivitetArenaAclUrl,
 		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(aktivitetArenaAclScope) },
 	)
 
 	@Bean
-	fun veilarboppfolgingClient(machineToMachineTokenClient: MachineToMachineTokenClient) = VeilarboppfolgingClient(
+	fun veilarboppfolgingClient(
+		machineToMachineTokenClient: MachineToMachineTokenClient,
+		@Value($$"${veilarboppfolging.url}") veilarboppfolgingUrl: String,
+		@Value($$"${veilarboppfolging.scope}") veilarboppfolgingScope: String,
+	) = VeilarboppfolgingClient(
 		baseUrl = "$veilarboppfolgingUrl/veilarboppfolging",
 		veilarboppfolgingTokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(veilarboppfolgingScope) },
 	)
