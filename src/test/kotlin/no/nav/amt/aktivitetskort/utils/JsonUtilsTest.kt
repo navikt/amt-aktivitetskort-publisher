@@ -35,7 +35,7 @@ class JsonUtilsTest {
 
 		// Korrekt fremgangsmåte: Justerer til systemets tidssone før konvertering
 		val correctLocalDateTimeFromZdt = zdtFromJson
-			.withZoneSameInstant(ZoneId.systemDefault())
+			.withZoneSameInstant(ZoneId.of("Europe/Oslo"))
 			.toLocalDateTime()
 		println(correctLocalDateTimeFromZdt) // 2025-07-26T00:00 RIKTIG
 		correctLocalDateTimeFromZdt shouldBe localDateTimeInTest
