@@ -1,7 +1,6 @@
 package no.nav.amt.aktivitetskort.repositories
 
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
-import no.nav.amt.aktivitetskort.utils.getNullableZonedDateTime
 import no.nav.amt.aktivitetskort.utils.sqlParameters
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -16,7 +15,7 @@ class OppfolgingsperiodeRepository(
 		Oppfolgingsperiode(
 			id = UUID.fromString(rs.getString("id")),
 			startDato = rs.getTimestamp("start_dato").toLocalDateTime(),
-			sluttDato = rs.getNullableZonedDateTime("start_dato")?.toLocalDateTime(),
+			sluttDato = rs.getTimestamp("slutt_dato")?.toLocalDateTime(),
 		)
 	}
 
@@ -29,7 +28,6 @@ class OppfolgingsperiodeRepository(
 					:slutt_dato)
 			ON CONFLICT (id) DO UPDATE SET start_dato = :start_dato, slutt_dato = :slutt_dato
 			returning *
-
 			""".trimIndent(),
 			sqlParameters(
 				"id" to oppfolgingsperiode.id,
