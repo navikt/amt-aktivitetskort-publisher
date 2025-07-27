@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -43,7 +44,7 @@ class VeilarboppfolgingClientTest : ClientTestBase() {
 			if (sluttDato != null) {
 				sluttDato shouldBe nowAsLocalDateTime.plusDays(1)
 			} else {
-				sluttDato shouldBe expected.sluttDato
+				sluttDato.shouldBeNull()
 			}
 		}
 	}
@@ -69,13 +70,15 @@ class VeilarboppfolgingClientTest : ClientTestBase() {
 	}
 
 	companion object {
-		private val nowAsLocalDateTime: LocalDateTime = LocalDateTime.now()
-		private val nowAsZonedDateTime: ZonedDateTime = ZonedDateTime.of(nowAsLocalDateTime, ZoneId.systemDefault())
+		val nowAsZonedDateTimeUtc: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+		val nowAsLocalDateTime: LocalDateTime = nowAsZonedDateTimeUtc
+			.withZoneSameInstant(ZoneId.systemDefault())
+			.toLocalDateTime()
 
 		private fun createOppfolgingPeriodeDTO(useEndDate: Boolean) = VeilarboppfolgingClient.OppfolgingPeriodeDTO(
 			uuid = UUID.randomUUID(),
-			startDato = nowAsZonedDateTime,
-			sluttDato = if (useEndDate) nowAsZonedDateTime.plusDays(1) else null,
+			startDato = nowAsZonedDateTimeUtc,
+			sluttDato = if (useEndDate) nowAsZonedDateTimeUtc.plusDays(1) else null,
 		)
 	}
 }
