@@ -70,8 +70,8 @@ class VeilarboppfolgingClientTest : ClientTestBase() {
 	}
 
 	companion object {
-		val nowAsZonedDateTimeUtc: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
-		val nowAsLocalDateTime: LocalDateTime = nowAsZonedDateTimeUtc
+		private val nowAsZonedDateTimeUtc: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+		private val nowAsLocalDateTime: LocalDateTime = nowAsZonedDateTimeUtc
 			.withZoneSameInstant(ZoneId.systemDefault())
 			.toLocalDateTime()
 
