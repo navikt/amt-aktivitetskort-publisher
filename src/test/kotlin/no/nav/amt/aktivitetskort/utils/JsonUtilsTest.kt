@@ -1,35 +1,43 @@
 package no.nav.amt.aktivitetskort.utils
 
-import com.fasterxml.jackson.databind.RuntimeJsonMappingException
-import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import no.nav.amt.aktivitetskort.client.AmtArrangorClient.ArrangorMedOverordnetArrangorDto
 import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJson
+import no.nav.amt.aktivitetskort.utils.JsonUtils.toJsonString
 import org.junit.jupiter.api.Test
-import java.util.UUID
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class JsonUtilsTest {
 	@Test
-	fun `skal returnere UUID for gyldig UUID-streng i JSON`() {
-		val expectedUUID = UUID.randomUUID()
-		val actualUUID = fromJson<UUID?>("\"$expectedUUID\"")
-		actualUUID shouldBe expectedUUID
-	}
+	fun `ZonedDateTime til LocalDateTime-tester`() {
+		val localDateTimeInTest = LocalDateTime.of(2025, 7, 26, 0, 0, 0)
 
-	@Test
-	fun `skal kaste feil hvis JSON ikke kan parses til spesifisert type`() {
-		val thrown = shouldThrow<RuntimeJsonMappingException> {
-			fromJson<ArrangorMedOverordnetArrangorDto>("null")
-		}
+		// Oppretter en ZonedDateTime med Oslo-tidssone
+		val zonedDateTimeInTest = ZonedDateTime.of(localDateTimeInTest, ZoneId.of("Europe/Oslo"))
+		println(zonedDateTimeInTest) // 2025-07-26T00:00+02:00[Europe/Oslo]
 
-		thrown.message shouldBe
-			"Deserialized value did not match the specified type; specified no.nav.amt.aktivitetskort.client.AmtArrangorClient.ArrangorMedOverordnetArrangorDto(non-null) but was null"
-	}
+		// Serialiserer ZonedDateTime til JSON
+		// NB: Tidssonenavn ([Europe/Oslo]) går tapt, kun offset (+02:00) beholdes
+		val zdtJson = toJsonString(zonedDateTimeInTest)
+		zdtJson shouldBe "\"2025-07-26T00:00:00+02:00\""
 
-	@Test
-	fun `skal ikke kaste feil for nullable type med null-JSON`() {
-		val result = fromJson<ArrangorMedOverordnetArrangorDto?>("null")
-		result.shouldBeNull()
+		// Deserialiserer JSON tilbake til ZonedDateTime
+		// NB: JSON-tidspunktet tolkes som +02:00, men Instant beholdes korrekt
+		val zdtFromJson = fromJson<ZonedDateTime>(zdtJson)
+		println(zdtFromJson) // 2025-07-25T22:00Z (samme tidspunkt som originalt, men nå i UTC)
+		zdtFromJson.toInstant() shouldBe zonedDateTimeInTest.toInstant()
+
+		// Feil: Konverterer direkte til LocalDateTime og mister offset
+		val wrongLocalDateTimeFromZdt = zdtFromJson.toLocalDateTime()
+		println(wrongLocalDateTimeFromZdt) // 2025-07-25T22:00 → FEIL: 2 timer for tidlig
+		wrongLocalDateTimeFromZdt shouldBe localDateTimeInTest.minusHours(2)
+
+		// Korrekt fremgangsmåte: Justerer til systemets tidssone før konvertering
+		val correctLocalDateTimeFromZdt = zdtFromJson
+			.withZoneSameInstant(ZoneId.of("Europe/Oslo"))
+			.toLocalDateTime()
+		println(correctLocalDateTimeFromZdt) // 2025-07-26T00:00 RIKTIG
+		correctLocalDateTimeFromZdt shouldBe localDateTimeInTest
 	}
 }

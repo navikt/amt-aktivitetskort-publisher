@@ -3,6 +3,7 @@ package no.nav.amt.aktivitetskort.client
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.utils.JsonUtils
 import no.nav.amt.aktivitetskort.utils.JsonUtils.toJsonString
+import no.nav.amt.aktivitetskort.utils.toSystemZoneLocalDateTime
 import no.nav.common.rest.client.RestClient.baseClient
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -53,8 +54,8 @@ class VeilarboppfolgingClient(
 	) {
 		fun toModel() = Oppfolgingsperiode(
 			id = uuid,
-			startDato = startDato.toLocalDateTime(),
-			sluttDato = sluttDato?.toLocalDateTime(),
+			startDato = startDato.toSystemZoneLocalDateTime(),
+			sluttDato = sluttDato?.toSystemZoneLocalDateTime(),
 		)
 	}
 }
