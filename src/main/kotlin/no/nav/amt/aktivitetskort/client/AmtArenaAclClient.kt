@@ -32,8 +32,7 @@ class AmtArenaAclClient(
 				error("Klarte ikke å hente arenaId for AmtId $amtId. Status: ${response.code}")
 			}
 
-			val body = response.body.string()
-			val hentArenaIdV2Response = JsonUtils.fromJson<HentArenaIdV2Response>(body)
+			val hentArenaIdV2Response = JsonUtils.fromJson<HentArenaIdV2Response>(response.body.string())
 
 			hentArenaIdV2Response.arenaId?.let {
 				return it.toLong()

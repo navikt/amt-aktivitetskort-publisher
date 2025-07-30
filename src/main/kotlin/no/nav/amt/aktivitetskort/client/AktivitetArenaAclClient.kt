@@ -34,8 +34,7 @@ class AktivitetArenaAclClient(
 				error("Klarte ikke å hente aktivitetId for ArenaId. Status: ${response.code}")
 			}
 
-			return response.body.string().let { JsonUtils.fromJson(it) }
-				?: error("Body is missing")
+			return JsonUtils.fromJson(response.body.string())
 		}
 	}
 
