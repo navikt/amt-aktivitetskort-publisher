@@ -27,6 +27,7 @@ import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.repositories.OppfolgingsperiodeRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
+import no.nav.amt.aktivitetskort.unleash.UnleashConfig.Companion.AKTIVITETSKORT_APP_NAME
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -47,8 +48,8 @@ class AktivitetskortService(
 	private val veilarboppfolgingClient: VeilarboppfolgingClient,
 	private val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
 	private val transactionTemplate: TransactionTemplate,
-	@Value("\${veilederurl.basepath}") private val veilederUrlBasePath: String,
-	@Value("\${deltakerurl.basepath}") private val deltakerUrlBasePath: String,
+	@Value($$"${veilederurl.basepath}") private val veilederUrlBasePath: String,
+	@Value($$"${deltakerurl.basepath}") private val deltakerUrlBasePath: String,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -100,45 +101,46 @@ class AktivitetskortService(
 		val nyesteAktivitetskortId = nyesteAktivitetskortForDeltaker?.id
 
 		if (deltaker.kilde == Kilde.KOMET) {
-			if (nyesteAktivitetskortForDeltaker?.oppfolgingperiode != null &&
+			return if (nyesteAktivitetskortForDeltaker?.oppfolgingperiode != null &&
 				oppfolgingsperiode.id != nyesteAktivitetskortForDeltaker.oppfolgingperiode
 			) {
 				log.info("Oppretter nytt aktivitetskort på deltaker ${deltaker.id} som har fått ny oppfølgingsperiode.")
-				return UUID.randomUUID()
+				UUID.randomUUID()
+			} else {
+				nyesteAktivitetskortId
+					?: UUID
+						.randomUUID()
+						.also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id ${deltaker.id}") }
 			}
-			return nyesteAktivitetskortId
-				?: UUID.randomUUID().also { log.info("Definerer egen aktivitetskortId: $it for deltaker med id ${deltaker.id}") }
 		}
 
 		return hentAktivitetskortIdForArenaDeltaker(deltaker.id)
 	}
 
-	fun hentAktivitetskortIdForArenaDeltaker(deltakerId: UUID): UUID {
+	fun hentAktivitetskortIdForArenaDeltaker(deltakerId: UUID): UUID =
 		// Vi MÅ kalle dab for å generere id for arena deltakere for at de skal generere mappingen
 		// Selv om vi har en aktivitetskort id på deltaker så kan dab ha opprettet en ny pga endringer i oppfølgingsperiode
-		return amtArenaAclClient
+		amtArenaAclClient
 			.getArenaIdForAmtId(deltakerId)
 			?.also { log.info("deltaker $deltakerId er opprettet i arena med id $it. Henter aktivitetskort id fra AKAS..") }
 			?.let { aktivitetArenaAclClient.getAktivitetIdForArenaId(it) }
 			?.also { log.info("deltaker $deltakerId skal ha aktivitetId: $it") }
 			?: throw IllegalStateException("Arenadeltaker $deltakerId fikk ikke id fra AKAS")
-	}
 
-	fun oppdaterAktivitetskort(deltakerId: UUID, meldingId: UUID): Melding? {
-		val deltaker = deltakerRepository.get(deltakerId)
-		if (deltaker == null) {
+	fun oppdaterAktivitetskort(deltakerId: UUID, meldingId: UUID): Melding? = deltakerRepository
+		.get(deltakerId)
+		?.let { deltaker -> tryOpprettMelding(deltaker, meldingId) }
+		?: run {
 			log.warn("Deltaker med id $deltakerId finnes ikke lenger")
-			return null
+			null
 		}
-		return tryOpprettMelding(deltaker, meldingId)
-	}
 
 	fun tryOpprettMelding(deltaker: Deltaker, meldingId: UUID? = null): Melding? {
 		try {
 			return opprettMelding(deltaker, meldingId)
 		} catch (e: IngenOppfolgingsperiodeException) {
 			log.warn("Kan ikke opprette aktivitetskort for deltaker ${deltaker.id}", e)
-		} catch (e: HistoriskArenaDeltakerException) {
+		} catch (_: HistoriskArenaDeltakerException) {
 			log.error("Kan ikke opprette aktivitetskort for historisk arena deltaker ${deltaker.id}")
 		}
 		return null
@@ -147,9 +149,12 @@ class AktivitetskortService(
 	fun opprettMelding(deltaker: Deltaker, meldingId: UUID? = null): Melding {
 		val deltakerliste = deltakerlisteRepository.get(deltaker.deltakerlisteId)
 			?: throw RuntimeException("Deltakerliste ${deltaker.deltakerlisteId} finnes ikke")
+
 		val arrangor = arrangorRepository.get(deltakerliste.arrangorId)
 			?: throw RuntimeException("Arrangør ${deltakerliste.arrangorId} finnes ikke")
+
 		val overordnetArrangor = arrangor.overordnetArrangorId?.let { arrangorRepository.get(it) }
+
 		val oppfolgingsperiode = veilarboppfolgingClient.hentOppfolgingperiode(deltaker.personident)
 			?: throw IngenOppfolgingsperiodeException("Kan ikke opprette aktivitetskort på deltaker ${deltaker.id} som ikke er under oppfølging")
 
@@ -169,6 +174,7 @@ class AktivitetskortService(
 			aktivitetskort = aktivitetskort,
 			oppfolgingperiode = oppfolgingsperiode.id,
 		)
+
 		transactionTemplate.executeWithoutResult {
 			oppfolgingsperiodeRepository.upsert(oppfolgingsperiode)
 			meldingRepository.upsert(melding)
@@ -201,7 +207,7 @@ class AktivitetskortService(
 		startDato = deltaker.oppstartsdato,
 		sluttDato = deltaker.sluttdato,
 		beskrivelse = null,
-		endretAv = EndretAv("amt-aktivitetskort-publisher", IdentType.SYSTEM),
+		endretAv = EndretAv(AKTIVITETSKORT_APP_NAME, IdentType.SYSTEM),
 		endretTidspunkt = LocalDateTime.now(),
 		avtaltMedNav = deltaker.status.type !in IKKE_AVTALT_MED_NAV_STATUSER,
 		oppgave = oppgaver(deltaker, deltakerliste, arrangor),
@@ -219,6 +225,7 @@ class AktivitetskortService(
 		if (!unleashToggle.erKometMasterForTiltakstype(deltakerliste.tiltak.type)) {
 			return null
 		}
+
 		if (deltaker.status.type != DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
 			return null
 		}

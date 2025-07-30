@@ -16,6 +16,7 @@ object JsonUtils {
 
 	fun objectMapper(): ObjectMapper = mapper
 
+	// Code review comment: Merk at T kan være null. Benytt <reified T : Any> hvis T ikke skal kunne være null.
 	inline fun <reified T> fromJson(jsonStr: String): T = mapper.readValue(jsonStr)
 
 	fun toJsonString(any: Any): String = mapper.writeValueAsString(any)

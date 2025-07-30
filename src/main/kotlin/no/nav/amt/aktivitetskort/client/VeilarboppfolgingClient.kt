@@ -37,9 +37,8 @@ class VeilarboppfolgingClient(
 				throw RuntimeException("Uventet status ved hent status-kall mot veilarboppfolging ${response.code}")
 			}
 			if (response.code == 204) return null
-			val body = response.body.string()
 
-			return JsonUtils.fromJson<OppfolgingPeriodeDTO>(body).toModel()
+			return JsonUtils.fromJson<OppfolgingPeriodeDTO>(response.body.string()).toModel()
 		}
 	}
 

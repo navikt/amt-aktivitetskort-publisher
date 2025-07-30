@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class TestKafkaConfig(
 	private val kafkaConfig: KafkaConfig,
 ) {

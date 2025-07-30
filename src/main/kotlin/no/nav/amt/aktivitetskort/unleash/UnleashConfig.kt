@@ -8,22 +8,25 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class UnleashConfig {
 	@Bean
 	@Profile("default")
 	fun unleashClient(
-		@Value("\${app.env.unleashUrl}") unleashUrl: String,
-		@Value("\${app.env.unleashApiToken}") unleashApiToken: String,
+		@Value($$"${app.env.unleashUrl}") unleashUrl: String,
+		@Value($$"${app.env.unleashApiToken}") unleashApiToken: String,
 	): Unleash {
-		val appName = "amt-aktivitetskort-publisher"
 		val config = UnleashConfig
 			.builder()
-			.appName(appName)
-			.instanceId(appName)
+			.appName(AKTIVITETSKORT_APP_NAME)
+			.instanceId(AKTIVITETSKORT_APP_NAME)
 			.unleashAPI(unleashUrl)
 			.apiKey(unleashApiToken)
 			.build()
 		return DefaultUnleash(config)
+	}
+
+	companion object {
+		const val AKTIVITETSKORT_APP_NAME = "amt-aktivitetskort-publisher"
 	}
 }

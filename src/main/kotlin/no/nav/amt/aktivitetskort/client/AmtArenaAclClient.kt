@@ -32,17 +32,20 @@ class AmtArenaAclClient(
 				error("Klarte ikke å hente arenaId for AmtId $amtId. Status: ${response.code}")
 			}
 
-			val body = response.body?.string() ?: error("Body is missing")
-			val hentArenaIdV2Response = JsonUtils.fromJson<HentArenaIdV2Response>(body)
-			if (hentArenaIdV2Response.arenaId != null) {
-				return hentArenaIdV2Response.arenaId.toLong()
-			} else if (hentArenaIdV2Response.arenaHistId != null) {
-				log.error("amtId $amtId tilhører histdeltaker med id ${hentArenaIdV2Response.arenaHistId}")
-				throw HistoriskArenaDeltakerException("amtId $amtId tilhører histdeltaker med id ${hentArenaIdV2Response.arenaHistId}")
-			} else {
-				log.warn("Fant ikke arenaId eller arenaHistId for deltaker med id $amtId")
-				return null
+			val hentArenaIdV2Response = JsonUtils.fromJson<HentArenaIdV2Response>(response.body.string())
+
+			hentArenaIdV2Response.arenaId?.let {
+				return it.toLong()
 			}
+
+			hentArenaIdV2Response.arenaHistId?.let {
+				val msg = "amtId $amtId tilhører histdeltaker med id $it"
+				log.error(msg)
+				throw HistoriskArenaDeltakerException(message = msg)
+			}
+
+			log.warn("Fant ikke arenaId eller arenaHistId for deltaker med id $amtId")
+			return null
 		}
 	}
 
