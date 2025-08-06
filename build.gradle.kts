@@ -69,6 +69,7 @@ dependencies {
 
 	testImplementation(kotlin("test"))
 	testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude("com.vaadin.external.google", "android-json")
 	}
@@ -85,6 +86,7 @@ kotlin {
 		freeCompilerArgs.addAll(
 			"-Xjsr305=strict",
 			"-Xannotation-default-target=param-property",
+			"-Xwarning-level=IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE:disabled",
 			"-Xmulti-dollar-interpolation",
 		)
 	}
