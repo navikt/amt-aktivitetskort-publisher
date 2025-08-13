@@ -26,7 +26,7 @@ val klintVersion = "1.4.1"
 val mockkVersion = "1.14.5"
 val commonVersion = "3.2025.06.23_14.50-3af3985d8555"
 val tokenSupportVersion = "5.0.34"
-val unleashVersion = "11.0.2"
+val unleashVersion = "11.1.0"
 
 dependencyManagement {
 	imports {
