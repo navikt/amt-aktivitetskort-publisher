@@ -37,14 +37,15 @@ spec:
   replicas:
     min: 2
     max: 3
-    cpuThresholdPercentage: 75
+    scalingStrategy:
+      cpu:
+        thresholdPercentage: 100
   resources:
-    limits:
-      cpu: "1"
-      memory: 2048Mi
     requests:
-      cpu: 250m
+      cpu: 50m
       memory: 512Mi
+    limits:
+      memory: 2048Mi
   azure:
     application:
       enabled: true
