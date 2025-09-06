@@ -10,7 +10,7 @@ spec:
   gcp:
     sqlInstances:
       - name: amt-aktivitetskort-publisher
-        type: POSTGRES_14
+        type: POSTGRES_17
         tier: db-custom-1-3840
         databases:
           - name: amt-aktivitetskort-publisher
