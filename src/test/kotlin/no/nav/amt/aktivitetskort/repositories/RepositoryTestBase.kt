@@ -36,7 +36,7 @@ abstract class RepositoryTestBase {
 	fun cleanDatabase() = DbTestDataUtils.cleanDatabase(dataSource)
 
 	companion object {
-		private const val POSTGRES_DOCKER_IMAGE_NAME = "postgres:14-alpine"
+		private const val POSTGRES_DOCKER_IMAGE_NAME = "postgres:17-alpine"
 
 		@ServiceConnection
 		@Suppress("unused")
