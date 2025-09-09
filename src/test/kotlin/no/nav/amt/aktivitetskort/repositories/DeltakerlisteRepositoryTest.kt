@@ -1,6 +1,6 @@
 package no.nav.amt.aktivitetskort.repositories
 
-import io.kotest.assertions.fail
+import io.kotest.assertions.AssertionErrorBuilder.Companion.fail
 import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
