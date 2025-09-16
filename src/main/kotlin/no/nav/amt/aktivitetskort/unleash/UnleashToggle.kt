@@ -15,14 +15,13 @@ class UnleashToggle(
 		Tiltak.Type.INDOPPFAG,
 		Tiltak.Type.DIGIOPPARB,
 		Tiltak.Type.VASV,
-	)
-
-	// her kan vi legge inn de neste tiltakstypene vi skal ta over
-	private val tiltakstyperKometKanskjeErMasterFor = listOf(
 		Tiltak.Type.GRUPPEAMO,
 		Tiltak.Type.GRUFAGYRKE,
 		Tiltak.Type.JOBBK,
 	)
+
+	// her kan vi legge inn de neste tiltakstypene vi skal ta over
+	private val tiltakstyperKometKanskjeErMasterFor = emptyList<Tiltak.Type>()
 
 	fun erKometMasterForTiltakstype(tiltakstype: Tiltak.Type): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
 		(unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
