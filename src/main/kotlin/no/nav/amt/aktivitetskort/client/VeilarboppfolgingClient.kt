@@ -34,7 +34,10 @@ class VeilarboppfolgingClient(
 
 		httpClient.newCall(request).execute().use { response ->
 			if (!response.isSuccessful) {
-				throw RuntimeException("Uventet status ved hent status-kall mot veilarboppfolging ${response.code}")
+				val errorBody = response.body.string().replace(fnr, "****")
+				throw RuntimeException(
+					"Uventet status ved hent status-kall mot veilarboppfolging ${response.code}. Body: $errorBody",
+				)
 			}
 			if (response.code == 204) return null
 

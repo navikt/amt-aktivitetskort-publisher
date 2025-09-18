@@ -66,7 +66,7 @@ class VeilarboppfolgingClientTest : ClientTestBase() {
 			client.hentOppfolgingperiode("12345678910")
 		}
 
-		thrown.message shouldBe "Uventet status ved hent status-kall mot veilarboppfolging 500"
+		thrown.message shouldBe "Uventet status ved hent status-kall mot veilarboppfolging 500. Body: "
 	}
 
 	companion object {
