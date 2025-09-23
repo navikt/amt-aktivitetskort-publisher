@@ -15,14 +15,13 @@ class UnleashToggle(
 		Tiltakstype.Tiltakskode.OPPFOLGING,
 		Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
 		Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+    Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+		Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+    Tiltakstype.Tiltakskode.JOBBKLUBB,
 	)
 
 	// her kan vi legge inn de neste tiltakstypene vi skal ta over
-	private val tiltakstyperKometKanskjeErMasterFor = listOf(
-		Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
-		Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
-		Tiltakstype.Tiltakskode.JOBBKLUBB,
-	)
+	private val tiltakstyperKometKanskjeErMasterFor = emptyList<Tiltakstype.Tiltakskode>()
 
 	fun erKometMasterForTiltakstype(tiltakstype: Tiltakstype.Tiltakskode): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
 		(unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
