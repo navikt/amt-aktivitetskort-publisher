@@ -114,7 +114,9 @@ class AktivitetskortServiceTest {
 
 	@Test
 	fun `lagAktivitetskort(deltaker) - kilde=KOMET - lager nytt aktivitetskort med lenker`() {
-		val deltakerliste = TestData.deltakerliste(tiltak = Tiltak("Arbeidsforberedende trening", Tiltakstype.ArenaKode.ARBFORB))
+		val deltakerliste = TestData.deltakerliste(
+			tiltak = Tiltak("Arbeidsforberedende trening", Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+		)
 		val deltaker =
 			TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id, prosentStilling = null, dagerPerUke = null)
 		val ctx = TestData.MockContext(deltaker = deltaker, deltakerliste = deltakerliste)
@@ -166,7 +168,9 @@ class AktivitetskortServiceTest {
 
 	@Test
 	fun `lagAktivitetskort(deltaker) - kilde=KOMET, arenaId finnes ikke - oppretter med ny aktivitetskortId`() = mockCluster {
-		val deltakerliste = TestData.deltakerliste(tiltak = Tiltak("Arbeidsforberedende trening", Tiltakstype.ArenaKode.ARBFORB))
+		val deltakerliste = TestData.deltakerliste(
+			tiltak = Tiltak("Arbeidsforberedende trening", Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+		)
 		val deltaker = TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id)
 		val ctx = TestData.MockContext(deltaker = deltaker, deltakerliste = deltakerliste)
 

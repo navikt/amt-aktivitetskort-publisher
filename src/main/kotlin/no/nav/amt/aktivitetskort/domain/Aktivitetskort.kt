@@ -24,7 +24,7 @@ data class Aktivitetskort(
 	val handlinger: List<Handling>? = null,
 	val detaljer: List<Detalj>,
 	val etiketter: List<Tag>,
-	val tiltakstype: Tiltakstype.ArenaKode, // TODO: Støtter aktivitetskort kun arenaKode ?
+	val tiltakstype: Tiltakstype.Tiltakskode,
 ) {
 	fun toAktivitetskortDto(): AktivitetskortDto = AktivitetskortDto(
 		id = id,
@@ -84,11 +84,11 @@ data class Aktivitetskort(
 			deltakerliste: Deltakerliste,
 			arrangor: Arrangor,
 			erKurs: Boolean,
-		) = when (deltakerliste.tiltak.arenaKode) {
-			Tiltakstype.ArenaKode.VASV -> "Tilrettelagt arbeid hos ${arrangor.navn}"
-			Tiltakstype.ArenaKode.JOBBK -> "Jobbsøkerkurs hos ${arrangor.navn}"
-			Tiltakstype.ArenaKode.GRUPPEAMO -> if (erKurs) "Kurs: ${deltakerliste.navn}" else deltakerliste.navn
-			Tiltakstype.ArenaKode.GRUFAGYRKE -> deltakerliste.navn
+		) = when (deltakerliste.tiltak.tiltakskode) {
+			Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "Tilrettelagt arbeid hos ${arrangor.navn}"
+			Tiltakstype.Tiltakskode.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
+			Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> if (erKurs) "Kurs: ${deltakerliste.navn}" else deltakerliste.navn
+			Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> deltakerliste.navn
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 
@@ -101,7 +101,7 @@ data class Aktivitetskort(
 
 			detaljer.add(Detalj("Status for deltakelse", deltaker.status.display()))
 
-			if (deltakerliste.tiltak.arenaKode.erTiltakmedDeltakelsesmengde()) {
+			if (deltakerliste.tiltak.tiltakskode.erTiltakmedDeltakelsesmengde()) {
 				deltakelseMengdeDetalj(deltaker)?.let { detaljer.add(it) }
 			}
 

@@ -19,7 +19,7 @@ class DeltakerlisteRepository(
 			id = UUID.fromString(rs.getString("id")),
 			tiltak = Tiltak(
 				navn = rs.getString("tiltaksnavn"),
-				arenaKode = Tiltakstype.ArenaKode.valueOf(rs.getString("tiltakstype")),
+				tiltakskode = Tiltakstype.Tiltakskode.valueOf(rs.getString("tiltakstype")),
 			),
 			navn = rs.getString("navn"),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
@@ -51,7 +51,7 @@ class DeltakerlisteRepository(
 				sqlParameters(
 					"id" to deltakerliste.id,
 					"tiltaksnavn" to deltakerliste.tiltak.navn,
-					"tiltakstype" to deltakerliste.tiltak.arenaKode.name,
+					"tiltakstype" to deltakerliste.tiltak.tiltakskode.name,
 					"navn" to deltakerliste.navn,
 					"arrangor_id" to deltakerliste.arrangorId,
 				),

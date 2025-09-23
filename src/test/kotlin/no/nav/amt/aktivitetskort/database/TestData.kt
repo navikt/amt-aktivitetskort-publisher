@@ -51,7 +51,7 @@ object TestData {
 		avtaltMedNav: Boolean = true,
 		detaljer: List<Detalj> = listOf(Detalj("Label", "Verdi")),
 		etiketter: List<Tag> = listOf(),
-		tiltakstype: Tiltakstype.ArenaKode = Tiltakstype.ArenaKode.INDOPPFAG,
+		tiltakstype: Tiltakstype.Tiltakskode = Tiltakstype.Tiltakskode.OPPFOLGING,
 	) = Aktivitetskort(
 		id = id,
 		personident = personIdent,
@@ -106,7 +106,7 @@ object TestData {
 			Detalj("Arrangør", arrangor.navn),
 		),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-		tiltakstype = deltakerliste.tiltak.arenaKode,
+		tiltakstype = deltakerliste.tiltak.tiltakskode,
 	)
 
 	fun deltaker(
@@ -148,7 +148,7 @@ object TestData {
 
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
-		tiltak: Tiltak = Tiltak("Oppfølging", Tiltakstype.ArenaKode.INDOPPFAG),
+		tiltak: Tiltak = Tiltak("Oppfølging", Tiltakstype.Tiltakskode.OPPFOLGING),
 		navn: String = "navn",
 		arrangorId: UUID = UUID.randomUUID(),
 	) = Deltakerliste(id, tiltak, navn, arrangorId)
@@ -198,5 +198,5 @@ object TestData {
 	)
 
 	fun Tiltak.toDto(id: UUID = UUID.randomUUID()): DeltakerlisteDto.TiltakstypeDto =
-		DeltakerlisteDto.TiltakstypeDto(id, navn, arenaKode.name, tiltakskode)
+		DeltakerlisteDto.TiltakstypeDto(id, navn, "INDOPPFAG", "OPPFOLGING")
 }

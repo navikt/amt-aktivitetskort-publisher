@@ -174,7 +174,7 @@ class KafkaConsumerServiceTest {
 			id = UUID.randomUUID(),
 			navn = "navn",
 			tiltakstypeDto = DeltakerlisteDto
-				.TiltakstypeDto(UUID.randomUUID(), "Ukjent", "UKJENT", Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+				.TiltakstypeDto(UUID.randomUUID(), "Ukjent", "UKJENT", "UKJENT"),
 			virksomhetsnummer = arrangor.organisasjonsnummer,
 		)
 
@@ -188,7 +188,7 @@ class KafkaConsumerServiceTest {
 	fun `deltakerlisteHendelse - arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
 		val arrangor = TestData.arrangor()
 		val deltakerliste =
-			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltakstype.ArenaKode.INDOPPFAG), arrangorId = arrangor.id)
+			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltakstype.Tiltakskode.OPPFOLGING), arrangorId = arrangor.id)
 
 		every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null andThen arrangor
 		every { arrangorRepository.upsert(any()) } returns RepositoryResult.Created(arrangor)
