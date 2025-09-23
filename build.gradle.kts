@@ -27,6 +27,7 @@ val mockkVersion = "1.14.5"
 val commonVersion = "3.2025.08.18_11.44-04fe318bd185"
 val tokenSupportVersion = "5.0.34"
 val unleashVersion = "11.1.0"
+val amtLibVersion = "1.2025.09.15_08.19-1c6bc06d65fe"
 
 dependencyManagement {
 	imports {
@@ -66,6 +67,8 @@ dependencies {
 	implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
 
 	implementation("io.getunleash:unleash-client-java:$unleashVersion")
+
+	implementation("no.nav.amt.lib:models:$amtLibVersion")
 
 	testImplementation(kotlin("test"))
 	testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")

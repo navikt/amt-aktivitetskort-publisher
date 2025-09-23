@@ -21,6 +21,7 @@ import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -50,7 +51,7 @@ object TestData {
 		avtaltMedNav: Boolean = true,
 		detaljer: List<Detalj> = listOf(Detalj("Label", "Verdi")),
 		etiketter: List<Tag> = listOf(),
-		tiltakstype: Tiltak.Type = Tiltak.Type.INDOPPFAG,
+		tiltakstype: Tiltakstype.ArenaKode = Tiltakstype.ArenaKode.INDOPPFAG,
 	) = Aktivitetskort(
 		id = id,
 		personident = personIdent,
@@ -105,7 +106,7 @@ object TestData {
 			Detalj("Arrangør", arrangor.navn),
 		),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-		tiltakstype = deltakerliste.tiltak.type,
+		tiltakstype = deltakerliste.tiltak.arenaKode,
 	)
 
 	fun deltaker(
@@ -147,7 +148,7 @@ object TestData {
 
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
-		tiltak: Tiltak = Tiltak("Oppfølging", Tiltak.Type.INDOPPFAG),
+		tiltak: Tiltak = Tiltak("Oppfølging", Tiltakstype.ArenaKode.INDOPPFAG),
 		navn: String = "navn",
 		arrangorId: UUID = UUID.randomUUID(),
 	) = Deltakerliste(id, tiltak, navn, arrangorId)
@@ -163,7 +164,7 @@ object TestData {
 	) {
 		fun deltakerlisteDto() = DeltakerlisteDto(
 			id = this.deltakerliste.id,
-			tiltakstype = this.deltakerliste.tiltak.toDto(),
+			tiltakstypeDto = this.deltakerliste.tiltak.toDto(),
 			navn = this.deltakerliste.navn,
 			virksomhetsnummer = this@MockContext.arrangor.organisasjonsnummer,
 		)
@@ -171,7 +172,7 @@ object TestData {
 
 	fun Deltakerliste.toDto(arrangor: Arrangor) = DeltakerlisteDto(
 		id = this.id,
-		tiltakstype = this.tiltak.toDto(),
+		tiltakstypeDto = this.tiltak.toDto(),
 		navn = this.navn,
 		virksomhetsnummer = arrangor.organisasjonsnummer,
 	)
@@ -196,5 +197,6 @@ object TestData {
 		overordnetArrangorId = this.overordnetArrangorId,
 	)
 
-	fun Tiltak.toDto(): DeltakerlisteDto.Tiltakstype = DeltakerlisteDto.Tiltakstype(navn, type.name)
+	fun Tiltak.toDto(id: UUID = UUID.randomUUID()): DeltakerlisteDto.TiltakstypeDto =
+		DeltakerlisteDto.TiltakstypeDto(id, navn, arenaKode.name, tiltakskode)
 }

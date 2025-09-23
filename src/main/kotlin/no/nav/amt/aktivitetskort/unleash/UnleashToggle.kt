@@ -1,31 +1,31 @@
 package no.nav.amt.aktivitetskort.unleash
 
 import io.getunleash.Unleash
-import no.nav.amt.aktivitetskort.domain.Tiltak
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import org.springframework.stereotype.Component
 
 @Component
 class UnleashToggle(
 	private val unleashClient: Unleash,
 ) {
-	private val tiltakstyperKometAlltidErMasterFor = listOf(
-		Tiltak.Type.ARBFORB,
-		Tiltak.Type.ARBRRHDAG,
-		Tiltak.Type.AVKLARAG,
-		Tiltak.Type.INDOPPFAG,
-		Tiltak.Type.DIGIOPPARB,
-		Tiltak.Type.VASV,
+	private val tiltakstyperKometAlltidErMasterFors = listOf(
+		Tiltakstype.ArenaKode.ARBFORB,
+		Tiltakstype.ArenaKode.ARBRRHDAG,
+		Tiltakstype.ArenaKode.AVKLARAG,
+		Tiltakstype.ArenaKode.INDOPPFAG,
+		Tiltakstype.ArenaKode.DIGIOPPARB,
+		Tiltakstype.ArenaKode.VASV,
 	)
 
 	// her kan vi legge inn de neste tiltakstypene vi skal ta over
-	private val tiltakstyperKometKanskjeErMasterFor = listOf(
-		Tiltak.Type.GRUPPEAMO,
-		Tiltak.Type.GRUFAGYRKE,
-		Tiltak.Type.JOBBK,
+	private val tiltakstyperKometKanskjeErMasterFors = listOf(
+		Tiltakstype.ArenaKode.GRUPPEAMO,
+		Tiltakstype.ArenaKode.GRUFAGYRKE,
+		Tiltakstype.ArenaKode.JOBBK,
 	)
 
-	fun erKometMasterForTiltakstype(tiltakstype: Tiltak.Type): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
-		(unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
+	fun erKometMasterForTiltakstype(tiltakstype: Tiltakstype.ArenaKode): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFors ||
+		(unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFors)
 
 	fun skalOppdatereForUendretDeltaker(): Boolean = unleashClient.isEnabled("amt.oppdater-alle-aktivitetskort")
 }

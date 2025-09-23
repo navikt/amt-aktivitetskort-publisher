@@ -76,7 +76,7 @@ class KafkaConsumerService(
 	fun deltakerlisteHendelse(id: UUID, deltakerliste: DeltakerlisteDto?) {
 		if (deltakerliste == null) return
 
-		if (!deltakerliste.tiltakstype.erStottet()) return
+		if (!deltakerliste.tiltakstypeDto.erStottet()) return
 
 		val arrangor = arrangorRepository.get(deltakerliste.virksomhetsnummer)
 			?: hentOgLagreArrangorFraAmtArrangor(deltakerliste.virksomhetsnummer)

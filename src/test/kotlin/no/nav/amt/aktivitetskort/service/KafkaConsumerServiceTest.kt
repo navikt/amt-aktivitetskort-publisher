@@ -16,6 +16,7 @@ import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.transaction.TransactionStatus
@@ -172,7 +173,8 @@ class KafkaConsumerServiceTest {
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = UUID.randomUUID(),
 			navn = "navn",
-			tiltakstype = DeltakerlisteDto.Tiltakstype("Ukjent", "UKJENT"),
+			tiltakstypeDto = DeltakerlisteDto
+				.TiltakstypeDto(UUID.randomUUID(), "Ukjent", "UKJENT", Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
 			virksomhetsnummer = arrangor.organisasjonsnummer,
 		)
 
@@ -186,7 +188,7 @@ class KafkaConsumerServiceTest {
 	fun `deltakerlisteHendelse - arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
 		val arrangor = TestData.arrangor()
 		val deltakerliste =
-			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltak.Type.INDOPPFAG), arrangorId = arrangor.id)
+			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltakstype.ArenaKode.INDOPPFAG), arrangorId = arrangor.id)
 
 		every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null andThen arrangor
 		every { arrangorRepository.upsert(any()) } returns RepositoryResult.Created(arrangor)
