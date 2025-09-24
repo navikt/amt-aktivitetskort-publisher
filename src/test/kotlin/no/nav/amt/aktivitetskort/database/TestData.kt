@@ -164,7 +164,7 @@ object TestData {
 	) {
 		fun deltakerlisteDto() = DeltakerlisteDto(
 			id = this.deltakerliste.id,
-			tiltakstypeDto = this.deltakerliste.tiltak.toDto(),
+			tiltakstype = this.deltakerliste.tiltak.toDto(),
 			navn = this.deltakerliste.navn,
 			virksomhetsnummer = this@MockContext.arrangor.organisasjonsnummer,
 		)
@@ -172,7 +172,7 @@ object TestData {
 
 	fun Deltakerliste.toDto(arrangor: Arrangor) = DeltakerlisteDto(
 		id = this.id,
-		tiltakstypeDto = this.tiltak.toDto(),
+		tiltakstype = this.tiltak.toDto(),
 		navn = this.navn,
 		virksomhetsnummer = arrangor.organisasjonsnummer,
 	)

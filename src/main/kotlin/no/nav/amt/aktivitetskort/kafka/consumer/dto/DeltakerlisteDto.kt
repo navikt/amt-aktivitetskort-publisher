@@ -8,7 +8,7 @@ import java.util.UUID
 data class DeltakerlisteDto(
 	val id: UUID,
 	val navn: String,
-	val tiltakstypeDto: TiltakstypeDto,
+	val tiltakstype: TiltakstypeDto,
 	val virksomhetsnummer: String,
 ) {
 	data class TiltakstypeDto(
@@ -50,7 +50,7 @@ data class DeltakerlisteDto(
 
 	fun toModel(arrangorId: UUID) = Deltakerliste(
 		id = this.id,
-		tiltak = this.tiltakstypeDto.toModel(),
+		tiltak = this.tiltakstype.toModel(),
 		navn = this.navn,
 		arrangorId = arrangorId,
 	)

@@ -173,7 +173,7 @@ class KafkaConsumerServiceTest {
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = UUID.randomUUID(),
 			navn = "navn",
-			tiltakstypeDto = DeltakerlisteDto
+			tiltakstype = DeltakerlisteDto
 				.TiltakstypeDto(UUID.randomUUID(), "Ukjent", "UKJENT", "UKJENT"),
 			virksomhetsnummer = arrangor.organisasjonsnummer,
 		)
