@@ -24,7 +24,7 @@ class AktivitetskortProducer(
 			val messageId = UUID.randomUUID().toString()
 			val payload = AktivitetskortPayload(
 				messageId = UUID.randomUUID(),
-				aktivitetskortType = it.tiltakstype.toArenaKode(),
+				aktivitetskortType = it.tiltakstype,
 				aktivitetskort = it.toAktivitetskortDto(),
 			)
 			template.send(AKTIVITETSKORT_TOPIC, it.id.toString(), JsonUtils.toJsonString(payload)).get()

@@ -67,7 +67,7 @@ object TestData {
 		handlinger = null,
 		detaljer = detaljer,
 		etiketter = etiketter,
-		tiltakstype = tiltakstype,
+		tiltakstype = tiltakstype.toArenaKode(),
 	)
 
 	fun aktivitetskort(
@@ -106,7 +106,7 @@ object TestData {
 			Detalj("Arrangør", arrangor.navn),
 		),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-		tiltakstype = deltakerliste.tiltak.tiltakskode,
+		tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
 	)
 
 	fun deltaker(
