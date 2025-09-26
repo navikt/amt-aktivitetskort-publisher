@@ -214,7 +214,7 @@ class AktivitetskortService(
 		handlinger = getHandlinger(deltaker),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-		tiltakstype = deltakerliste.tiltak.type,
+		tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
 	)
 
 	private fun oppgaver(
@@ -222,7 +222,7 @@ class AktivitetskortService(
 		deltakerliste: Deltakerliste,
 		arrangor: Arrangor,
 	): OppgaveWrapper? {
-		if (!unleashToggle.erKometMasterForTiltakstype(deltakerliste.tiltak.type)) {
+		if (!unleashToggle.erKometMasterForTiltakstype(deltakerliste.tiltak.tiltakskode)) {
 			return null
 		}
 

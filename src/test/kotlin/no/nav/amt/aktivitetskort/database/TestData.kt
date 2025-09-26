@@ -21,6 +21,7 @@ import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -50,7 +51,7 @@ object TestData {
 		avtaltMedNav: Boolean = true,
 		detaljer: List<Detalj> = listOf(Detalj("Label", "Verdi")),
 		etiketter: List<Tag> = listOf(),
-		tiltakstype: Tiltak.Type = Tiltak.Type.INDOPPFAG,
+		tiltakstype: Tiltakstype.Tiltakskode = Tiltakstype.Tiltakskode.OPPFOLGING,
 	) = Aktivitetskort(
 		id = id,
 		personident = personIdent,
@@ -66,7 +67,7 @@ object TestData {
 		handlinger = null,
 		detaljer = detaljer,
 		etiketter = etiketter,
-		tiltakstype = tiltakstype,
+		tiltakstype = tiltakstype.toArenaKode(),
 	)
 
 	fun aktivitetskort(
@@ -105,7 +106,7 @@ object TestData {
 			Detalj("Arrangør", arrangor.navn),
 		),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-		tiltakstype = deltakerliste.tiltak.type,
+		tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
 	)
 
 	fun deltaker(
@@ -147,7 +148,7 @@ object TestData {
 
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
-		tiltak: Tiltak = Tiltak("Oppfølging", Tiltak.Type.INDOPPFAG),
+		tiltak: Tiltak = Tiltak("Oppfølging", Tiltakstype.Tiltakskode.OPPFOLGING),
 		navn: String = "navn",
 		arrangorId: UUID = UUID.randomUUID(),
 	) = Deltakerliste(id, tiltak, navn, arrangorId)
@@ -196,5 +197,6 @@ object TestData {
 		overordnetArrangorId = this.overordnetArrangorId,
 	)
 
-	fun Tiltak.toDto(): DeltakerlisteDto.Tiltakstype = DeltakerlisteDto.Tiltakstype(navn, type.name)
+	fun Tiltak.toDto(id: UUID = UUID.randomUUID()): DeltakerlisteDto.TiltakstypeDto =
+		DeltakerlisteDto.TiltakstypeDto(id, navn, "INDOPPFAG", "OPPFOLGING")
 }
