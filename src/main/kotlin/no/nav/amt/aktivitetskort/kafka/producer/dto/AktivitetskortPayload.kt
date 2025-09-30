@@ -7,7 +7,7 @@ import java.util.UUID
 data class AktivitetskortPayload(
 	val messageId: UUID,
 	val source: String = SOURCE,
-	val aktivitetskortType: Tiltakstype.ArenaKode,
+	val aktivitetskortType: Tiltakstype.Tiltakskode,
 	val actionType: String = "UPSERT_AKTIVITETSKORT_V1",
 	val aktivitetskort: AktivitetskortDto,
 )
