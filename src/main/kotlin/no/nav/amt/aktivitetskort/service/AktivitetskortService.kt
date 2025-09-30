@@ -214,7 +214,7 @@ class AktivitetskortService(
 		handlinger = getHandlinger(deltaker),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-		tiltakstype = deltakerliste.tiltak.tiltakskode,
+		tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
 	)
 
 	private fun oppgaver(
