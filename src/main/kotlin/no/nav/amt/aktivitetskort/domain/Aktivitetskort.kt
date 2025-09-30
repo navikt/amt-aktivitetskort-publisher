@@ -24,7 +24,7 @@ data class Aktivitetskort(
 	val handlinger: List<Handling>? = null,
 	val detaljer: List<Detalj>,
 	val etiketter: List<Tag>,
-	val tiltakstype: Tiltakstype.ArenaKode,
+	val tiltakstype: Tiltakstype.Tiltakskode,
 ) {
 	fun toAktivitetskortDto(): AktivitetskortDto = AktivitetskortDto(
 		id = id,
