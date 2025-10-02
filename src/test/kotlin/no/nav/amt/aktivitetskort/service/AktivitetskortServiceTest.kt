@@ -25,7 +25,7 @@ import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.repositories.OppfolgingsperiodeRepository
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -115,7 +115,7 @@ class AktivitetskortServiceTest {
 	@Test
 	fun `lagAktivitetskort(deltaker) - kilde=KOMET - lager nytt aktivitetskort med lenker`() {
 		val deltakerliste = TestData.deltakerliste(
-			tiltak = Tiltak("Arbeidsforberedende trening", Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+			tiltak = Tiltak("Arbeidsforberedende trening", Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
 		)
 		val deltaker =
 			TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id, prosentStilling = null, dagerPerUke = null)
@@ -169,7 +169,7 @@ class AktivitetskortServiceTest {
 	@Test
 	fun `lagAktivitetskort(deltaker) - kilde=KOMET, arenaId finnes ikke - oppretter med ny aktivitetskortId`() = mockCluster {
 		val deltakerliste = TestData.deltakerliste(
-			tiltak = Tiltak("Arbeidsforberedende trening", Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+			tiltak = Tiltak("Arbeidsforberedende trening", Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
 		)
 		val deltaker = TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id)
 		val ctx = TestData.MockContext(deltaker = deltaker, deltakerliste = deltakerliste)

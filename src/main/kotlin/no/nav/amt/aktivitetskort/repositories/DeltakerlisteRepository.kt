@@ -4,7 +4,7 @@ import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.aktivitetskort.utils.sqlParameters
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -19,7 +19,7 @@ class DeltakerlisteRepository(
 			id = UUID.fromString(rs.getString("id")),
 			tiltak = Tiltak(
 				navn = rs.getString("tiltaksnavn"),
-				tiltakskode = Tiltakstype.Tiltakskode.valueOf(rs.getString("tiltakstype")),
+				tiltakskode = Tiltakskode.valueOf(rs.getString("tiltakstype")),
 			),
 			navn = rs.getString("navn"),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),

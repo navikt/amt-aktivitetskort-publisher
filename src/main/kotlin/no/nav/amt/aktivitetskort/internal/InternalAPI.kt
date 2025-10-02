@@ -23,6 +23,7 @@ class InternalAPI(
 	private val aktivitetskortProducer: AktivitetskortProducer,
 	private val deltakerRepository: DeltakerRepository,
 ) {
+	// Regenererer aktivitetskort på samme deltaker
 	@Unprotected
 	@GetMapping("/publiser/{deltakerId}")
 	fun publiserAktivitetskortForDeltaker(

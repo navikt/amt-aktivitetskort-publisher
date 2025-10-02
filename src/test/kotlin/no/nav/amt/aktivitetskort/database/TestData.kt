@@ -21,7 +21,7 @@ import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -51,7 +51,7 @@ object TestData {
 		avtaltMedNav: Boolean = true,
 		detaljer: List<Detalj> = listOf(Detalj("Label", "Verdi")),
 		etiketter: List<Tag> = listOf(),
-		tiltakstype: Tiltakstype.Tiltakskode = Tiltakstype.Tiltakskode.OPPFOLGING,
+		tiltakstype: Tiltakskode = Tiltakskode.OPPFOLGING,
 	) = Aktivitetskort(
 		id = id,
 		personident = personIdent,
@@ -148,7 +148,7 @@ object TestData {
 
 	fun deltakerliste(
 		id: UUID = UUID.randomUUID(),
-		tiltak: Tiltak = Tiltak("Oppfølging", Tiltakstype.Tiltakskode.OPPFOLGING),
+		tiltak: Tiltak = Tiltak("Oppfølging", Tiltakskode.OPPFOLGING),
 		navn: String = "navn",
 		arrangorId: UUID = UUID.randomUUID(),
 	) = Deltakerliste(id, tiltak, navn, arrangorId)
