@@ -1,7 +1,8 @@
 package no.nav.amt.aktivitetskort.domain
 
 import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortDto
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -24,7 +25,7 @@ data class Aktivitetskort(
 	val handlinger: List<Handling>? = null,
 	val detaljer: List<Detalj>,
 	val etiketter: List<Tag>,
-	val tiltakstype: Tiltakstype.ArenaKode,
+	val tiltakstype: ArenaKode,
 ) {
 	fun toAktivitetskortDto(): AktivitetskortDto = AktivitetskortDto(
 		id = id,
@@ -84,11 +85,11 @@ data class Aktivitetskort(
 			deltakerliste: Deltakerliste,
 			arrangor: Arrangor,
 			erKurs: Boolean,
-		) = when (deltakerliste.tiltak.tiltakskode) {
-			Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "Tilrettelagt arbeid hos ${arrangor.navn}"
-			Tiltakstype.Tiltakskode.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
-			Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> if (erKurs) "Kurs: ${deltakerliste.navn}" else deltakerliste.navn
-			Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> deltakerliste.navn
+		): String = when (deltakerliste.tiltak.tiltakskode) {
+			Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "Tilrettelagt arbeid hos ${arrangor.navn}"
+			Tiltakskode.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
+			Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> if (erKurs) "Kurs: ${deltakerliste.navn}" else deltakerliste.navn
+			Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> deltakerliste.navn
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 

@@ -2,7 +2,7 @@ package no.nav.amt.aktivitetskort.kafka.consumer.dto
 
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.Tiltak
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.util.UUID
 
 data class DeltakerlisteDto(
@@ -35,15 +35,15 @@ data class DeltakerlisteDto(
 		)
 
 		fun tiltakskodeToTiltaksEnum(tiltakskode: String) = when (tiltakskode) {
-			"OPPFOLGING" -> Tiltakstype.Tiltakskode.OPPFOLGING
-			"ARBEIDSFORBEREDENDE_TRENING" -> Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING
-			"AVKLARING" -> Tiltakstype.Tiltakskode.AVKLARING
-			"VARIG_TILRETTELAGT_ARBEID_SKJERMET" -> Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET
-			"ARBEIDSRETTET_REHABILITERING" -> Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING
-			"DIGITALT_OPPFOLGINGSTILTAK" -> Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK
-			"JOBBKLUBB" -> Tiltakstype.Tiltakskode.JOBBKLUBB
-			"GRUPPE_ARBEIDSMARKEDSOPPLAERING" -> Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING
-			"GRUPPE_FAG_OG_YRKESOPPLAERING" -> Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING
+			"OPPFOLGING" -> Tiltakskode.OPPFOLGING
+			"ARBEIDSFORBEREDENDE_TRENING" -> Tiltakskode.ARBEIDSFORBEREDENDE_TRENING
+			"AVKLARING" -> Tiltakskode.AVKLARING
+			"VARIG_TILRETTELAGT_ARBEID_SKJERMET" -> Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET
+			"ARBEIDSRETTET_REHABILITERING" -> Tiltakskode.ARBEIDSRETTET_REHABILITERING
+			"DIGITALT_OPPFOLGINGSTILTAK" -> Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK
+			"JOBBKLUBB" -> Tiltakskode.JOBBKLUBB
+			"GRUPPE_ARBEIDSMARKEDSOPPLAERING" -> Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING
+			"GRUPPE_FAG_OG_YRKESOPPLAERING" -> Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING
 			else -> throw IllegalArgumentException("Unknown tiltakskode: $tiltakskode")
 		}
 	}
