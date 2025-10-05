@@ -9,13 +9,13 @@ spec:
   image: {{image}}
   gcp:
     sqlInstances:
-      - name: amt-aktivitetskort-publisher
+      - name: amt-aktivitetskort-publisher-1
         tier: db-f1-micro
         type: POSTGRES_17
         databases:
           - name: amt-aktivitetskort-publisher
             envVarPrefix: DB
-        diskAutoresize: true
+        diskAutoresize: false
         highAvailability: false
         insights:
           enabled: true
