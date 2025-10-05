@@ -16,7 +16,7 @@ spec:
           - name: amt-aktivitetskort-publisher
             envVarPrefix: DB
         diskAutoresize: true
-        highAvailability: true
+        highAvailability: false
         insights:
           enabled: true
   port: 8080
@@ -30,8 +30,8 @@ spec:
     path: /internal/health/liveness
     initialDelay: 30
   replicas:
-    min: 1
-    max: 3
+    min: 0
+    max: 0
     scalingStrategy:
       cpu:
         thresholdPercentage: 500
