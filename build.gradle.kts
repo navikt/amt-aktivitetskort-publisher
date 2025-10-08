@@ -27,7 +27,7 @@ val mockkVersion = "1.14.6"
 val commonVersion = "3.2025.08.18_11.44-04fe318bd185"
 val tokenSupportVersion = "5.0.34"
 val unleashVersion = "11.1.0"
-val amtLibVersion = "1.2025.10.01_11.29-8da7435c10c1"
+val amtLibVersion = "1.2025.10.08_09.09-4d8d4f2abb10"
 
 dependencyManagement {
 	imports {

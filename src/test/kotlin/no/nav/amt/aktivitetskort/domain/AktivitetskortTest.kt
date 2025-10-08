@@ -21,7 +21,10 @@ class AktivitetskortTest {
 					Tiltakskode.OPPFOLGING -> "Oppfølgingstiltak"
 					Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "VTA"
 					Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> "Gruppe yrkesfaglig utanning"
-					else -> "$it hos ${arrangor.navn}"
+					Tiltakskode.HOYERE_UTDANNING,
+					Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
+					Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
+					-> "Enkeltplass"
 				}
 				TestData.deltakerliste(tiltak = Tiltak(tiltaksnavn, it), arrangorId = arrangor.id)
 			}
@@ -34,6 +37,10 @@ class AktivitetskortTest {
 				Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
 				Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> aktivitetskortTittel shouldBe "Kurs: ${it.navn}"
 				Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> aktivitetskortTittel shouldBe it.navn
+				Tiltakskode.HOYERE_UTDANNING,
+				Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
+				Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
+				-> aktivitetskortTittel shouldBe "Tiltak hos ${arrangor.navn}"
 				else -> aktivitetskortTittel shouldBe "${it.tiltak.navn} hos ${arrangor.navn}"
 			}
 		}
