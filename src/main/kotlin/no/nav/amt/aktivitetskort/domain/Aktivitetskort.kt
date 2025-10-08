@@ -90,6 +90,10 @@ data class Aktivitetskort(
 			Tiltakskode.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
 			Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> if (erKurs) "Kurs: ${deltakerliste.navn}" else deltakerliste.navn
 			Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> deltakerliste.navn
+			Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
+			Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
+			Tiltakskode.HOYERE_UTDANNING,
+			-> "Tiltak hos ${arrangor.navn}"
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 

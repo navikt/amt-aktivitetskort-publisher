@@ -22,8 +22,8 @@ class UnleashToggle(
 
 	// her kan vi legge inn de neste tiltakstypene vi skal ta over
 	private val tiltakstyperKometKanskjeErMasterFor = setOf(
-		Tiltakskode.AMO,
-		Tiltakskode.FAG_OG_YRKESOPPLAERING,
+		Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
+		Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
 		Tiltakskode.HOYERE_UTDANNING,
 	)
 
