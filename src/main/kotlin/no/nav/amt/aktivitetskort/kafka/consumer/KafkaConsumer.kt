@@ -1,5 +1,7 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
+import no.nav.amt.aktivitetskort.kafka.TiltakstypeUtils.tiltakskodeErStottet
+import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
 import no.nav.amt.aktivitetskort.service.FeilmeldingService
 import no.nav.amt.aktivitetskort.service.KafkaConsumerService
 import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJson
@@ -9,21 +11,13 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 import java.util.UUID
 
-const val DELTAKER_TOPIC = "amt.deltaker-v2"
-const val ARRANGOR_TOPIC = "amt.arrangor-v1"
-const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
-const val FEILTOPIC = "dab.aktivitetskort-feil-v1"
-const val AKTIVITETSKORT_TOPIC = "dab.aktivitetskort-v1.1"
-
-const val SOURCE = "TEAM_KOMET"
-
 @Component
 class KafkaConsumer(
 	val kafkaConsumerService: KafkaConsumerService,
 	val feilmeldingService: FeilmeldingService,
 ) {
 	@KafkaListener(
-		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC, FEILTOPIC],
+		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC_V1, FEIL_TOPIC],
 		containerFactory = "kafkaListenerContainerFactory",
 	)
 	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
@@ -33,10 +27,25 @@ class KafkaConsumer(
 				record.value()?.let { fromJson(it) },
 			)
 
-			DELTAKERLISTE_TOPIC -> kafkaConsumerService.deltakerlisteHendelse(
+			DELTAKERLISTE_TOPIC_V1 -> {
+				record
+					.value()
+					?.let { fromJson<DeltakerlisteDto>(it) }
+					?.takeIf { deltakerlisteDto -> tiltakskodeErStottet(deltakerlisteDto.tiltakstype.tiltakskode) }
+					?.let { deltakerliste ->
+						kafkaConsumerService.deltakerlisteHendelse(
+							id = UUID.fromString(record.key()),
+							deltakerlisteDto = deltakerliste,
+						)
+					}
+			}
+
+/*
+			DELTAKERLISTE_TOPIC_V2 -> kafkaConsumerService.deltakerlisteHendelse(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },
 			)
+*/
 
 			DELTAKER_TOPIC -> kafkaConsumerService.deltakerHendelse(
 				id = UUID.fromString(record.key()),
@@ -44,7 +53,7 @@ class KafkaConsumer(
 				offset = record.offset(),
 			)
 
-			FEILTOPIC -> feilmeldingService.handleFeilmelding(
+			FEIL_TOPIC -> feilmeldingService.handleFeilmelding(
 				UUID.fromString(record.key()),
 				record.value()?.let { fromJson(it) },
 			)

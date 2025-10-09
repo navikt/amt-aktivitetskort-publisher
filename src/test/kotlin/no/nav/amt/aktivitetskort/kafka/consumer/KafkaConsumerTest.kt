@@ -62,7 +62,7 @@ class KafkaConsumerTest(
 
 		kafkaProducer.send(
 			ProducerRecord(
-				DELTAKERLISTE_TOPIC,
+				DELTAKERLISTE_TOPIC_V1,
 				ctx.deltakerliste.id.toString(),
 				JsonUtils.toJsonString(ctx.deltakerlisteDto()),
 			),

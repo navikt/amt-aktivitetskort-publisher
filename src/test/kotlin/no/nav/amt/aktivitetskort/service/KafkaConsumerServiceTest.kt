@@ -1,5 +1,7 @@
 package no.nav.amt.aktivitetskort.service
 
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -11,6 +13,7 @@ import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
+import no.nav.amt.aktivitetskort.kafka.consumer.dto.TiltakstypeDto
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -168,17 +171,20 @@ class KafkaConsumerServiceTest {
 	}
 
 	@Test
-	fun `deltakerlisteHendelse - tiltak er ikke støttet - skal ikke lagre deltakerliste`() {
+	fun `deltakerlisteHendelse - tiltak er ikke stottet - skal ikke lagre deltakerliste`() {
 		val arrangor = TestData.arrangor()
 		val deltakerlisteDto = DeltakerlisteDto(
 			id = UUID.randomUUID(),
 			navn = "navn",
-			tiltakstype = DeltakerlisteDto
-				.TiltakstypeDto(UUID.randomUUID(), "Ukjent", "UKJENT", "UKJENT"),
+			tiltakstype = TiltakstypeDto(UUID.randomUUID(), "Ukjent", "UKJENT", "UKJENT"),
 			virksomhetsnummer = arrangor.organisasjonsnummer,
 		)
 
-		kafkaConsumerService.deltakerlisteHendelse(deltakerlisteDto.id, deltakerlisteDto)
+		val throwable = shouldThrow<IllegalArgumentException> {
+			kafkaConsumerService.deltakerlisteHendelse(deltakerlisteDto.id, deltakerlisteDto)
+		}
+
+		throwable.message shouldBe "Tiltakskode UKJENT er ikke støttet"
 
 		verify(exactly = 0) { arrangorRepository.get(arrangor.organisasjonsnummer) }
 		verify(exactly = 0) { deltakerlisteRepository.upsert(any()) }
