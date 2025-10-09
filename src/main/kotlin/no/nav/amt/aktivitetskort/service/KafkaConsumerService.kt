@@ -6,6 +6,7 @@ import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.kafka.TiltakstypeUtils.tiltakskodeErStottet
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
@@ -55,6 +56,7 @@ class KafkaConsumerService(
 					}
 					aktivitetskortProducer.send(aktivitetskort)
 				}
+
 				is RepositoryResult.Created -> {
 					log.info("Ny hendelse for deltaker ${deltaker.id}: Opprettelse")
 					val aktivitetskort = aktivitetskortService.lagAktivitetskort(result.data)
@@ -73,23 +75,23 @@ class KafkaConsumerService(
 		}
 	}
 
-	fun deltakerlisteHendelse(id: UUID, deltakerliste: DeltakerlisteDto?) {
-		if (deltakerliste == null) return
+	fun deltakerlisteHendelse(id: UUID, deltakerlisteDto: DeltakerlisteDto) {
+		require(
+			tiltakskodeErStottet(deltakerlisteDto.tiltakstype.tiltakskode),
+		) { "Tiltakskode ${deltakerlisteDto.tiltakstype.tiltakskode} er ikke støttet" }
 
-		if (!deltakerliste.tiltakstype.erStottet()) return
-
-		val arrangor = arrangorRepository.get(deltakerliste.virksomhetsnummer)
-			?: hentOgLagreArrangorFraAmtArrangor(deltakerliste.virksomhetsnummer)
+		val arrangor = arrangorRepository.get(deltakerlisteDto.virksomhetsnummer)
+			?: hentOgLagreArrangorFraAmtArrangor(deltakerlisteDto.virksomhetsnummer)
 
 		transactionTemplate.executeWithoutResult {
-			when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel(arrangor.id))) {
+			when (val result = deltakerlisteRepository.upsert(deltakerlisteDto.toModel(arrangor.id))) {
 				is RepositoryResult.Modified -> {
-					log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Oppdatering")
+					log.info("Ny hendelse for deltakerliste ${deltakerlisteDto.id}: Oppdatering")
 					aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(result.data))
 				}
 
-				is RepositoryResult.Created -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Opprettelse")
-				is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Ingen endring")
+				is RepositoryResult.Created -> log.info("Ny hendelse for deltakerliste ${deltakerlisteDto.id}: Opprettelse")
+				is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerlisteDto.id}: Ingen endring")
 			}
 			log.info("Konsumerte melding med deltakerliste $id")
 		}

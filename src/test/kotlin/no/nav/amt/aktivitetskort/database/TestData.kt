@@ -19,6 +19,7 @@ import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
+import no.nav.amt.aktivitetskort.kafka.consumer.dto.TiltakstypeDto
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
@@ -197,6 +198,5 @@ object TestData {
 		overordnetArrangorId = this.overordnetArrangorId,
 	)
 
-	fun Tiltak.toDto(id: UUID = UUID.randomUUID()): DeltakerlisteDto.TiltakstypeDto =
-		DeltakerlisteDto.TiltakstypeDto(id, navn, "INDOPPFAG", "OPPFOLGING")
+	fun Tiltak.toDto(id: UUID = UUID.randomUUID()): TiltakstypeDto = TiltakstypeDto(id, navn, "INDOPPFAG", "OPPFOLGING")
 }
