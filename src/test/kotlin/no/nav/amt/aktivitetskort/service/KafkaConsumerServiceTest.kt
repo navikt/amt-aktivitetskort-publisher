@@ -12,8 +12,7 @@ import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tiltak
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.TiltakstypeDto
+import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -21,6 +20,7 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.SimpleTransactionStatus
@@ -127,90 +127,93 @@ class KafkaConsumerServiceTest {
 		verify(exactly = 1) { aktivitetskortProducer.send(mockAktivitetskort) }
 	}
 
-	@Test
-	fun `deltakerlisteHendelse - deltakerliste modifisert - publiser melding`() {
-		val ctx = TestData.MockContext()
+	@Nested
+	inner class DeltakerlisteHendelse {
+		@Test
+		fun `deltakerliste modifisert - publiser melding`() {
+			val ctx = TestData.MockContext()
 
-		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
-		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
-		every { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
+			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
+			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
+			every { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
-		kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
+			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload())
 
-		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
-		verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
-		verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
-	}
-
-	@Test
-	fun `deltakerlisteHendelse - deltakerliste lagd - ikke publiser melding`() {
-		val ctx = TestData.MockContext()
-
-		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
-		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
-
-		kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
-
-		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
-		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
-		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
-	}
-
-	@Test
-	fun `deltakerlisteHendelse - deltakerliste har ingen forandring - ikke publiser melding`() {
-		val ctx = TestData.MockContext()
-
-		every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
-		every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
-
-		kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerliste.id, ctx.deltakerlisteDto())
-
-		verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
-		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
-		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
-	}
-
-	@Test
-	fun `deltakerlisteHendelse - tiltak er ikke stottet - skal ikke lagre deltakerliste`() {
-		val arrangor = TestData.arrangor()
-		val deltakerlisteDto = DeltakerlisteDto(
-			id = UUID.randomUUID(),
-			navn = "navn",
-			tiltakstype = TiltakstypeDto(UUID.randomUUID(), "Ukjent", "UKJENT", "UKJENT"),
-			virksomhetsnummer = arrangor.organisasjonsnummer,
-		)
-
-		val throwable = shouldThrow<IllegalArgumentException> {
-			kafkaConsumerService.deltakerlisteHendelse(deltakerlisteDto.id, deltakerlisteDto)
+			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
+			verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
+			verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
 		}
 
-		throwable.message shouldBe "Tiltakskode UKJENT er ikke støttet"
+		@Test
+		fun `deltakerliste lagd - ikke publiser melding`() {
+			val ctx = TestData.MockContext()
 
-		verify(exactly = 0) { arrangorRepository.get(arrangor.organisasjonsnummer) }
-		verify(exactly = 0) { deltakerlisteRepository.upsert(any()) }
-	}
+			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
+			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 
-	@Test
-	fun `deltakerlisteHendelse - arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
-		val arrangor = TestData.arrangor()
-		val deltakerliste =
-			TestData.deltakerliste(tiltak = Tiltak("navn", Tiltakskode.OPPFOLGING), arrangorId = arrangor.id)
+			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload())
 
-		every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null andThen arrangor
-		every { arrangorRepository.upsert(any()) } returns RepositoryResult.Created(arrangor)
-		every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns AmtArrangorClient.ArrangorMedOverordnetArrangorDto(
-			arrangor.id,
-			arrangor.navn,
-			arrangor.organisasjonsnummer,
-			null,
-		)
-		every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
+			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
+			verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
+			verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
+		}
 
-		kafkaConsumerService.deltakerlisteHendelse(deltakerliste.id, deltakerliste.toDto(arrangor))
+		@Test
+		fun `deltakerliste har ingen forandring - ikke publiser melding`() {
+			val ctx = TestData.MockContext()
 
-		verify(exactly = 2) { arrangorRepository.get(arrangor.organisasjonsnummer) }
-		verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) }
-		verify(exactly = 1) { deltakerlisteRepository.upsert(deltakerliste) }
+			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
+			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
+
+			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload())
+
+			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
+			verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
+			verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
+		}
+
+		@Test
+		fun `tiltak er ikke stottet - skal ikke lagre deltakerliste`() {
+			val arrangor = TestData.arrangor()
+			val deltakerlistePayload = DeltakerlistePayload(
+				id = UUID.randomUUID(),
+				navn = "navn",
+				tiltakstype = DeltakerlistePayload.Tiltakstype("UKJENT", "UKJENT"),
+				virksomhetsnummer = arrangor.organisasjonsnummer,
+			)
+
+			val throwable = shouldThrow<IllegalArgumentException> {
+				kafkaConsumerService.deltakerlisteHendelse(deltakerlistePayload)
+			}
+
+			throwable.message shouldBe "Tiltakskode UKJENT er ikke støttet"
+
+			verify(exactly = 0) { arrangorRepository.get(arrangor.organisasjonsnummer) }
+			verify(exactly = 0) { deltakerlisteRepository.upsert(any()) }
+		}
+
+		@Test
+		fun `arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
+			val arrangor = TestData.arrangor()
+			val deltakerliste =
+				TestData.deltakerliste(tiltak = Tiltak("navn", Tiltakskode.OPPFOLGING), arrangorId = arrangor.id)
+
+			every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null andThen arrangor
+			every { arrangorRepository.upsert(any()) } returns RepositoryResult.Created(arrangor)
+			every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns AmtArrangorClient.ArrangorMedOverordnetArrangorDto(
+				arrangor.id,
+				arrangor.navn,
+				arrangor.organisasjonsnummer,
+				null,
+			)
+			every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
+
+			kafkaConsumerService.deltakerlisteHendelse(deltakerliste.toDto(arrangor))
+
+			verify(exactly = 2) { arrangorRepository.get(arrangor.organisasjonsnummer) }
+			verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) }
+			verify(exactly = 1) { deltakerlisteRepository.upsert(deltakerliste) }
+		}
 	}
 
 	@Test

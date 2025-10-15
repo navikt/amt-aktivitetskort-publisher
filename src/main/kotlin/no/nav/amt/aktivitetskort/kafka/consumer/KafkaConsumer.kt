@@ -1,10 +1,11 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
-import no.nav.amt.aktivitetskort.kafka.TiltakstypeUtils.tiltakskodeErStottet
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
 import no.nav.amt.aktivitetskort.service.FeilmeldingService
 import no.nav.amt.aktivitetskort.service.KafkaConsumerService
 import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJson
+import no.nav.amt.lib.utils.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
@@ -27,25 +28,20 @@ class KafkaConsumer(
 				record.value()?.let { fromJson(it) },
 			)
 
+			// fjernes ved overgang til v2
 			DELTAKERLISTE_TOPIC_V1 -> {
-				record
-					.value()
-					?.let { fromJson<DeltakerlisteDto>(it) }
-					?.takeIf { deltakerlisteDto -> tiltakskodeErStottet(deltakerlisteDto.tiltakstype.tiltakskode) }
-					?.let { deltakerliste ->
-						kafkaConsumerService.deltakerlisteHendelse(
-							id = UUID.fromString(record.key()),
-							deltakerlisteDto = deltakerliste,
-						)
-					}
+				objectMapper
+					.readValue<DeltakerlistePayload>(record.value())
+					.takeIf { it.tiltakstype.erStottet() }
+					?.let { kafkaConsumerService.deltakerlisteHendelse(deltakerlistePayload = it) }
 			}
 
-/*
-			DELTAKERLISTE_TOPIC_V2 -> kafkaConsumerService.deltakerlisteHendelse(
-				UUID.fromString(record.key()),
-				record.value()?.let { fromJson(it) },
-			)
-*/
+			DELTAKERLISTE_TOPIC_V2 -> {
+				objectMapper
+					.readValue<DeltakerlistePayload>(record.value())
+					.takeIf { it.tiltakstype.erStottet() }
+					?.let { kafkaConsumerService.deltakerlisteHendelse(deltakerlistePayload = it) }
+			}
 
 			DELTAKER_TOPIC -> kafkaConsumerService.deltakerHendelse(
 				id = UUID.fromString(record.key()),
