@@ -18,7 +18,7 @@ repositories {
 }
 
 val logstashEncoderVersion = "8.1"
-val okHttpVersion = "5.1.0"
+val okHttpVersion = "5.2.1"
 val kafkaClientsVersion = "4.1.0"
 val kotestVersion = "6.0.3"
 val testcontainersVersion = "1.21.3"
@@ -26,7 +26,7 @@ val klintVersion = "1.4.1"
 val mockkVersion = "1.14.6"
 val commonVersion = "3.2025.08.18_11.44-04fe318bd185"
 val tokenSupportVersion = "5.0.34"
-val unleashVersion = "11.1.0"
+val unleashVersion = "11.1.1"
 val amtLibVersion = "1.2025.10.08_09.09-4d8d4f2abb10"
 
 dependencyManagement {
