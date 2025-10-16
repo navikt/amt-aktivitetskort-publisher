@@ -20,7 +20,10 @@ class KafkaConsumer(
 	private val tiltakstypeRepository: TiltakstypeRepository,
 ) {
 	@KafkaListener(
-		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, DELTAKERLISTE_TOPIC_V1, DELTAKERLISTE_TOPIC_V2, FEIL_TOPIC],
+		topics = [
+			DELTAKER_TOPIC, ARRANGOR_TOPIC, TILTAKSTYPE_TOPIC, DELTAKERLISTE_TOPIC_V1,
+			DELTAKERLISTE_TOPIC_V2, FEIL_TOPIC,
+		],
 		containerFactory = "kafkaListenerContainerFactory",
 	)
 	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
