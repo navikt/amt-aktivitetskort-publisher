@@ -13,6 +13,7 @@ import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
+import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.slf4j.LoggerFactory
@@ -24,6 +25,7 @@ import java.util.UUID
 class KafkaConsumerService(
 	private val arrangorRepository: ArrangorRepository,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val tiltakstypeRepository: TiltakstypeRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val aktivitetskortService: AktivitetskortService,
 	private val amtArrangorClient: AmtArrangorClient,
@@ -82,8 +84,15 @@ class KafkaConsumerService(
 		val arrangor = arrangorRepository.get(deltakerlistePayload.organisasjonsnummer)
 			?: hentOgLagreArrangorFraAmtArrangor(deltakerlistePayload.organisasjonsnummer)
 
+		val tiltakstype = tiltakstypeRepository.getByTiltakskode(deltakerlistePayload.tiltakstype.tiltakskode)
+			?: throw NoSuchElementException("Fant ikke tiltakstype med tiltakskode ${deltakerlistePayload.tiltakstype.tiltakskode}")
+
 		transactionTemplate.executeWithoutResult {
-			when (val result = deltakerlisteRepository.upsert(deltakerlistePayload.toModel(arrangor.id))) {
+			when (
+				val result = deltakerlisteRepository.upsert(
+					deltakerlistePayload.toModel(arrangorId = arrangor.id, navnTiltakstype = tiltakstype.navn),
+				)
+			) {
 				is RepositoryResult.Modified -> {
 					log.info("Ny hendelse for deltakerliste ${deltakerlistePayload.id}: Oppdatering")
 					aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(result.data))

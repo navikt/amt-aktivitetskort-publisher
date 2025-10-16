@@ -16,6 +16,7 @@ import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Tag
 import no.nav.amt.aktivitetskort.domain.Tiltak
+import no.nav.amt.aktivitetskort.domain.Tiltakstype
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
@@ -157,6 +158,11 @@ object TestData {
 		val deltaker: Deltaker = deltaker(),
 		val deltakerliste: Deltakerliste = deltakerliste(id = deltaker.deltakerlisteId),
 		val arrangor: Arrangor = arrangor(id = deltakerliste.arrangorId),
+		val tiltakstype: Tiltakstype = Tiltakstype(
+			id = UUID.randomUUID(),
+			navn = "Oppfølging",
+			tiltakskode = Tiltakskode.OPPFOLGING,
+		),
 		val aktivitetskortId: UUID = UUID.randomUUID(),
 		val aktivitetskort: Aktivitetskort = aktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor),
 		val oppfolgingsperiodeId: UUID? = null,
@@ -197,5 +203,5 @@ object TestData {
 		overordnetArrangorId = this.overordnetArrangorId,
 	)
 
-	fun Tiltak.toDto(): DeltakerlistePayload.Tiltakstype = DeltakerlistePayload.Tiltakstype(this.tiltakskode.name, this.navn)
+	fun Tiltak.toDto(): DeltakerlistePayload.Tiltakstype = DeltakerlistePayload.Tiltakstype(this.tiltakskode.name)
 }

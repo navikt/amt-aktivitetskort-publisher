@@ -15,7 +15,6 @@ data class DeltakerlistePayload(
 ) {
 	data class Tiltakstype(
 		val tiltakskode: String,
-		val navn: String = "TODO", // vil komme etterhvert fra Mulighetsrommet
 	) {
 		fun erStottet() = Tiltakskode.entries.any { it.name == tiltakskode }
 	}
@@ -30,10 +29,10 @@ data class DeltakerlistePayload(
 			.firstOrNull()
 			?: throw IllegalStateException("Virksomhetsnummer mangler")
 
-	fun toModel(arrangorId: UUID) = Deltakerliste(
+	fun toModel(arrangorId: UUID, navnTiltakstype: String) = Deltakerliste(
 		id = this.id,
-		tiltak = Tiltak(this.tiltakstype.navn, Tiltakskode.valueOf(this.tiltakstype.tiltakskode)),
-		navn = this.navn ?: tiltakstype.navn,
+		tiltak = Tiltak(navnTiltakstype, Tiltakskode.valueOf(this.tiltakstype.tiltakskode)),
+		navn = this.navn ?: navnTiltakstype,
 		arrangorId = arrangorId,
 	)
 }

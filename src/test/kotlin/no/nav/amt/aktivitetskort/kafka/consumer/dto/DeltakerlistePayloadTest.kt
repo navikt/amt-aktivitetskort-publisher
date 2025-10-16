@@ -92,10 +92,9 @@ class DeltakerlistePayloadTest {
 			val arrangor = arrangor()
 			val tiltakstype = DeltakerlistePayload.Tiltakstype(
 				tiltakskode = Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING.name,
-				"Test tiltak ENKFAGYRKE",
 			)
 
-			val model = payload.toModel(arrangor.id)
+			val model = payload.toModel(arrangorId = arrangor.id, navnTiltakstype = "Test tiltak ENKFAGYRKE")
 
 			assertSoftly(model) {
 				tiltakstype shouldBe tiltakstype
@@ -116,9 +115,9 @@ class DeltakerlistePayloadTest {
 
 			val arrangor = arrangor()
 
-			val model = payload.toModel(arrangor.id)
+			val model = payload.toModel(arrangorId = arrangor.id, navnTiltakstype = "Test tiltak ENKFAGYRKE")
 
-			model.navn shouldBe "TODO" // Fix denne etter at Mulighetsrommet har oppdatert skjemaet
+			model.navn shouldBe "Test tiltak ENKFAGYRKE"
 		}
 	}
 

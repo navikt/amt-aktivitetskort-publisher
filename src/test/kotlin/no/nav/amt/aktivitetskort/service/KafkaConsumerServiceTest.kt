@@ -2,6 +2,7 @@ package no.nav.amt.aktivitetskort.service
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -17,6 +18,7 @@ import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
+import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.junit.jupiter.api.BeforeEach
@@ -30,12 +32,15 @@ import java.util.function.Consumer
 
 class KafkaConsumerServiceTest {
 	private val arrangorRepository = mockk<ArrangorRepository>()
-	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
+	private val deltakerlisteRepository = mockk<DeltakerlisteRepository>(relaxed = true)
 	private val deltakerRepository = mockk<DeltakerRepository>()
 	private val aktivitetskortService = mockk<AktivitetskortService>()
 	private val amtArrangorClient = mockk<AmtArrangorClient>()
 	private val aktivitetskortProducer = mockk<AktivitetskortProducer>(relaxed = true)
+	private val tiltakstypeRepository = mockk<TiltakstypeRepository>()
 	private val transactionTemplate = mockk<TransactionTemplate>()
+
+	private val ctx: TestData.MockContext = TestData.MockContext()
 
 	private val offset: Long = 0
 
@@ -46,20 +51,22 @@ class KafkaConsumerServiceTest {
 		aktivitetskortService = aktivitetskortService,
 		amtArrangorClient = amtArrangorClient,
 		aktivitetskortProducer = aktivitetskortProducer,
+		tiltakstypeRepository = tiltakstypeRepository,
 		transactionTemplate = transactionTemplate,
 	)
 
 	@BeforeEach
 	fun setup() {
+		clearAllMocks()
+
 		every { transactionTemplate.executeWithoutResult(any<Consumer<TransactionStatus>>()) } answers {
 			(firstArg() as Consumer<TransactionStatus>).accept(SimpleTransactionStatus())
 		}
+		every { tiltakstypeRepository.getByTiltakskode(any()) } returns ctx.tiltakstype
 	}
 
 	@Test
 	fun `deltakerHendelse - deltaker modifisert - publiser melding`() {
-		val ctx = TestData.MockContext()
-
 		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Modified(ctx.deltaker)
 		every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
 
@@ -72,8 +79,6 @@ class KafkaConsumerServiceTest {
 
 	@Test
 	fun `deltakerHendelse - deltaker lagd - publiser melding`() {
-		val ctx = TestData.MockContext()
-
 		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Created(ctx.deltaker)
 		every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
 
@@ -86,8 +91,6 @@ class KafkaConsumerServiceTest {
 
 	@Test
 	fun `deltakerHendelse - deltaker har ingen forandring - ikke publiser melding`() {
-		val ctx = TestData.MockContext()
-
 		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.NoChange()
 
 		kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
@@ -99,7 +102,6 @@ class KafkaConsumerServiceTest {
 
 	@Test
 	fun `deltakerHendelse - deltaker finnes ikke, status feilregistrert - publiserer ikke melding`() {
-		val ctx = TestData.MockContext()
 		val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
 
 		every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.NoChange()
@@ -113,7 +115,6 @@ class KafkaConsumerServiceTest {
 
 	@Test
 	fun `deltakerHendelse - deltaker finnes, status feilregistrert - publiserer melding`() {
-		val ctx = TestData.MockContext()
 		val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
 		val mockAktivitetskort = ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
 
@@ -131,8 +132,6 @@ class KafkaConsumerServiceTest {
 	inner class DeltakerlisteHendelse {
 		@Test
 		fun `deltakerliste modifisert - publiser melding`() {
-			val ctx = TestData.MockContext()
-
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
 			every { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
@@ -146,8 +145,6 @@ class KafkaConsumerServiceTest {
 
 		@Test
 		fun `deltakerliste lagd - ikke publiser melding`() {
-			val ctx = TestData.MockContext()
-
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 
@@ -160,8 +157,6 @@ class KafkaConsumerServiceTest {
 
 		@Test
 		fun `deltakerliste har ingen forandring - ikke publiser melding`() {
-			val ctx = TestData.MockContext()
-
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
 
@@ -178,7 +173,7 @@ class KafkaConsumerServiceTest {
 			val deltakerlistePayload = DeltakerlistePayload(
 				id = UUID.randomUUID(),
 				navn = "navn",
-				tiltakstype = DeltakerlistePayload.Tiltakstype("UKJENT", "UKJENT"),
+				tiltakstype = DeltakerlistePayload.Tiltakstype("UKJENT"),
 				virksomhetsnummer = arrangor.organisasjonsnummer,
 			)
 
@@ -196,7 +191,7 @@ class KafkaConsumerServiceTest {
 		fun `arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
 			val arrangor = TestData.arrangor()
 			val deltakerliste =
-				TestData.deltakerliste(tiltak = Tiltak("navn", Tiltakskode.OPPFOLGING), arrangorId = arrangor.id)
+				TestData.deltakerliste(tiltak = Tiltak("Oppfølging", Tiltakskode.OPPFOLGING), arrangorId = arrangor.id)
 
 			every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null andThen arrangor
 			every { arrangorRepository.upsert(any()) } returns RepositoryResult.Created(arrangor)
@@ -218,8 +213,6 @@ class KafkaConsumerServiceTest {
 
 	@Test
 	fun `arrangorHendelse - arrangor modifisert - publiser melding`() {
-		val ctx = TestData.MockContext()
-
 		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Modified(ctx.arrangor)
 		every { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) } returns listOf(ctx.aktivitetskort)
 
@@ -232,8 +225,6 @@ class KafkaConsumerServiceTest {
 
 	@Test
 	fun `arrangorHendelse - arrangor lagd - ikke publiser melding`() {
-		val ctx = TestData.MockContext()
-
 		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Created(ctx.arrangor)
 
 		kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
@@ -245,8 +236,6 @@ class KafkaConsumerServiceTest {
 
 	@Test
 	fun `arrangorHendelse - arrangor har ingen forandring - ikke publiser melding`() {
-		val ctx = TestData.MockContext()
-
 		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.NoChange()
 
 		kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())

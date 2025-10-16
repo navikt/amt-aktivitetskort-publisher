@@ -13,8 +13,9 @@ import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
-import no.nav.amt.aktivitetskort.utils.JsonUtils
+import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
+import no.nav.amt.lib.utils.objectMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.awaitility.Awaitility.await
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit
 class KafkaConsumerTest(
 	private val kafkaProducer: KafkaProducer<String, String?>,
 	private val arrangorRepository: ArrangorRepository,
+	private val tiltakstypeRepository: TiltakstypeRepository,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val meldingRepository: MeldingRepository,
@@ -46,7 +48,7 @@ class KafkaConsumerTest(
 			ProducerRecord(
 				ARRANGOR_TOPIC,
 				arrangor.id.toString(),
-				JsonUtils.toJsonString(arrangor.toDto()),
+				objectMapper.writeValueAsString(arrangor.toDto()),
 			),
 		)
 
@@ -59,12 +61,13 @@ class KafkaConsumerTest(
 	fun `listen - melding om ny deltakerliste - deltakerliste upsertes`() {
 		val ctx = TestData.MockContext()
 		arrangorRepository.upsert(ctx.arrangor)
+		tiltakstypeRepository.upsert(ctx.tiltakstype)
 
 		kafkaProducer.send(
 			ProducerRecord(
 				DELTAKERLISTE_TOPIC_V1,
 				ctx.deltakerliste.id.toString(),
-				JsonUtils.toJsonString(ctx.deltakerlistePayload()),
+				objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
 			),
 		)
 
@@ -87,7 +90,7 @@ class KafkaConsumerTest(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
-				JsonUtils.toJsonString(ctx.deltaker.toDto()),
+				objectMapper.writeValueAsString(ctx.deltaker.toDto()),
 			),
 		)
 
@@ -142,7 +145,7 @@ class KafkaConsumerTest(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
-				JsonUtils.toJsonString(endretDeltaker.toDto()),
+				objectMapper.writeValueAsString(endretDeltaker.toDto()),
 			),
 		)
 

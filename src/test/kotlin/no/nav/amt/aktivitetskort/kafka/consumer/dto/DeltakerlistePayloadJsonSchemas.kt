@@ -15,7 +15,6 @@ object DeltakerlistePayloadJsonSchemas {
 	val tiltakstypeSchema = jsonSchema {
 		obj {
 			withProperty("tiltakskode") { string() }
-			withProperty("navn") { string() }
 			additionalProperties = false
 		}
 	}
