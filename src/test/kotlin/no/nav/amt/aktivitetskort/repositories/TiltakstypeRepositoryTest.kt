@@ -35,6 +35,27 @@ class TiltakstypeRepositoryTest(
 		}
 	}
 
+	@Nested
+	inner class Upsert {
+		@Test
+		fun `skal oppdatere eksisterende tiltakstype`() {
+			sut.upsert(tiltakstypeInTest)
+
+			val expectedTiltakstype = tiltakstypeInTest.copy(
+				navn = "Oppdatert navn",
+				tiltakskode = Tiltakskode.JOBBKLUBB,
+			)
+			sut.upsert(expectedTiltakstype)
+
+			val inDb = sut.getById(tiltakstypeInTest.id)
+
+			assertSoftly(inDb.shouldNotBeNull()) {
+				navn shouldBe expectedTiltakstype.navn
+				tiltakskode shouldBe expectedTiltakstype.tiltakskode
+			}
+		}
+	}
+
 	companion object {
 		private val tiltakstypeInTest = Tiltakstype(
 			id = UUID.randomUUID(),

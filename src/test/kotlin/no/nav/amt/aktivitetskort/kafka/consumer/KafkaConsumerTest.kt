@@ -58,6 +58,23 @@ class KafkaConsumerTest(
 	}
 
 	@Test
+	fun `listen - melding om ny tiltakstype - tiltakstype upsertes`() {
+		val ctx = TestData.MockContext()
+
+		kafkaProducer.send(
+			ProducerRecord(
+				TILTAKSTYPE_TOPIC,
+				ctx.tiltakstype.id.toString(),
+				objectMapper.writeValueAsString(ctx.tiltakstype),
+			),
+		)
+
+		await().atMost(5, TimeUnit.SECONDS).until {
+			tiltakstypeRepository.getById(ctx.tiltakstype.id) != null
+		}
+	}
+
+	@Test
 	fun `listen - melding om ny deltakerliste - deltakerliste upsertes`() {
 		val ctx = TestData.MockContext()
 		arrangorRepository.upsert(ctx.arrangor)
