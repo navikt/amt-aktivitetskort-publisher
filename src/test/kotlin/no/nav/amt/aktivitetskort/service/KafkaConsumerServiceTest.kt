@@ -13,12 +13,15 @@ import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tiltak
+import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_TOPIC_V1
+import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_TOPIC_V2
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
+import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.junit.jupiter.api.BeforeEach
@@ -39,6 +42,7 @@ class KafkaConsumerServiceTest {
 	private val aktivitetskortProducer = mockk<AktivitetskortProducer>(relaxed = true)
 	private val tiltakstypeRepository = mockk<TiltakstypeRepository>()
 	private val transactionTemplate = mockk<TransactionTemplate>()
+	private val unleashToggle = mockk<UnleashToggle>(relaxed = true)
 
 	private val ctx: TestData.MockContext = TestData.MockContext()
 
@@ -53,6 +57,7 @@ class KafkaConsumerServiceTest {
 		aktivitetskortProducer = aktivitetskortProducer,
 		tiltakstypeRepository = tiltakstypeRepository,
 		transactionTemplate = transactionTemplate,
+		unleashToggle = unleashToggle,
 	)
 
 	@BeforeEach
@@ -62,70 +67,75 @@ class KafkaConsumerServiceTest {
 		every { transactionTemplate.executeWithoutResult(any<Consumer<TransactionStatus>>()) } answers {
 			(firstArg() as Consumer<TransactionStatus>).accept(SimpleTransactionStatus())
 		}
+		every { unleashToggle.skalLeseGjennomforingerV2() } returns true
 		every { tiltakstypeRepository.getByTiltakskode(any()) } returns ctx.tiltakstype
+		every { unleashToggle.skalLeseArenaDataForTiltakstype(any()) } returns true
 	}
 
-	@Test
-	fun `deltakerHendelse - deltaker modifisert - publiser melding`() {
-		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Modified(ctx.deltaker)
-		every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
+	@Nested
+	inner class DeltakerHendelse {
+		@Test
+		fun `deltaker modifisert - publiser melding`() {
+			every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Modified(ctx.deltaker)
+			every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
 
-		kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
+			kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
-		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
-		verify(exactly = 1) { aktivitetskortProducer.send(ctx.aktivitetskort) }
-	}
+			verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
+			verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
+			verify(exactly = 1) { aktivitetskortProducer.send(ctx.aktivitetskort) }
+		}
 
-	@Test
-	fun `deltakerHendelse - deltaker lagd - publiser melding`() {
-		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Created(ctx.deltaker)
-		every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
+		@Test
+		fun `deltaker lagd - publiser melding`() {
+			every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Created(ctx.deltaker)
+			every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
 
-		kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
+			kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
-		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
-		verify(exactly = 1) { aktivitetskortProducer.send(ctx.aktivitetskort) }
-	}
+			verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
+			verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
+			verify(exactly = 1) { aktivitetskortProducer.send(ctx.aktivitetskort) }
+		}
 
-	@Test
-	fun `deltakerHendelse - deltaker har ingen forandring - ikke publiser melding`() {
-		every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.NoChange()
+		@Test
+		fun `deltaker har ingen forandring - ikke publiser melding`() {
+			every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.NoChange()
 
-		kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
+			kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
-		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
-		verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
-	}
+			verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
+			verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
+			verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
+		}
 
-	@Test
-	fun `deltakerHendelse - deltaker finnes ikke, status feilregistrert - publiserer ikke melding`() {
-		val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
+		@Test
+		fun `deltaker finnes ikke, status feilregistrert - publiserer ikke melding`() {
+			val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
 
-		every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.NoChange()
+			every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.NoChange()
 
-		kafkaConsumerService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
+			kafkaConsumerService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
-		verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
-		verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
-	}
+			verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
+			verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
+			verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
+		}
 
-	@Test
-	fun `deltakerHendelse - deltaker finnes, status feilregistrert - publiserer melding`() {
-		val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
-		val mockAktivitetskort = ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
+		@Test
+		fun `deltaker finnes, status feilregistrert - publiserer melding`() {
+			val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
+			val mockAktivitetskort = ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
 
-		every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.Modified(mockDeltaker)
-		every { aktivitetskortService.lagAktivitetskort(mockDeltaker) } returns mockAktivitetskort
+			every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.Modified(mockDeltaker)
+			every { aktivitetskortService.lagAktivitetskort(mockDeltaker) } returns mockAktivitetskort
 
-		kafkaConsumerService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
+			kafkaConsumerService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
 
-		verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
-		verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
-		verify(exactly = 1) { aktivitetskortProducer.send(mockAktivitetskort) }
+			verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
+			verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
+			verify(exactly = 1) { aktivitetskortProducer.send(mockAktivitetskort) }
+		}
 	}
 
 	@Nested
@@ -136,7 +146,7 @@ class KafkaConsumerServiceTest {
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
 			every { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
-			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload())
+			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V1)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 			verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
@@ -147,8 +157,9 @@ class KafkaConsumerServiceTest {
 		fun `deltakerliste lagd - ikke publiser melding`() {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
+			every { unleashToggle.skalLeseGjennomforingerV2() } returns true
 
-			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload())
+			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V2)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 			verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
@@ -156,11 +167,33 @@ class KafkaConsumerServiceTest {
 		}
 
 		@Test
+		fun `unleash for gjennomforinger v2 ikke enabled - ikke publiser melding`() {
+			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
+			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
+			every { unleashToggle.skalLeseGjennomforingerV2() } returns false
+
+			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V2)
+
+			verify(exactly = 0) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
+		}
+
+		@Test
+		fun `unleash for tiltakstype ikke enabled - ikke publiser melding`() {
+			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
+			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
+			every { unleashToggle.skalLeseArenaDataForTiltakstype(any()) } returns false
+
+			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V2)
+
+			verify(exactly = 0) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
+		}
+
+		@Test
 		fun `deltakerliste har ingen forandring - ikke publiser melding`() {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
 
-			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload())
+			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V1)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 			verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
@@ -178,7 +211,7 @@ class KafkaConsumerServiceTest {
 			)
 
 			val throwable = shouldThrow<IllegalArgumentException> {
-				kafkaConsumerService.deltakerlisteHendelse(deltakerlistePayload)
+				kafkaConsumerService.deltakerlisteHendelse(deltakerlistePayload, DELTAKERLISTE_TOPIC_V1)
 			}
 
 			throwable.message shouldBe "Tiltakskode UKJENT er ikke støttet"
@@ -203,7 +236,7 @@ class KafkaConsumerServiceTest {
 			)
 			every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
 
-			kafkaConsumerService.deltakerlisteHendelse(deltakerliste.toDto(arrangor))
+			kafkaConsumerService.deltakerlisteHendelse(deltakerliste.toDto(arrangor), DELTAKERLISTE_TOPIC_V1)
 
 			verify(exactly = 2) { arrangorRepository.get(arrangor.organisasjonsnummer) }
 			verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) }
@@ -211,37 +244,40 @@ class KafkaConsumerServiceTest {
 		}
 	}
 
-	@Test
-	fun `arrangorHendelse - arrangor modifisert - publiser melding`() {
-		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Modified(ctx.arrangor)
-		every { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) } returns listOf(ctx.aktivitetskort)
+	@Nested
+	inner class ArrangorHendelse {
+		@Test
+		fun `arrangor modifisert - publiser melding`() {
+			every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Modified(ctx.arrangor)
+			every { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) } returns listOf(ctx.aktivitetskort)
 
-		kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
+			kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
-		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
-		verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
-		verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
-	}
+			verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
+			verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
+			verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
+		}
 
-	@Test
-	fun `arrangorHendelse - arrangor lagd - ikke publiser melding`() {
-		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Created(ctx.arrangor)
+		@Test
+		fun `arrangor lagd - ikke publiser melding`() {
+			every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Created(ctx.arrangor)
 
-		kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
+			kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
-		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
-		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
-		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
-	}
+			verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
+			verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
+			verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
+		}
 
-	@Test
-	fun `arrangorHendelse - arrangor har ingen forandring - ikke publiser melding`() {
-		every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.NoChange()
+		@Test
+		fun `arrangor har ingen forandring - ikke publiser melding`() {
+			every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.NoChange()
 
-		kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
+			kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
-		verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
-		verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
-		verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
+			verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
+			verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
+			verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
+		}
 	}
 }

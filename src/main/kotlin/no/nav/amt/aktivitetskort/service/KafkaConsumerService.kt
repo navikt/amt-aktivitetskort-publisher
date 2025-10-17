@@ -6,6 +6,7 @@ import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_TOPIC_V2
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
@@ -15,6 +16,7 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
+import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -31,6 +33,7 @@ class KafkaConsumerService(
 	private val amtArrangorClient: AmtArrangorClient,
 	private val aktivitetskortProducer: AktivitetskortProducer,
 	private val transactionTemplate: TransactionTemplate,
+	private val unleashToggle: UnleashToggle,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -76,10 +79,20 @@ class KafkaConsumerService(
 		}
 	}
 
-	fun deltakerlisteHendelse(deltakerlistePayload: DeltakerlistePayload) {
+	fun deltakerlisteHendelse(deltakerlistePayload: DeltakerlistePayload, topic: String) {
 		require(
 			deltakerlistePayload.tiltakstype.erStottet(),
 		) { "Tiltakskode ${deltakerlistePayload.tiltakstype.tiltakskode} er ikke støttet" }
+
+		if (topic == DELTAKERLISTE_TOPIC_V2) {
+			if (!(
+					unleashToggle.skalLeseGjennomforingerV2() &&
+						unleashToggle.skalLeseArenaDataForTiltakstype(deltakerlistePayload.tiltakstype.tiltakskode)
+				)
+			) {
+				return
+			}
+		}
 
 		val arrangor = arrangorRepository.get(deltakerlistePayload.organisasjonsnummer)
 			?: hentOgLagreArrangorFraAmtArrangor(deltakerlistePayload.organisasjonsnummer)

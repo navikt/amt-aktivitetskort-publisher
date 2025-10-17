@@ -43,13 +43,23 @@ class KafkaConsumer(
 				objectMapper
 					.readValue<DeltakerlistePayload>(record.value())
 					.takeIf { it.tiltakstype.erStottet() }
-					?.let { kafkaConsumerService.deltakerlisteHendelse(deltakerlistePayload = it) }
+					?.let {
+						kafkaConsumerService.deltakerlisteHendelse(
+							deltakerlistePayload = it,
+							topic = DELTAKERLISTE_TOPIC_V1,
+						)
+					}
 
 			DELTAKERLISTE_TOPIC_V2 ->
 				objectMapper
 					.readValue<DeltakerlistePayload>(record.value())
 					.takeIf { it.tiltakstype.erStottet() }
-					?.let { kafkaConsumerService.deltakerlisteHendelse(deltakerlistePayload = it) }
+					?.let {
+						kafkaConsumerService.deltakerlisteHendelse(
+							deltakerlistePayload = it,
+							topic = DELTAKERLISTE_TOPIC_V2,
+						)
+					}
 
 			DELTAKER_TOPIC -> kafkaConsumerService.deltakerHendelse(
 				id = UUID.fromString(record.key()),
