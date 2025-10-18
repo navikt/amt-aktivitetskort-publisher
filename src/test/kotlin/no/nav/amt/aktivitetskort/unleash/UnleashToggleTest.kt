@@ -36,6 +36,7 @@ class UnleashToggleTest {
 			],
 		)
 		fun `returnerer true for tiltakstyper som Komet alltid er master for`(kode: Tiltakskode) {
+			sut.erKometMasterForTiltakstype(kode.name) shouldBe true
 			sut.erKometMasterForTiltakstype(kode) shouldBe true
 		}
 

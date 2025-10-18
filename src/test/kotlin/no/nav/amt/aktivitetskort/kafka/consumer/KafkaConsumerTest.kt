@@ -80,16 +80,18 @@ class KafkaConsumerTest(
 		arrangorRepository.upsert(ctx.arrangor)
 		tiltakstypeRepository.upsert(ctx.tiltakstype)
 
+		val deltakerlistePayload = ctx.deltakerlistePayload()
+
 		kafkaProducer.send(
 			ProducerRecord(
-				DELTAKERLISTE_TOPIC_V1,
-				ctx.deltakerliste.id.toString(),
-				objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				DELTAKERLISTE_V1_TOPIC,
+				deltakerlistePayload.id.toString(),
+				objectMapper.writeValueAsString(deltakerlistePayload),
 			),
 		)
 
 		await().atMost(5, TimeUnit.SECONDS).until {
-			deltakerlisteRepository.get(ctx.deltakerliste.id) != null
+			deltakerlisteRepository.get(deltakerlistePayload.id) != null
 		}
 	}
 

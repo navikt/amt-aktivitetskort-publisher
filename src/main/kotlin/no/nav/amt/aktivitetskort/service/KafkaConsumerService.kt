@@ -1,12 +1,13 @@
 package no.nav.amt.aktivitetskort.service
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
-import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_TOPIC_V2
+import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_V2_TOPIC
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
@@ -18,6 +19,7 @@ import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
@@ -79,19 +81,24 @@ class KafkaConsumerService(
 		}
 	}
 
-	fun deltakerlisteHendelse(deltakerlistePayload: DeltakerlistePayload, topic: String) {
-		require(
-			deltakerlistePayload.tiltakstype.erStottet(),
-		) { "Tiltakskode ${deltakerlistePayload.tiltakstype.tiltakskode} er ikke støttet" }
+	fun deltakerlisteHendelse(
+		id: UUID,
+		value: String?,
+		topic: String,
+	) {
+		if (topic == DELTAKERLISTE_V2_TOPIC && !unleashToggle.skalLeseGjennomforingerV2()) {
+			return
+		}
 
-		if (topic == DELTAKERLISTE_TOPIC_V2) {
-			if (!(
-					unleashToggle.skalLeseGjennomforingerV2() &&
-						unleashToggle.skalLeseArenaDataForTiltakstype(deltakerlistePayload.tiltakstype.tiltakskode)
-				)
-			) {
-				return
-			}
+		if (value == null) {
+			deltakerlisteRepository.delete(id)
+			return
+		}
+
+		val deltakerlistePayload: DeltakerlistePayload = objectMapper.readValue(value)
+
+		if (!unleashToggle.erKometMasterForTiltakstype(deltakerlistePayload.tiltakstype.tiltakskode)) {
+			return
 		}
 
 		val arrangor = arrangorRepository.get(deltakerlistePayload.organisasjonsnummer)

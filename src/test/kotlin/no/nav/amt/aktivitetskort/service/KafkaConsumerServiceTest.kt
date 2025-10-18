@@ -1,7 +1,5 @@
 package no.nav.amt.aktivitetskort.service
 
-import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -13,9 +11,8 @@ import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tiltak
-import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_TOPIC_V1
-import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_TOPIC_V2
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
+import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_V1_TOPIC
+import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_V2_TOPIC
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -24,13 +21,13 @@ import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.SimpleTransactionStatus
 import org.springframework.transaction.support.TransactionTemplate
-import java.util.UUID
 import java.util.function.Consumer
 
 class KafkaConsumerServiceTest {
@@ -69,7 +66,7 @@ class KafkaConsumerServiceTest {
 		}
 		every { unleashToggle.skalLeseGjennomforingerV2() } returns true
 		every { tiltakstypeRepository.getByTiltakskode(any()) } returns ctx.tiltakstype
-		every { unleashToggle.skalLeseArenaDataForTiltakstype(any()) } returns true
+		every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns true
 	}
 
 	@Nested
@@ -141,12 +138,27 @@ class KafkaConsumerServiceTest {
 	@Nested
 	inner class DeltakerlisteHendelse {
 		@Test
+		fun `mottar tombstone for deltakerliste - sletter deltakerliste`() {
+			kafkaConsumerService.deltakerlisteHendelse(
+				id = ctx.deltakerlistePayload().id,
+				value = null,
+				topic = DELTAKERLISTE_V1_TOPIC,
+			)
+
+			verify(exactly = 1) { deltakerlisteRepository.delete(ctx.deltakerliste.id) }
+		}
+
+		@Test
 		fun `deltakerliste modifisert - publiser melding`() {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
 			every { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
-			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V1)
+			kafkaConsumerService.deltakerlisteHendelse(
+				id = ctx.deltakerlistePayload().id,
+				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				topic = DELTAKERLISTE_V1_TOPIC,
+			)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 			verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
@@ -159,7 +171,11 @@ class KafkaConsumerServiceTest {
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 			every { unleashToggle.skalLeseGjennomforingerV2() } returns true
 
-			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V2)
+			kafkaConsumerService.deltakerlisteHendelse(
+				id = ctx.deltakerlistePayload().id,
+				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				topic = DELTAKERLISTE_V2_TOPIC,
+			)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 			verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
@@ -167,23 +183,32 @@ class KafkaConsumerServiceTest {
 		}
 
 		@Test
-		fun `unleash for gjennomforinger v2 ikke enabled - ikke publiser melding`() {
+		fun `unleash for gjennomforinger v2 ikke enabled - ikke prosesser melding`() {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 			every { unleashToggle.skalLeseGjennomforingerV2() } returns false
 
-			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V2)
+			kafkaConsumerService.deltakerlisteHendelse(
+				id = ctx.deltakerlistePayload().id,
+				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				topic = DELTAKERLISTE_V2_TOPIC,
+			)
 
 			verify(exactly = 0) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		}
 
 		@Test
-		fun `unleash for tiltakstype ikke enabled - ikke publiser melding`() {
+		fun `Komet er ikke master for tiltak - ikke prosesser melding`() {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
-			every { unleashToggle.skalLeseArenaDataForTiltakstype(any()) } returns false
+			every { unleashToggle.skalLeseGjennomforingerV2() } returns true
+			every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns false
 
-			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V2)
+			kafkaConsumerService.deltakerlisteHendelse(
+				id = ctx.deltakerlistePayload().id,
+				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				topic = DELTAKERLISTE_V2_TOPIC,
+			)
 
 			verify(exactly = 0) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 		}
@@ -193,31 +218,15 @@ class KafkaConsumerServiceTest {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
 
-			kafkaConsumerService.deltakerlisteHendelse(ctx.deltakerlistePayload(), DELTAKERLISTE_TOPIC_V1)
+			kafkaConsumerService.deltakerlisteHendelse(
+				id = ctx.deltakerlistePayload().id,
+				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				topic = DELTAKERLISTE_V1_TOPIC,
+			)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
 			verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
 			verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
-		}
-
-		@Test
-		fun `tiltak er ikke stottet - skal ikke lagre deltakerliste`() {
-			val arrangor = TestData.arrangor()
-			val deltakerlistePayload = DeltakerlistePayload(
-				id = UUID.randomUUID(),
-				navn = "navn",
-				tiltakstype = DeltakerlistePayload.Tiltakstype("UKJENT"),
-				virksomhetsnummer = arrangor.organisasjonsnummer,
-			)
-
-			val throwable = shouldThrow<IllegalArgumentException> {
-				kafkaConsumerService.deltakerlisteHendelse(deltakerlistePayload, DELTAKERLISTE_TOPIC_V1)
-			}
-
-			throwable.message shouldBe "Tiltakskode UKJENT er ikke støttet"
-
-			verify(exactly = 0) { arrangorRepository.get(arrangor.organisasjonsnummer) }
-			verify(exactly = 0) { deltakerlisteRepository.upsert(any()) }
 		}
 
 		@Test
@@ -236,7 +245,11 @@ class KafkaConsumerServiceTest {
 			)
 			every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
 
-			kafkaConsumerService.deltakerlisteHendelse(deltakerliste.toDto(arrangor), DELTAKERLISTE_TOPIC_V1)
+			kafkaConsumerService.deltakerlisteHendelse(
+				id = ctx.deltakerlistePayload().id,
+				value = objectMapper.writeValueAsString(deltakerliste.toDto(arrangor)),
+				topic = DELTAKERLISTE_V1_TOPIC,
+			)
 
 			verify(exactly = 2) { arrangorRepository.get(arrangor.organisasjonsnummer) }
 			verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) }

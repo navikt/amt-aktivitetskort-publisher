@@ -1,7 +1,6 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.TiltakstypePayload
 import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.service.FeilmeldingService
@@ -21,8 +20,8 @@ class KafkaConsumer(
 ) {
 	@KafkaListener(
 		topics = [
-			DELTAKER_TOPIC, ARRANGOR_TOPIC, TILTAKSTYPE_TOPIC, DELTAKERLISTE_TOPIC_V1,
-			DELTAKERLISTE_TOPIC_V2, FEIL_TOPIC,
+			DELTAKER_TOPIC, ARRANGOR_TOPIC, TILTAKSTYPE_TOPIC, DELTAKERLISTE_V1_TOPIC,
+			DELTAKERLISTE_V2_TOPIC, FEIL_TOPIC,
 		],
 		containerFactory = "kafkaListenerContainerFactory",
 	)
@@ -39,27 +38,17 @@ class KafkaConsumer(
 					.let { tiltakstypeRepository.upsert(it.toModel()) }
 
 			// fjernes ved overgang til v2
-			DELTAKERLISTE_TOPIC_V1 ->
-				objectMapper
-					.readValue<DeltakerlistePayload>(record.value())
-					.takeIf { it.tiltakstype.erStottet() }
-					?.let {
-						kafkaConsumerService.deltakerlisteHendelse(
-							deltakerlistePayload = it,
-							topic = DELTAKERLISTE_TOPIC_V1,
-						)
-					}
+			DELTAKERLISTE_V1_TOPIC -> kafkaConsumerService.deltakerlisteHendelse(
+				id = UUID.fromString(record.key()),
+				value = record.value(),
+				topic = DELTAKERLISTE_V1_TOPIC,
+			)
 
-			DELTAKERLISTE_TOPIC_V2 ->
-				objectMapper
-					.readValue<DeltakerlistePayload>(record.value())
-					.takeIf { it.tiltakstype.erStottet() }
-					?.let {
-						kafkaConsumerService.deltakerlisteHendelse(
-							deltakerlistePayload = it,
-							topic = DELTAKERLISTE_TOPIC_V2,
-						)
-					}
+			DELTAKERLISTE_V2_TOPIC -> kafkaConsumerService.deltakerlisteHendelse(
+				id = UUID.fromString(record.key()),
+				value = record.value(),
+				topic = DELTAKERLISTE_V2_TOPIC,
+			)
 
 			DELTAKER_TOPIC -> kafkaConsumerService.deltakerHendelse(
 				id = UUID.fromString(record.key()),

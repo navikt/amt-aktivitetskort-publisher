@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component
 class UnleashToggle(
 	private val unleashClient: Unleash,
 ) {
-	fun erKometMasterForTiltakstype(tiltakstype: Tiltakskode): Boolean = tiltakstype in tiltakstyperKometErMasterFor ||
-		(unleashClient.isEnabled(ENABLE_KOMET_DELTAKERE) && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
+	fun erKometMasterForTiltakstype(tiltakskode: String): Boolean = tiltakstyperKometErMasterFor.any { it.name == tiltakskode } ||
+		(unleashClient.isEnabled(ENABLE_KOMET_DELTAKERE) && tiltakstyperKometKanskjeErMasterFor.any { it.name == tiltakskode })
+
+	fun erKometMasterForTiltakstype(tiltakskode: Tiltakskode): Boolean = erKometMasterForTiltakstype(tiltakskode.name)
 
 	fun skalOppdatereForUendretDeltaker(): Boolean = unleashClient.isEnabled(OPPDATER_ALLE_AKTIVITETSKORT)
 

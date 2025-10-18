@@ -15,9 +15,7 @@ data class DeltakerlistePayload(
 ) {
 	data class Tiltakstype(
 		val tiltakskode: String,
-	) {
-		fun erStottet() = Tiltakskode.entries.any { it.name == tiltakskode }
-	}
+	)
 
 	data class Arrangor(
 		val organisasjonsnummer: String,

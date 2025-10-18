@@ -14,18 +14,6 @@ import java.util.UUID
 class DeltakerlisteRepository(
 	private val template: NamedParameterJdbcTemplate,
 ) {
-	private val rowMapper = RowMapper { rs, _ ->
-		Deltakerliste(
-			id = UUID.fromString(rs.getString("id")),
-			tiltak = Tiltak(
-				navn = rs.getString("tiltaksnavn"),
-				tiltakskode = Tiltakskode.valueOf(rs.getString("tiltakstype")),
-			),
-			navn = rs.getString("navn"),
-			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
-		)
-	}
-
 	fun upsert(deltakerliste: Deltakerliste): RepositoryResult<Deltakerliste> {
 		val old = get(deltakerliste.id)
 
@@ -65,8 +53,29 @@ class DeltakerlisteRepository(
 
 	fun get(id: UUID): Deltakerliste? = template
 		.query(
-			"SELECT * from deltakerliste where id = :id",
+			"SELECT id,tiltaksnavn,tiltakstype,navn,arrangor_id FROM deltakerliste WHERE id = :id",
 			sqlParameters("id" to id),
 			rowMapper,
 		).firstOrNull()
+
+	fun delete(id: UUID) {
+		template.update(
+			"DELETE FROM deltakerliste WHERE id = :id",
+			sqlParameters("id" to id),
+		)
+	}
+
+	companion object {
+		private val rowMapper = RowMapper { rs, _ ->
+			Deltakerliste(
+				id = UUID.fromString(rs.getString("id")),
+				tiltak = Tiltak(
+					navn = rs.getString("tiltaksnavn"),
+					tiltakskode = Tiltakskode.valueOf(rs.getString("tiltakstype")),
+				),
+				navn = rs.getString("navn"),
+				arrangorId = UUID.fromString(rs.getString("arrangor_id")),
+			)
+		}
+	}
 }
