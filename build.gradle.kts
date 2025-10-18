@@ -69,9 +69,11 @@ dependencies {
 	implementation("io.getunleash:unleash-client-java:$unleashVersion")
 
 	implementation("no.nav.amt.lib:models:$amtLibVersion")
+	implementation("no.nav.amt.lib:utils:$amtLibVersion")
 
 	testImplementation(kotlin("test"))
 	testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+	testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude("com.vaadin.external.google", "android-json")
