@@ -5,6 +5,7 @@ import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.utils.JsonUtils
 import no.nav.amt.aktivitetskort.utils.getZonedDateTime
 import no.nav.amt.aktivitetskort.utils.sqlParameters
+import no.nav.amt.lib.utils.objectMapper
 import org.postgresql.util.PGobject
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -75,6 +76,6 @@ class MeldingRepository(
 
 	fun Aktivitetskort.toPGObject() = PGobject().also {
 		it.type = "json"
-		it.value = JsonUtils.objectMapper().writeValueAsString(this)
+		it.value = objectMapper.writeValueAsString(this)
 	}
 }

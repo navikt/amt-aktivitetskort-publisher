@@ -8,27 +8,45 @@ import org.springframework.stereotype.Component
 class UnleashToggle(
 	private val unleashClient: Unleash,
 ) {
-	private val tiltakstyperKometAlltidErMasterFor = setOf(
-		Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
-		Tiltakskode.ARBEIDSRETTET_REHABILITERING,
-		Tiltakskode.AVKLARING,
-		Tiltakskode.OPPFOLGING,
-		Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
-		Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-		Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
-		Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
-		Tiltakskode.JOBBKLUBB,
-	)
+	fun erKometMasterForTiltakstype(tiltakskode: String): Boolean = tiltakstyperKometErMasterFor.any { it.name == tiltakskode } ||
+		(unleashClient.isEnabled(ENABLE_KOMET_DELTAKERE) && tiltakstyperKometKanskjeErMasterFor.any { it.name == tiltakskode })
 
-	// her kan vi legge inn de neste tiltakstypene vi skal ta over
-	private val tiltakstyperKometKanskjeErMasterFor = setOf(
-		Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
-		Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
-		Tiltakskode.HOYERE_UTDANNING,
-	)
+	fun erKometMasterForTiltakstype(tiltakskode: Tiltakskode): Boolean = erKometMasterForTiltakstype(tiltakskode.name)
 
-	fun erKometMasterForTiltakstype(tiltakstype: Tiltakskode): Boolean = tiltakstype in tiltakstyperKometAlltidErMasterFor ||
-		(unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
+	fun skalOppdatereForUendretDeltaker(): Boolean = unleashClient.isEnabled(OPPDATER_ALLE_AKTIVITETSKORT)
 
-	fun skalOppdatereForUendretDeltaker(): Boolean = unleashClient.isEnabled("amt.oppdater-alle-aktivitetskort")
+	fun skalLeseArenaDataForTiltakstype(tiltakskode: String): Boolean =
+		unleashClient.isEnabled(LES_ARENA_DELTAKERE) && tiltakstyperKometKanLese.any { it.name == tiltakskode }
+
+	fun skalLeseGjennomforingerV2(): Boolean = unleashClient.isEnabled(LES_GJENNOMFORINGER_V2)
+
+	fun skipProsesseringAvGjennomforing(tiltakskode: String): Boolean =
+		!(erKometMasterForTiltakstype(tiltakskode) || skalLeseArenaDataForTiltakstype(tiltakskode))
+
+	companion object {
+		const val ENABLE_KOMET_DELTAKERE = "amt.enable-komet-deltakere"
+		const val OPPDATER_ALLE_AKTIVITETSKORT = "amt.oppdater-alle-aktivitetskort"
+		const val LES_ARENA_DELTAKERE = "amt.les-arena-deltakere"
+		const val LES_GJENNOMFORINGER_V2 = "amt.les-gjennomforing-v2"
+
+		private val tiltakstyperKometErMasterFor = setOf(
+			Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
+			Tiltakskode.OPPFOLGING,
+			Tiltakskode.AVKLARING,
+			Tiltakskode.ARBEIDSRETTET_REHABILITERING,
+			Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
+			Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+			Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+			Tiltakskode.JOBBKLUBB,
+			Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+		)
+
+		private val tiltakstyperKometKanLese = setOf(
+			Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
+			Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
+			Tiltakskode.HOYERE_UTDANNING,
+		)
+
+		private val tiltakstyperKometKanskjeErMasterFor = tiltakstyperKometKanLese
+	}
 }

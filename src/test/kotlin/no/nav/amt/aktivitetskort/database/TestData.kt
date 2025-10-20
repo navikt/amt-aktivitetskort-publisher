@@ -16,9 +16,10 @@ import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Tag
 import no.nav.amt.aktivitetskort.domain.Tiltak
+import no.nav.amt.aktivitetskort.domain.Tiltakstype
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
+import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
@@ -157,12 +158,17 @@ object TestData {
 		val deltaker: Deltaker = deltaker(),
 		val deltakerliste: Deltakerliste = deltakerliste(id = deltaker.deltakerlisteId),
 		val arrangor: Arrangor = arrangor(id = deltakerliste.arrangorId),
+		val tiltakstype: Tiltakstype = Tiltakstype(
+			id = UUID.randomUUID(),
+			navn = "Oppfølging",
+			tiltakskode = Tiltakskode.OPPFOLGING,
+		),
 		val aktivitetskortId: UUID = UUID.randomUUID(),
 		val aktivitetskort: Aktivitetskort = aktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor),
 		val oppfolgingsperiodeId: UUID? = null,
 		val melding: Melding = melding(deltaker.id, deltakerliste.id, arrangor.id, aktivitetskort, oppfolgingsperiodeId),
 	) {
-		fun deltakerlisteDto() = DeltakerlisteDto(
+		fun deltakerlistePayload() = DeltakerlistePayload(
 			id = this.deltakerliste.id,
 			tiltakstype = this.deltakerliste.tiltak.toDto(),
 			navn = this.deltakerliste.navn,
@@ -170,7 +176,7 @@ object TestData {
 		)
 	}
 
-	fun Deltakerliste.toDto(arrangor: Arrangor) = DeltakerlisteDto(
+	fun Deltakerliste.toDto(arrangor: Arrangor) = DeltakerlistePayload(
 		id = this.id,
 		tiltakstype = this.tiltak.toDto(),
 		navn = this.navn,
@@ -197,6 +203,5 @@ object TestData {
 		overordnetArrangorId = this.overordnetArrangorId,
 	)
 
-	fun Tiltak.toDto(id: UUID = UUID.randomUUID()): DeltakerlisteDto.TiltakstypeDto =
-		DeltakerlisteDto.TiltakstypeDto(id, navn, "INDOPPFAG", "OPPFOLGING")
+	fun Tiltak.toDto(): DeltakerlistePayload.Tiltakstype = DeltakerlistePayload.Tiltakstype(this.tiltakskode.name)
 }

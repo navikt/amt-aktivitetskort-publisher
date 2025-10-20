@@ -1,20 +1,25 @@
 package no.nav.amt.aktivitetskort.service
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_V2_TOPIC
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlisteDto
+import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
+import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
+import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
@@ -24,11 +29,13 @@ import java.util.UUID
 class KafkaConsumerService(
 	private val arrangorRepository: ArrangorRepository,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
+	private val tiltakstypeRepository: TiltakstypeRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val aktivitetskortService: AktivitetskortService,
 	private val amtArrangorClient: AmtArrangorClient,
 	private val aktivitetskortProducer: AktivitetskortProducer,
 	private val transactionTemplate: TransactionTemplate,
+	private val unleashToggle: UnleashToggle,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
@@ -55,6 +62,7 @@ class KafkaConsumerService(
 					}
 					aktivitetskortProducer.send(aktivitetskort)
 				}
+
 				is RepositoryResult.Created -> {
 					log.info("Ny hendelse for deltaker ${deltaker.id}: Opprettelse")
 					val aktivitetskort = aktivitetskortService.lagAktivitetskort(result.data)
@@ -73,25 +81,47 @@ class KafkaConsumerService(
 		}
 	}
 
-	fun deltakerlisteHendelse(id: UUID, deltakerliste: DeltakerlisteDto?) {
-		if (deltakerliste == null) return
+	fun deltakerlisteHendelse(
+		id: UUID,
+		value: String?,
+		topic: String,
+	) {
+		if (topic == DELTAKERLISTE_V2_TOPIC && !unleashToggle.skalLeseGjennomforingerV2()) {
+			return
+		}
 
-		if (!deltakerliste.tiltakstype.erStottet()) return
+		if (value == null) {
+			deltakerlisteRepository.delete(id)
+			return
+		}
 
-		val arrangor = arrangorRepository.get(deltakerliste.virksomhetsnummer)
-			?: hentOgLagreArrangorFraAmtArrangor(deltakerliste.virksomhetsnummer)
+		val deltakerlistePayload: DeltakerlistePayload = objectMapper.readValue(value)
+
+		if (unleashToggle.skipProsesseringAvGjennomforing(deltakerlistePayload.tiltakstype.tiltakskode)) {
+			return
+		}
+
+		val arrangor = arrangorRepository.get(deltakerlistePayload.organisasjonsnummer)
+			?: hentOgLagreArrangorFraAmtArrangor(deltakerlistePayload.organisasjonsnummer)
+
+		val tiltakstype = tiltakstypeRepository.getByTiltakskode(deltakerlistePayload.tiltakstype.tiltakskode)
+			?: throw NoSuchElementException("Fant ikke tiltakstype med tiltakskode ${deltakerlistePayload.tiltakstype.tiltakskode}")
 
 		transactionTemplate.executeWithoutResult {
-			when (val result = deltakerlisteRepository.upsert(deltakerliste.toModel(arrangor.id))) {
+			when (
+				val result = deltakerlisteRepository.upsert(
+					deltakerlistePayload.toModel(arrangorId = arrangor.id, navnTiltakstype = tiltakstype.navn),
+				)
+			) {
 				is RepositoryResult.Modified -> {
-					log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Oppdatering")
+					log.info("Ny hendelse for deltakerliste ${deltakerlistePayload.id}: Oppdatering")
 					aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(result.data))
 				}
 
-				is RepositoryResult.Created -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Opprettelse")
-				is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerliste.id}: Ingen endring")
+				is RepositoryResult.Created -> log.info("Ny hendelse for deltakerliste ${deltakerlistePayload.id}: Opprettelse")
+				is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerlistePayload.id}: Ingen endring")
 			}
-			log.info("Konsumerte melding med deltakerliste $id")
+			log.info("Konsumerte melding med deltakerliste ${deltakerlistePayload.id}")
 		}
 	}
 
