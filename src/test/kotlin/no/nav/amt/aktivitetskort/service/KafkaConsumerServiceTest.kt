@@ -39,7 +39,7 @@ class KafkaConsumerServiceTest {
 	private val aktivitetskortProducer = mockk<AktivitetskortProducer>(relaxed = true)
 	private val tiltakstypeRepository = mockk<TiltakstypeRepository>()
 	private val transactionTemplate = mockk<TransactionTemplate>()
-	private val unleashToggle = mockk<UnleashToggle>(relaxed = true)
+	private val unleashToggle = mockk<UnleashToggle>()
 
 	private val ctx: TestData.MockContext = TestData.MockContext()
 
@@ -64,9 +64,9 @@ class KafkaConsumerServiceTest {
 		every { transactionTemplate.executeWithoutResult(any<Consumer<TransactionStatus>>()) } answers {
 			(firstArg() as Consumer<TransactionStatus>).accept(SimpleTransactionStatus())
 		}
-		every { unleashToggle.skalLeseGjennomforingerV2() } returns true
 		every { tiltakstypeRepository.getByTiltakskode(any()) } returns ctx.tiltakstype
-		every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns true
+		every { unleashToggle.skalLeseGjennomforingerV2() } returns true
+		every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns false
 	}
 
 	@Nested
@@ -202,7 +202,7 @@ class KafkaConsumerServiceTest {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 			every { unleashToggle.skalLeseGjennomforingerV2() } returns true
-			every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns false
+			every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns true
 
 			kafkaConsumerService.deltakerlisteHendelse(
 				id = ctx.deltakerlistePayload().id,

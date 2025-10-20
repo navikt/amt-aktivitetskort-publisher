@@ -97,7 +97,7 @@ class KafkaConsumerService(
 
 		val deltakerlistePayload: DeltakerlistePayload = objectMapper.readValue(value)
 
-		if (!unleashToggle.erKometMasterForTiltakstype(deltakerlistePayload.tiltakstype.tiltakskode)) {
+		if (unleashToggle.skipProsesseringAvGjennomforing(deltakerlistePayload.tiltakstype.tiltakskode)) {
 			return
 		}
 
