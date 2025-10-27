@@ -18,8 +18,6 @@ class UnleashToggle(
 	fun skalLeseArenaDataForTiltakstype(tiltakskode: String): Boolean =
 		unleashClient.isEnabled(LES_ARENA_DELTAKERE) && tiltakstyperKometKanLese.any { it.name == tiltakskode }
 
-	fun skalLeseGjennomforingerV2(): Boolean = unleashClient.isEnabled(LES_GJENNOMFORINGER_V2)
-
 	fun skipProsesseringAvGjennomforing(tiltakskode: String): Boolean =
 		!(erKometMasterForTiltakstype(tiltakskode) || tiltakstyperKometKanLese.any { it.name == tiltakskode })
 
@@ -27,7 +25,6 @@ class UnleashToggle(
 		const val ENABLE_KOMET_DELTAKERE = "amt.enable-komet-deltakere"
 		const val OPPDATER_ALLE_AKTIVITETSKORT = "amt.oppdater-alle-aktivitetskort"
 		const val LES_ARENA_DELTAKERE = "amt.les-arena-deltakere"
-		const val LES_GJENNOMFORINGER_V2 = "amt.les-gjennomforing-v2"
 
 		private val tiltakstyperKometErMasterFor = setOf(
 			Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,

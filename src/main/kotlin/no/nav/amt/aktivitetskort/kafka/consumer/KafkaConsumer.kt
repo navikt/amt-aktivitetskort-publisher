@@ -19,10 +19,7 @@ class KafkaConsumer(
 	private val tiltakstypeRepository: TiltakstypeRepository,
 ) {
 	@KafkaListener(
-		topics = [
-			DELTAKER_TOPIC, ARRANGOR_TOPIC, TILTAKSTYPE_TOPIC, DELTAKERLISTE_V1_TOPIC,
-			DELTAKERLISTE_V2_TOPIC, FEIL_TOPIC,
-		],
+		topics = [DELTAKER_TOPIC, ARRANGOR_TOPIC, TILTAKSTYPE_TOPIC, DELTAKERLISTE_V2_TOPIC, FEIL_TOPIC],
 		containerFactory = "kafkaListenerContainerFactory",
 	)
 	fun listen(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
@@ -37,17 +34,9 @@ class KafkaConsumer(
 					.readValue<TiltakstypePayload>(record.value())
 					.let { tiltakstypeRepository.upsert(it.toModel()) }
 
-			// fjernes ved overgang til v2
-			DELTAKERLISTE_V1_TOPIC -> kafkaConsumerService.deltakerlisteHendelse(
-				id = UUID.fromString(record.key()),
-				value = record.value(),
-				topic = DELTAKERLISTE_V1_TOPIC,
-			)
-
 			DELTAKERLISTE_V2_TOPIC -> kafkaConsumerService.deltakerlisteHendelse(
 				id = UUID.fromString(record.key()),
 				value = record.value(),
-				topic = DELTAKERLISTE_V2_TOPIC,
 			)
 
 			DELTAKER_TOPIC -> kafkaConsumerService.deltakerHendelse(

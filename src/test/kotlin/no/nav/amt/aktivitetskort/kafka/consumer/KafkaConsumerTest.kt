@@ -84,7 +84,7 @@ class KafkaConsumerTest(
 
 		kafkaProducer.send(
 			ProducerRecord(
-				DELTAKERLISTE_V1_TOPIC,
+				DELTAKERLISTE_V2_TOPIC,
 				deltakerlistePayload.id.toString(),
 				objectMapper.writeValueAsString(deltakerlistePayload),
 			),

@@ -7,7 +7,6 @@ import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
-import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_V2_TOPIC
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
@@ -81,15 +80,7 @@ class KafkaConsumerService(
 		}
 	}
 
-	fun deltakerlisteHendelse(
-		id: UUID,
-		value: String?,
-		topic: String,
-	) {
-		if (topic == DELTAKERLISTE_V2_TOPIC && !unleashToggle.skalLeseGjennomforingerV2()) {
-			return
-		}
-
+	fun deltakerlisteHendelse(id: UUID, value: String?) {
 		if (value == null) {
 			deltakerlisteRepository.delete(id)
 			return

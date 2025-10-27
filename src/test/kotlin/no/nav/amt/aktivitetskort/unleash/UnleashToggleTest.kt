@@ -7,7 +7,6 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle.Companion.ENABLE_KOMET_DELTAKERE
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle.Companion.LES_ARENA_DELTAKERE
-import no.nav.amt.aktivitetskort.unleash.UnleashToggle.Companion.LES_GJENNOMFORINGER_V2
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle.Companion.OPPDATER_ALLE_AKTIVITETSKORT
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.junit.jupiter.api.BeforeEach
@@ -121,23 +120,6 @@ class UnleashToggleTest {
 			every { unleashClient.isEnabled(OPPDATER_ALLE_AKTIVITETSKORT) } returns false
 
 			sut.skalOppdatereForUendretDeltaker() shouldBe false
-		}
-	}
-
-	@Nested
-	inner class SkalLeseGjennomforingerV2 {
-		@Test
-		fun `returnerer true nar toggle LES_GJENNOMFORINGER_V2 er pa`() {
-			every { unleashClient.isEnabled(LES_GJENNOMFORINGER_V2) } returns true
-
-			sut.skalLeseGjennomforingerV2() shouldBe true
-		}
-
-		@Test
-		fun `returnerer false nar toggle LES_GJENNOMFORINGER_V2 er av`() {
-			every { unleashClient.isEnabled(LES_GJENNOMFORINGER_V2) } returns false
-
-			sut.skalLeseGjennomforingerV2() shouldBe false
 		}
 	}
 

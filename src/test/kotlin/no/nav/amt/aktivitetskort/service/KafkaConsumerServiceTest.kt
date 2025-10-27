@@ -11,8 +11,6 @@ import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Tiltak
-import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_V1_TOPIC
-import no.nav.amt.aktivitetskort.kafka.consumer.DELTAKERLISTE_V2_TOPIC
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -65,7 +63,6 @@ class KafkaConsumerServiceTest {
 			(firstArg() as Consumer<TransactionStatus>).accept(SimpleTransactionStatus())
 		}
 		every { tiltakstypeRepository.getByTiltakskode(any()) } returns ctx.tiltakstype
-		every { unleashToggle.skalLeseGjennomforingerV2() } returns true
 		every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns false
 	}
 
@@ -142,7 +139,6 @@ class KafkaConsumerServiceTest {
 			kafkaConsumerService.deltakerlisteHendelse(
 				id = ctx.deltakerlistePayload().id,
 				value = null,
-				topic = DELTAKERLISTE_V1_TOPIC,
 			)
 
 			verify(exactly = 1) { deltakerlisteRepository.delete(ctx.deltakerliste.id) }
@@ -157,7 +153,6 @@ class KafkaConsumerServiceTest {
 			kafkaConsumerService.deltakerlisteHendelse(
 				id = ctx.deltakerlistePayload().id,
 				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
-				topic = DELTAKERLISTE_V1_TOPIC,
 			)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
@@ -169,12 +164,10 @@ class KafkaConsumerServiceTest {
 		fun `deltakerliste lagd - ikke publiser melding`() {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
-			every { unleashToggle.skalLeseGjennomforingerV2() } returns true
 
 			kafkaConsumerService.deltakerlisteHendelse(
 				id = ctx.deltakerlistePayload().id,
 				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
-				topic = DELTAKERLISTE_V2_TOPIC,
 			)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
@@ -183,31 +176,14 @@ class KafkaConsumerServiceTest {
 		}
 
 		@Test
-		fun `unleash for gjennomforinger v2 ikke enabled - ikke prosesser melding`() {
-			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
-			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
-			every { unleashToggle.skalLeseGjennomforingerV2() } returns false
-
-			kafkaConsumerService.deltakerlisteHendelse(
-				id = ctx.deltakerlistePayload().id,
-				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
-				topic = DELTAKERLISTE_V2_TOPIC,
-			)
-
-			verify(exactly = 0) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
-		}
-
-		@Test
 		fun `Komet er ikke master for tiltak - ikke prosesser melding`() {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
-			every { unleashToggle.skalLeseGjennomforingerV2() } returns true
 			every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns true
 
 			kafkaConsumerService.deltakerlisteHendelse(
 				id = ctx.deltakerlistePayload().id,
 				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
-				topic = DELTAKERLISTE_V2_TOPIC,
 			)
 
 			verify(exactly = 0) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
@@ -221,7 +197,6 @@ class KafkaConsumerServiceTest {
 			kafkaConsumerService.deltakerlisteHendelse(
 				id = ctx.deltakerlistePayload().id,
 				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
-				topic = DELTAKERLISTE_V1_TOPIC,
 			)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
@@ -248,7 +223,6 @@ class KafkaConsumerServiceTest {
 			kafkaConsumerService.deltakerlisteHendelse(
 				id = ctx.deltakerlistePayload().id,
 				value = objectMapper.writeValueAsString(deltakerliste.toDto(arrangor)),
-				topic = DELTAKERLISTE_V1_TOPIC,
 			)
 
 			verify(exactly = 2) { arrangorRepository.get(arrangor.organisasjonsnummer) }
