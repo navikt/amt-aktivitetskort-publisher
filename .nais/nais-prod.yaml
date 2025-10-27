@@ -34,7 +34,7 @@ spec:
     max: 3
     scalingStrategy:
       cpu:
-        thresholdPercentage: 500
+        thresholdPercentage: 70
   resources:
     requests:
       cpu: 20m
