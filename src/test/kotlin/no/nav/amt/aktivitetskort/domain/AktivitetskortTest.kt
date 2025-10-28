@@ -37,10 +37,6 @@ class AktivitetskortTest {
 				Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
 				Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> aktivitetskortTittel shouldBe "Kurs: ${it.navn}"
 				Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> aktivitetskortTittel shouldBe it.navn
-				Tiltakskode.HOYERE_UTDANNING,
-				Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
-				Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
-				-> aktivitetskortTittel shouldBe "Tiltak hos ${arrangor.navn}"
 				else -> aktivitetskortTittel shouldBe "${it.tiltak.navn} hos ${arrangor.navn}"
 			}
 		}
