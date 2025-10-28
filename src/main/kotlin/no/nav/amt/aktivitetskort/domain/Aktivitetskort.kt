@@ -92,8 +92,7 @@ data class Aktivitetskort(
 			Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> deltakerliste.navn
 			Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
 			Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
-			Tiltakskode.HOYERE_UTDANNING,
-			-> "Tiltak hos ${arrangor.navn}"
+			Tiltakskode.HOYERE_UTDANNING -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 
