@@ -17,7 +17,7 @@ repositories {
 	maven { setUrl("https://packages.confluent.io/maven/") }
 }
 
-val logstashEncoderVersion = "8.1"
+val logstashEncoderVersion = "9.0"
 val okHttpVersion = "5.2.1"
 val kafkaClientsVersion = "4.1.0"
 val kotestVersion = "6.0.4"
