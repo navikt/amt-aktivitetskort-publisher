@@ -17,8 +17,8 @@ repositories {
 	maven { setUrl("https://packages.confluent.io/maven/") }
 }
 
-val logstashEncoderVersion = "8.1"
-val okHttpVersion = "5.2.1"
+val logstashEncoderVersion = "9.0"
+val okHttpVersion = "5.3.0"
 val kafkaClientsVersion = "4.1.0"
 val kotestVersion = "6.0.4"
 val testcontainersVersion = "2.0.1"
@@ -86,7 +86,7 @@ dependencies {
 }
 
 kotlin {
-	jvmToolchain(24)
+	jvmToolchain(21)
 	compilerOptions {
 		freeCompilerArgs.addAll(
 			"-Xjsr305=strict",
