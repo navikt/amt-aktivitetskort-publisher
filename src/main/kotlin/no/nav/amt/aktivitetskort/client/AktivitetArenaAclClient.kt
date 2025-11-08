@@ -1,6 +1,7 @@
 package no.nav.amt.aktivitetskort.client
 
-import no.nav.amt.aktivitetskort.utils.JsonUtils
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.common.rest.client.RestClient
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -34,7 +35,7 @@ class AktivitetArenaAclClient(
 				error("Klarte ikke å hente aktivitetId for ArenaId. Status: ${response.code}")
 			}
 
-			return JsonUtils.fromJson(response.body.string())
+			return objectMapper.readValue(response.body.string())
 		}
 	}
 
@@ -42,8 +43,8 @@ class AktivitetArenaAclClient(
 		val arenaId: Long,
 		val aktivitetKategori: String = "TILTAKSAKTIVITET",
 	) {
-		fun toRequest() = JsonUtils
-			.toJsonString(this)
+		fun toRequest() = objectMapper
+			.writeValueAsString(this)
 			.toRequestBody(APPLICATION_JSON_VALUE.toMediaType())
 	}
 }

@@ -5,7 +5,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import no.nav.amt.aktivitetskort.utils.JsonUtils
+import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -32,7 +32,7 @@ class VeilarboppfolgingClientTest : ClientTestBase() {
 	@ValueSource(booleans = [true, false])
 	fun `hentOppfolgingperiode - returnerer gyldig oppfolgingsperiode`(useEndDate: Boolean) {
 		val expected = createOppfolgingPeriodeDTO(useEndDate)
-		val expectedAsJson = JsonUtils.toJsonString(expected)
+		val expectedAsJson = objectMapper.writeValueAsString(expected)
 		enqueueJson(expectedAsJson)
 
 		val oppfolgingsperiode = client.hentOppfolgingperiode("123456789")

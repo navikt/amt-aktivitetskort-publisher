@@ -1,8 +1,8 @@
 package no.nav.amt.aktivitetskort.repositories
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Melding
-import no.nav.amt.aktivitetskort.utils.JsonUtils
 import no.nav.amt.aktivitetskort.utils.getZonedDateTime
 import no.nav.amt.aktivitetskort.utils.sqlParameters
 import no.nav.amt.lib.utils.objectMapper
@@ -22,7 +22,7 @@ class MeldingRepository(
 			deltakerId = UUID.fromString(rs.getString("deltaker_id")),
 			deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
 			arrangorId = UUID.fromString(rs.getString("arrangor_id")),
-			aktivitetskort = JsonUtils.fromJson(rs.getString("melding")),
+			aktivitetskort = objectMapper.readValue(rs.getString("melding")),
 			oppfolgingperiode = rs.getString("oppfolgingsperiode")?.let { UUID.fromString(it) },
 			createdAt = rs.getZonedDateTime("created_at"),
 			modifiedAt = rs.getZonedDateTime("modified_at"),

@@ -24,10 +24,10 @@ val kotestVersion = "6.0.4"
 val testcontainersVersion = "2.0.1"
 val klintVersion = "1.4.1"
 val mockkVersion = "1.14.6"
-val commonVersion = "3.2025.08.18_11.44-04fe318bd185"
-val tokenSupportVersion = "5.0.34"
+val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
+val tokenSupportVersion = "5.0.39"
 val unleashVersion = "11.1.1"
-val amtLibVersion = "1.2025.10.08_09.09-4d8d4f2abb10"
+val amtLibVersion = "1.2025.11.04_07.48-1183a3751d73"
 
 dependencyManagement {
 	imports {

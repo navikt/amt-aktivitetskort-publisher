@@ -1,7 +1,7 @@
 package no.nav.amt.aktivitetskort.client
 
 import io.kotest.matchers.shouldBe
-import no.nav.amt.aktivitetskort.utils.JsonUtils
+import no.nav.amt.lib.utils.objectMapper
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
@@ -32,7 +32,7 @@ class AktivitetArenaAclClientTest {
 	@Test
 	fun `getAktivitetIdForArenaId - returnerer id om eksisterer`() {
 		val response = UUID.randomUUID()
-		server.enqueue(MockResponse().setBody(JsonUtils.toJsonString(response)))
+		server.enqueue(MockResponse().setBody(objectMapper.writeValueAsString(response)))
 
 		val id = client.getAktivitetIdForArenaId(1L)
 

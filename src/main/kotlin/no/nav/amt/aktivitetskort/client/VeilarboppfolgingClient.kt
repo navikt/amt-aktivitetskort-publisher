@@ -1,9 +1,9 @@
 package no.nav.amt.aktivitetskort.client
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
-import no.nav.amt.aktivitetskort.utils.JsonUtils
-import no.nav.amt.aktivitetskort.utils.JsonUtils.toJsonString
 import no.nav.amt.aktivitetskort.utils.toSystemZoneLocalDateTime
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.common.rest.client.RestClient.baseClient
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -23,7 +23,7 @@ class VeilarboppfolgingClient(
 	}
 
 	fun hentOppfolgingperiode(fnr: String): Oppfolgingsperiode? {
-		val personRequestJson = toJsonString(PersonRequest(fnr))
+		val personRequestJson = objectMapper.writeValueAsString(PersonRequest(fnr))
 		val request = Request
 			.Builder()
 			.url("$baseUrl/api/v3/oppfolging/hent-gjeldende-periode")
@@ -38,7 +38,9 @@ class VeilarboppfolgingClient(
 			}
 			if (response.code == 204) return null
 
-			return JsonUtils.fromJson<OppfolgingPeriodeDTO>(response.body.string()).toModel()
+			return objectMapper
+				.readValue<OppfolgingPeriodeDTO>(response.body.string())
+				.toModel()
 		}
 	}
 

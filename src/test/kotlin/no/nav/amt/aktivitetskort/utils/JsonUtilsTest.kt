@@ -1,8 +1,8 @@
 package no.nav.amt.aktivitetskort.utils
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
-import no.nav.amt.aktivitetskort.utils.JsonUtils.fromJson
-import no.nav.amt.aktivitetskort.utils.JsonUtils.toJsonString
+import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -19,12 +19,12 @@ class JsonUtilsTest {
 
 		// Serialiserer ZonedDateTime til JSON
 		// NB: Tidssonenavn ([Europe/Oslo]) går tapt, kun offset (+02:00) beholdes
-		val zdtJson = toJsonString(zonedDateTimeInTest)
+		val zdtJson = objectMapper.writeValueAsString(zonedDateTimeInTest)
 		zdtJson shouldBe "\"2025-07-26T00:00:00+02:00\""
 
 		// Deserialiserer JSON tilbake til ZonedDateTime
 		// NB: JSON-tidspunktet tolkes som +02:00, men Instant beholdes korrekt
-		val zdtFromJson = fromJson<ZonedDateTime>(zdtJson)
+		val zdtFromJson = objectMapper.readValue<ZonedDateTime>(zdtJson)
 		println(zdtFromJson) // 2025-07-25T22:00Z (samme tidspunkt som originalt, men nå i UTC)
 		zdtFromJson.toInstant() shouldBe zonedDateTimeInTest.toInstant()
 

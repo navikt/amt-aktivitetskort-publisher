@@ -1,7 +1,8 @@
 package no.nav.amt.aktivitetskort.client
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.exceptions.HistoriskArenaDeltakerException
-import no.nav.amt.aktivitetskort.utils.JsonUtils
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.common.rest.client.RestClient.baseClient
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -32,7 +33,7 @@ class AmtArenaAclClient(
 				error("Klarte ikke å hente arenaId for AmtId $amtId. Status: ${response.code}")
 			}
 
-			val hentArenaIdV2Response = JsonUtils.fromJson<HentArenaIdV2Response>(response.body.string())
+			val hentArenaIdV2Response = objectMapper.readValue<HentArenaIdV2Response>(response.body.string())
 
 			hentArenaIdV2Response.arenaId?.let {
 				return it.toLong()

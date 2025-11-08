@@ -1,7 +1,8 @@
 package no.nav.amt.aktivitetskort.client
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.domain.Arrangor
-import no.nav.amt.aktivitetskort.utils.JsonUtils
+import no.nav.amt.lib.utils.objectMapper
 import no.nav.common.rest.client.RestClient.baseClient
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -25,7 +26,7 @@ class AmtArrangorClient(
 			if (!response.isSuccessful) {
 				throw RuntimeException("Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.code}")
 			}
-			return JsonUtils.fromJson<ArrangorMedOverordnetArrangorDto>(response.body.string())
+			return objectMapper.readValue<ArrangorMedOverordnetArrangorDto>(response.body.string())
 		}
 	}
 
@@ -41,7 +42,7 @@ class AmtArrangorClient(
 			if (!response.isSuccessful) {
 				throw RuntimeException("Kunne ikke hente arrangør med id $arrangorId fra amt-arrangør. Status=${response.code}")
 			}
-			return JsonUtils.fromJson<ArrangorMedOverordnetArrangorDto>(response.body.string())
+			return objectMapper.readValue<ArrangorMedOverordnetArrangorDto>(response.body.string())
 		}
 	}
 
