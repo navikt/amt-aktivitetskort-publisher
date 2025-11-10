@@ -9,10 +9,11 @@ import java.util.UUID
 data class DeltakerlistePayload(
 	val id: UUID,
 	val navn: String? = null, // finnes kun for gruppetiltak
-	val tiltakstype: Tiltakstype,
-	val virksomhetsnummer: String? = null, // finnes kun for v1
-	val arrangor: Arrangor? = null, // finnes kun for v2
+	val tiltakskode: String? = null, // skal gjøres non-nullable
+	val tiltakstype: Tiltakstype? = null, // skal fjernes
+	val arrangor: Arrangor,
 ) {
+	// skal fjernes
 	data class Tiltakstype(
 		val tiltakskode: String,
 	)
@@ -21,15 +22,14 @@ data class DeltakerlistePayload(
 		val organisasjonsnummer: String,
 	)
 
+	// erstattes av tiltakskode senere
 	@get:JsonIgnore
-	val organisasjonsnummer: String
-		get() = setOfNotNull(arrangor?.organisasjonsnummer, virksomhetsnummer)
-			.firstOrNull()
-			?: throw IllegalStateException("Virksomhetsnummer mangler")
+	val effectiveTiltakskode: String
+		get() = tiltakskode ?: tiltakstype?.tiltakskode ?: throw IllegalStateException("Tiltakskode er ikke satt")
 
-	fun toModel(arrangorId: UUID, navnTiltakstype: String) = Deltakerliste(
+	fun toModel(arrangorId: UUID, navnTiltakstype: String): Deltakerliste = Deltakerliste(
 		id = this.id,
-		tiltak = Tiltak(navnTiltakstype, Tiltakskode.valueOf(this.tiltakstype.tiltakskode)),
+		tiltak = Tiltak(navnTiltakstype, Tiltakskode.valueOf(effectiveTiltakskode)),
 		navn = this.navn ?: navnTiltakstype,
 		arrangorId = arrangorId,
 	)

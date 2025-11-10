@@ -172,7 +172,7 @@ object TestData {
 			id = this.deltakerliste.id,
 			tiltakstype = this.deltakerliste.tiltak.toDto(),
 			navn = this.deltakerliste.navn,
-			virksomhetsnummer = this@MockContext.arrangor.organisasjonsnummer,
+			arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
 		)
 	}
 
@@ -180,7 +180,7 @@ object TestData {
 		id = this.id,
 		tiltakstype = this.tiltak.toDto(),
 		navn = this.navn,
-		virksomhetsnummer = arrangor.organisasjonsnummer,
+		arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
 	)
 
 	fun Deltaker.toDto() = DeltakerDto(

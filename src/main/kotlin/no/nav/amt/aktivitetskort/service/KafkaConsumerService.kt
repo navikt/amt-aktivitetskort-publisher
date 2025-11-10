@@ -88,15 +88,15 @@ class KafkaConsumerService(
 
 		val deltakerlistePayload: DeltakerlistePayload = objectMapper.readValue(value)
 
-		if (unleashToggle.skipProsesseringAvGjennomforing(deltakerlistePayload.tiltakstype.tiltakskode)) {
+		if (unleashToggle.skipProsesseringAvGjennomforing(deltakerlistePayload.effectiveTiltakskode)) {
 			return
 		}
 
-		val arrangor = arrangorRepository.get(deltakerlistePayload.organisasjonsnummer)
-			?: hentOgLagreArrangorFraAmtArrangor(deltakerlistePayload.organisasjonsnummer)
+		val arrangor = arrangorRepository.get(deltakerlistePayload.arrangor.organisasjonsnummer)
+			?: hentOgLagreArrangorFraAmtArrangor(deltakerlistePayload.arrangor.organisasjonsnummer)
 
-		val tiltakstype = tiltakstypeRepository.getByTiltakskode(deltakerlistePayload.tiltakstype.tiltakskode)
-			?: throw NoSuchElementException("Fant ikke tiltakstype med tiltakskode ${deltakerlistePayload.tiltakstype.tiltakskode}")
+		val tiltakstype = tiltakstypeRepository.getByTiltakskode(deltakerlistePayload.effectiveTiltakskode)
+			?: throw NoSuchElementException("Fant ikke tiltakstype med tiltakskode ${deltakerlistePayload.effectiveTiltakskode}")
 
 		transactionTemplate.executeWithoutResult {
 			when (

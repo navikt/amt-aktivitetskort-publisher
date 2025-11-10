@@ -23,18 +23,9 @@ object DeltakerlistePayloadJsonSchemas {
 		obj {
 			withProperty("id") { string() }
 			withProperty("navn", optional = true) { string() }
-			withProperty("tiltakstype") { tiltakstypeSchema() }
+			withProperty("tiltakskode", optional = true) { string() }
+			withProperty("tiltakstype", optional = true) { tiltakstypeSchema() }
 			withProperty("arrangor") { arrangorSchema() }
-			additionalProperties = false
-		}
-	}
-
-	val deltakerlistePayloadV1Schema = jsonSchema {
-		obj {
-			withProperty("id") { string() }
-			withProperty("navn") { string() }
-			withProperty("tiltakstype") { tiltakstypeSchema() }
-			withProperty("virksomhetsnummer") { string() }
 			additionalProperties = false
 		}
 	}

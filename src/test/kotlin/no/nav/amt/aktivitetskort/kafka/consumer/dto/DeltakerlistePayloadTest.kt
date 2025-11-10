@@ -3,64 +3,55 @@ package no.nav.amt.aktivitetskort.kafka.consumer.dto
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.json.schema.shouldMatchSchema
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.database.TestData.arrangor
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayloadJsonSchemas.deltakerlistePayloadV1Schema
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayloadJsonSchemas.deltakerlistePayloadV2Schema
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.util.UUID
 
 class DeltakerlistePayloadTest {
 	@Nested
-	inner class Organisasjonsnummer {
+	inner class Tiltakskodenavn {
 		@Test
-		fun `returnerer virksomhetsnummer for v1`() {
+		fun `organisasjonsnummer - kaster feil hvis tiltakskode mangler`() {
 			val payload = DeltakerlistePayload(
 				id = deltakerlisteIdInTest,
-				tiltakstype = DeltakerlistePayload.Tiltakstype(Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK.name),
-				virksomhetsnummer = "123456789",
+				arrangor = DeltakerlistePayload.Arrangor("123456789"),
 			)
 
-			payload.organisasjonsnummer shouldBe "123456789"
-		}
-
-		@Test
-		fun `organisasjonsnummer - kaster feil hvis virksomhetsnummer mangler`() {
-			val payload = DeltakerlistePayload(
-				id = deltakerlisteIdInTest,
-				tiltakstype = DeltakerlistePayload.Tiltakstype(Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK.name),
-			)
-
-			assertThrows<IllegalStateException> {
-				payload.organisasjonsnummer
+			shouldThrow<IllegalStateException> {
+				payload.effectiveTiltakskode
 			}
 		}
 
 		@Test
-		fun `returnerer arrangor-organisasjonsnummer for v2`() {
+		fun `returnerer tiltakskode fra Tiltakstype`() {
+			val expectedTiltakskode = Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING.name
+
 			val payload = DeltakerlistePayload(
 				id = deltakerlisteIdInTest,
-				tiltakstype = DeltakerlistePayload.Tiltakstype(Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK.name),
+				tiltakstype = DeltakerlistePayload.Tiltakstype(expectedTiltakskode),
 				arrangor = DeltakerlistePayload.Arrangor("987654321"),
 			)
 
-			payload.organisasjonsnummer shouldBe "987654321"
+			payload.effectiveTiltakskode shouldBe expectedTiltakskode
 		}
 
 		@Test
-		fun `organisasjonsnummer - kaster feil hvis arrangor-organisasjonsnummer mangler`() {
+		fun `returnerer tiltakskode fra tiltakskode`() {
+			val expectedTiltakskode = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING.name
+
 			val payload = DeltakerlistePayload(
 				id = deltakerlisteIdInTest,
-				tiltakstype = DeltakerlistePayload.Tiltakstype(Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK.name),
+				tiltakskode = expectedTiltakskode,
+				arrangor = DeltakerlistePayload.Arrangor("987654321"),
 			)
 
-			assertThrows<IllegalStateException> {
-				payload.organisasjonsnummer
-			}
+			payload.effectiveTiltakskode shouldBe expectedTiltakskode
 		}
 	}
 
@@ -70,16 +61,13 @@ class DeltakerlistePayloadTest {
 		fun `toModel - mapper felter korrekt`() {
 			val payload = fullyPopulatedV2PayloadInTest.copy()
 
-			val arrangor = arrangor()
-			val tiltakstype = DeltakerlistePayload.Tiltakstype(
-				tiltakskode = Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING.name,
-			)
+			val expectedArrangorId = UUID.randomUUID()
 
-			val model = payload.toModel(arrangorId = arrangor.id, navnTiltakstype = "Test tiltak ENKFAGYRKE")
+			val model = payload.toModel(arrangorId = expectedArrangorId, navnTiltakstype = EXPECTED_NAVN_TILTAKSTYPE)
 
 			assertSoftly(model) {
-				tiltakstype shouldBe tiltakstype
-				arrangor shouldBe arrangor
+				tiltak.tiltakskode shouldBe expectedTiltakskode
+				arrangorId shouldBe expectedArrangorId
 
 				id shouldBe id
 				navn shouldBe "Testliste"
@@ -91,7 +79,7 @@ class DeltakerlistePayloadTest {
 			val payload = DeltakerlistePayload(
 				id = deltakerlisteIdInTest,
 				tiltakstype = DeltakerlistePayload.Tiltakstype(Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING.name),
-				virksomhetsnummer = "123456789",
+				arrangor = DeltakerlistePayload.Arrangor("987654321"),
 			)
 
 			val arrangor = arrangor()
@@ -113,33 +101,19 @@ class DeltakerlistePayloadTest {
 
 			json.shouldMatchSchema(deltakerlistePayloadV2Schema)
 		}
-
-		@Test
-		fun `fullt populert V1 skal matche skjema`() {
-			val json = objectMapper
-				.copy()
-				.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-				.writeValueAsString(fullyPopulatedV1PayloadInTest.copy())
-
-			json.shouldMatchSchema(deltakerlistePayloadV1Schema)
-		}
 	}
 
 	companion object {
 		private val deltakerlisteIdInTest = UUID.randomUUID()
-
-		private val fullyPopulatedV1PayloadInTest = DeltakerlistePayload(
-			id = deltakerlisteIdInTest,
-			tiltakstype = DeltakerlistePayload.Tiltakstype(Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING.name),
-			navn = "Testliste",
-			virksomhetsnummer = "123456789",
-		)
+		private val expectedTiltakskode = Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING
+		private const val EXPECTED_NAVN_TILTAKSTYPE = "Test tiltak ENKFAGYRKE"
 
 		private val fullyPopulatedV2PayloadInTest = DeltakerlistePayload(
 			id = deltakerlisteIdInTest,
-			tiltakstype = DeltakerlistePayload.Tiltakstype(Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING.name),
+			tiltakskode = expectedTiltakskode.name,
+			tiltakstype = DeltakerlistePayload.Tiltakstype(expectedTiltakskode.name),
 			navn = "Testliste",
-			arrangor = DeltakerlistePayload.Arrangor("987654321"),
+			arrangor = DeltakerlistePayload.Arrangor("123456789"),
 		)
 	}
 }
