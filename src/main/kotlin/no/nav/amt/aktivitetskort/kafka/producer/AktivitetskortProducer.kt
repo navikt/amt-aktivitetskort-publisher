@@ -35,7 +35,7 @@ class AktivitetskortProducer(
 					objectMapper.writeValueAsString(payload),
 				).get()
 
-			log.info("Sendte aktivtetskort til aktivitetsplanen: ${currentAktivitetskort.id}} messageId: $messageId")
+			log.info("Sendte aktivitetskort til aktivitetsplanen: ${currentAktivitetskort.id}} messageId: $messageId")
 			metricsService.incSendtAktivitetskort()
 		}
 	}
