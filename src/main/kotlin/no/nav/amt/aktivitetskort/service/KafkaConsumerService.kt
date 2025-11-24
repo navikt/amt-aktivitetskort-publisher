@@ -66,7 +66,7 @@ class KafkaConsumerService(
 					log.info("Ny hendelse for deltaker ${deltaker.id}: Opprettelse")
 					val aktivitetskort = aktivitetskortService.lagAktivitetskort(result.data)
 					if (aktivitetskort == null) {
-						log.error("aktivitetskort for deltaker ${deltaker.id} ble ikke opprettet")
+						log.warn("aktivitetskort for deltaker ${deltaker.id} ble ikke opprettet")
 						return@executeWithoutResult
 					}
 					aktivitetskortProducer.send(aktivitetskort)
