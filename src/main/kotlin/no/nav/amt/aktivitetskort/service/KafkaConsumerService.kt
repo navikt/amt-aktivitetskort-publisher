@@ -56,7 +56,7 @@ class KafkaConsumerService(
 					log.info("Ny hendelse for deltaker ${deltaker.id}: Oppdatering")
 					val aktivitetskort = aktivitetskortService.lagAktivitetskort(result.data)
 					if (aktivitetskort == null) {
-						log.error("aktivitetskort for deltaker ${deltaker.id} ble ikke oppdatert")
+						log.warn("aktivitetskort for deltaker ${deltaker.id} ble ikke oppdatert.")
 						return@executeWithoutResult
 					}
 					aktivitetskortProducer.send(aktivitetskort)
