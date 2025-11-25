@@ -140,7 +140,7 @@ class AktivitetskortService(
 		try {
 			return opprettMelding(deltaker, meldingId)
 		} catch (e: IngenOppfolgingsperiodeException) {
-			log.warn("Kan ikke opprette aktivitetskort for deltaker ${deltaker.id}", e)
+			log.warn("Kan ikke opprette aktivitetskort for deltaker ${deltaker.id} uten oppfølgingsperiode", e)
 		} catch (_: HistoriskArenaDeltakerException) {
 			log.error("Kan ikke opprette aktivitetskort for historisk arena deltaker ${deltaker.id}")
 		}
