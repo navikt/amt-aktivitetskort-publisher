@@ -1,12 +1,13 @@
 package no.nav.amt.aktivitetskort.repositories
 
-import no.nav.amt.aktivitetskort.domain.AVSLUTTENDE_STATUSER
 import no.nav.amt.aktivitetskort.domain.Deltaker
-import no.nav.amt.aktivitetskort.domain.DeltakerStatus
-import no.nav.amt.aktivitetskort.domain.Kilde
+import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.aktivitetskort.utils.sqlParameters
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.DeltakerStatus.Companion.avsluttendeStatuser
+import no.nav.amt.lib.models.deltaker.Kilde
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -29,9 +30,13 @@ class DeltakerRepository(
 				id = UUID.fromString(rs.getString("id")),
 				personident = rs.getString("personident"),
 				deltakerlisteId = UUID.fromString(rs.getString("deltakerliste_id")),
-				status = DeltakerStatus(
-					type = DeltakerStatus.Type.valueOf(rs.getString("deltaker_status_type")),
-					aarsak = rs.getString("deltaker_status_arsak")?.let { DeltakerStatus.Aarsak.valueOf(it) },
+				status = DeltakerStatusModel(
+					type = DeltakerStatus.Type
+						.valueOf(rs.getString("deltaker_status_type")),
+					aarsak = rs.getString("deltaker_status_arsak")?.let {
+						DeltakerStatus.Aarsak.Type
+							.valueOf(it)
+					},
 				),
 				dagerPerUke = rs.getFloat("dager_per_uke"),
 				prosentStilling = rs.getDouble("prosent_stilling"),
@@ -58,7 +63,7 @@ class DeltakerRepository(
 
 		if (deltaker == oldDeltaker?.deltaker && !unleashToggle.skalOppdatereForUendretDeltaker()) return RepositoryResult.NoChange()
 
-		if (deltaker.status.type in AVSLUTTENDE_STATUSER &&
+		if (deltaker.status.type in avsluttendeStatuser &&
 			deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&
 			!skalKorrigereTidligereDeltaker(oldDeltaker?.deltaker)
 		) {
@@ -137,8 +142,11 @@ class DeltakerRepository(
 
 	fun get(id: UUID): Deltaker? = getDeltakerMedOffset(id)?.deltaker
 
+	//
 	private fun skalKorrigereTidligereDeltaker(lagretDeltaker: Deltaker?): Boolean =
-		!(lagretDeltaker == null || lagretDeltaker.status.type in AVSLUTTENDE_STATUSER)
+		// Hvis første vi hører om deltakeren er avsluttende status
+		// så skal det ikke opprettes aktivitetskort
+		!(lagretDeltaker == null || lagretDeltaker.status.type in avsluttendeStatuser)
 
 	private fun getDeltakerMedOffset(id: UUID): DeltakerMedOffset? = template
 		.query(

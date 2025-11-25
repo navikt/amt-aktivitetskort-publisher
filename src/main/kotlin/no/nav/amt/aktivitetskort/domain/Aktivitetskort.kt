@@ -104,7 +104,7 @@ data class Aktivitetskort(
 		): List<Detalj> {
 			val detaljer = mutableListOf<Detalj>()
 
-			detaljer.add(Detalj("Status for deltakelse", deltaker.status.display()))
+			detaljer.add(Detalj("Status for deltakelse", displayText(deltaker.status)))
 
 			if (deltakerliste.tiltak.tiltakskode.erTiltakmedDeltakelsesmengde()) {
 				deltakelseMengdeDetalj(deltaker)?.let { detaljer.add(it) }

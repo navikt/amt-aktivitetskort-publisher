@@ -1,8 +1,9 @@
 package no.nav.amt.aktivitetskort.service
 
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
-import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
 import no.nav.amt.aktivitetskort.domain.Tag
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 
 object StatusMapping {
 	private val FORSLAG_STATUS = listOf(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
@@ -38,7 +39,7 @@ object StatusMapping {
 		else -> Result.failure(RuntimeException("Deltakerstatus ${deltakerStatus.name} kunne ikke mappes til aktivitetsstatus"))
 	}
 
-	fun deltakerStatusTilEtikett(status: DeltakerStatus): Tag? = when (status.type) {
+	fun deltakerStatusTilEtikett(status: DeltakerStatusModel): Tag? = when (status.type) {
 		DeltakerStatus.Type.VENTER_PA_OPPSTART -> Tag(
 			tekst = "Venter på oppstart",
 			sentiment = Tag.Sentiment.NEUTRAL,
@@ -96,5 +97,6 @@ object StatusMapping {
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.AVBRUTT_UTKAST,
 		)
+		else -> throw IllegalStateException("Deltakerstatus ${status.type.name} kunne ikke mappes til etikett")
 	}
 }

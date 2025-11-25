@@ -4,8 +4,9 @@ import io.getunleash.FakeUnleash
 import io.kotest.assertions.AssertionErrorBuilder.Companion.fail
 import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.database.TestData
-import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -141,7 +142,7 @@ class DeltakerRepositoryTest(
 	fun `upsert - finnes ikke, status feilregistrert - returnerer NoChange Result, lagres ikke`() {
 		val deltaker = TestData
 			.deltaker()
-			.copy(status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null))
+			.copy(status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null))
 			.also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
 		when (val result = deltakerRepository.upsert(deltaker, 0)) {
 			is RepositoryResult.NoChange -> {}
@@ -159,7 +160,7 @@ class DeltakerRepositoryTest(
 			.also { deltakerRepository.upsert(it, 0) }
 
 		val updatedDeltaker = initialDeltaker.copy(
-			status = DeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT, null),
+			status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null),
 		)
 
 		when (val result = deltakerRepository.upsert(updatedDeltaker, 1)) {
@@ -176,7 +177,7 @@ class DeltakerRepositoryTest(
 			.deltaker(
 				oppstartsdato = LocalDate.of(2017, 10, 1),
 				sluttdato = LocalDate.of(2017, 11, 30),
-				status = DeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Aarsak.FATT_JOBB),
+				status = DeltakerStatusModel(DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Aarsak.Type.FATT_JOBB),
 			).also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
 		when (val result = deltakerRepository.upsert(deltaker, 0)) {
 			is RepositoryResult.NoChange -> {}
@@ -192,14 +193,14 @@ class DeltakerRepositoryTest(
 			.deltaker(
 				oppstartsdato = LocalDate.of(2017, 10, 1),
 				sluttdato = null,
-				status = DeltakerStatus(DeltakerStatus.Type.DELTAR, null),
+				status = DeltakerStatusModel(DeltakerStatus.Type.DELTAR, null),
 			).also { testDatabase.insertDeltakerliste(TestData.deltakerliste(id = it.deltakerlisteId)) }
 			.also { deltakerRepository.upsert(it, 0) }
 
 		val updatedDeltaker = initialDeltaker.copy(
 			oppstartsdato = LocalDate.of(2017, 10, 1),
 			sluttdato = LocalDate.of(2017, 11, 30),
-			status = DeltakerStatus(DeltakerStatus.Type.FULLFORT, DeltakerStatus.Aarsak.ANNET),
+			status = DeltakerStatusModel(DeltakerStatus.Type.FULLFORT, DeltakerStatus.Aarsak.Type.ANNET),
 		)
 
 		when (val result = deltakerRepository.upsert(updatedDeltaker, 1)) {

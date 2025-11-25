@@ -6,9 +6,8 @@ import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
-import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
@@ -18,6 +17,7 @@ import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -40,7 +40,7 @@ class KafkaConsumerService(
 
 	fun deltakerHendelse(
 		id: UUID,
-		deltaker: DeltakerDto?,
+		deltaker: DeltakerKafkaPayload?,
 		offset: Long,
 	) {
 		if (deltaker == null) return handterSlettetDeltaker(id)
@@ -183,7 +183,7 @@ class KafkaConsumerService(
 
 	private fun avbrytAktivitetskort(aktivitetskort: Aktivitetskort, deltaker: Deltaker) {
 		if (skalAvbryteAktivtetskort(aktivitetskort.aktivitetStatus)) {
-			val avbruttDeltaker = deltaker.copy(status = DeltakerStatus(DeltakerStatus.Type.AVBRUTT, null))
+			val avbruttDeltaker = deltaker.copy(status = DeltakerStatusModel(no.nav.amt.lib.models.deltaker.DeltakerStatus.Type.AVBRUTT, null))
 
 			aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskortForSlettetdeltaker(avbruttDeltaker, aktivitetskort.id))
 			log.info(
@@ -201,4 +201,17 @@ class KafkaConsumerService(
 
 		else -> false
 	}
+
+	fun DeltakerKafkaPayload.toModel() = Deltaker(
+		id = id,
+		personident = personalia.personident,
+		deltakerlisteId = deltakerliste.id,
+		status = DeltakerStatusModel(status.type, status.aarsak),
+		dagerPerUke = dagerPerUke,
+		prosentStilling = prosentStilling,
+		oppstartsdato = oppstartsdato,
+		sluttdato = sluttdato,
+		deltarPaKurs = deltarPaKurs,
+		kilde = kilde,
+	)
 }
