@@ -13,6 +13,7 @@ import no.nav.amt.aktivitetskort.client.AktivitetArenaAclClient
 import no.nav.amt.aktivitetskort.client.AmtArenaAclClient
 import no.nav.amt.aktivitetskort.client.VeilarboppfolgingClient
 import no.nav.amt.aktivitetskort.database.TestData
+import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.exceptions.HistoriskArenaDeltakerException
@@ -24,6 +25,7 @@ import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.repositories.OppfolgingsperiodeRepository
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.junit.jupiter.api.BeforeEach
@@ -247,6 +249,22 @@ class AktivitetskortServiceTest {
 
 		verify(exactly = 1) { meldingRepository.upsert(any()) }
 		aktivitetskort?.id shouldNotBe ctx.aktivitetskort.id
+	}
+
+	fun `lagAktivitetskort(deltaker) - gamle arenameldinger fra tidligere oppfølgingsperiode - ignorerer`() {
+		val ctx = TestData.MockContext(
+			deltaker = TestData.deltaker(
+				kilde = Kilde.ARENA,
+				status = DeltakerStatusModel(DeltakerStatus.Type.FULLFORT, null, nyPeriode.startDato.minusDays(10)),
+			),
+		)
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
+		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
+		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
+		every { veilarboppfolgingClient.hentOppfolgingperiode(ctx.deltaker.personident) } returns nyPeriode
+
+		val aktivitetskort = aktivitetskortService.lagAktivitetskort(ctx.deltaker)
+		aktivitetskort shouldBe null
 	}
 
 	@Test
