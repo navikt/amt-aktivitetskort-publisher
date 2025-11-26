@@ -4,6 +4,7 @@ import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
+import no.nav.amt.aktivitetskort.utils.getNullableLocalDateTime
 import no.nav.amt.aktivitetskort.utils.sqlParameters
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.DeltakerStatus.Companion.avsluttendeStatuser
@@ -37,6 +38,7 @@ class DeltakerRepository(
 						DeltakerStatus.Aarsak.Type
 							.valueOf(it)
 					},
+					gyldigFra = rs.getNullableLocalDateTime("deltaker_status_gyldig_fra"),
 				),
 				dagerPerUke = rs.getFloat("dager_per_uke"),
 				prosentStilling = rs.getDouble("prosent_stilling"),
@@ -79,6 +81,7 @@ class DeltakerRepository(
 				deltakerliste_id,
 				deltaker_status_type,
 				deltaker_status_arsak,
+				deltaker_status_gyldig_fra,
 				dager_per_uke,
 				prosent_stilling,
 				start_dato,
@@ -94,6 +97,7 @@ class DeltakerRepository(
 				:deltakerliste_id,
 				:deltaker_status_type,
 				:deltaker_status_arsak,
+				:deltaker_status_gyldig_fra,
 				:dager_per_uke,
 				:prosent_stilling,
 				:start_dato,
@@ -108,6 +112,7 @@ class DeltakerRepository(
 				deltakerliste_id = :deltakerliste_id,
 				deltaker_status_type = :deltaker_status_type,
 				deltaker_status_arsak = :deltaker_status_arsak,
+				deltaker_status_gyldig_fra = :deltaker_status_gyldig_fra,
 				dager_per_uke = :dager_per_uke,
 				prosent_stilling = :prosent_stilling,
 				start_dato = :start_dato,
@@ -124,6 +129,7 @@ class DeltakerRepository(
 			"deltakerliste_id" to deltaker.deltakerlisteId,
 			"deltaker_status_type" to deltaker.status.type.name,
 			"deltaker_status_arsak" to deltaker.status.aarsak?.name,
+			"deltaker_status_gyldig_fra" to deltaker.status.gyldigFra,
 			"dager_per_uke" to deltaker.dagerPerUke,
 			"prosent_stilling" to deltaker.prosentStilling,
 			"start_dato" to deltaker.oppstartsdato,

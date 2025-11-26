@@ -2,6 +2,7 @@ package no.nav.amt.aktivitetskort.domain
 
 import no.nav.amt.lib.models.deltaker.Kilde
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Objects
 import java.util.UUID
 
@@ -58,6 +59,7 @@ data class Deltaker(
 data class DeltakerStatusModel(
 	val type: no.nav.amt.lib.models.deltaker.DeltakerStatus.Type,
 	val aarsak: no.nav.amt.lib.models.deltaker.DeltakerStatus.Aarsak.Type?,
+	val gyldigFra: LocalDateTime? = null,
 )
 
 val IKKE_AVTALT_MED_NAV_STATUSER = listOf(

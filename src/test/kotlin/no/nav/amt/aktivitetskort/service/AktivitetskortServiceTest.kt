@@ -255,6 +255,7 @@ class AktivitetskortServiceTest {
 
 		every { meldingRepository.getByDeltakerlisteId(ctx.deltakerliste.id) } returns listOf(ctx.melding)
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { veilarboppfolgingClient.hentOppfolgingperiode(ctx.deltaker.personident) } returns nyPeriode
@@ -276,6 +277,7 @@ class AktivitetskortServiceTest {
 
 		every { meldingRepository.getByArrangorId(ctx.arrangor.id) } returns listOf(ctx.melding.copy(aktivitetskort = mockAktivitetskort))
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
 		every { arrangorRepository.getUnderordnedeArrangorer(ctx.arrangor.id) } returns emptyList()
@@ -305,6 +307,9 @@ class AktivitetskortServiceTest {
 
 		every { meldingRepository.getByArrangorId(ctx.arrangor.id) } returns listOf(ctx.melding.copy(aktivitetskort = mockAktivitetskort))
 		every { meldingRepository.getByArrangorId(underarrangor.id) } returns listOf(underarrangorMelding)
+		every { meldingRepository.getByDeltakerId(ctxUnderarrangor.deltaker.id) } returns emptyList()
+		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
+
 		every { deltakerRepository.get(ctx.deltaker.id) } returns ctx.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerRepository.get(ctxUnderarrangor.deltaker.id) } returns ctxUnderarrangor.deltaker.copy(sluttdato = deltakerSluttdato)
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
