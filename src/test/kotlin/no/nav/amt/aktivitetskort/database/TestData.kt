@@ -4,24 +4,29 @@ import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
-import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.Detalj
 import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.IdentType
-import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Tag
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.domain.Tiltakstype
+import no.nav.amt.aktivitetskort.domain.displayText
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerDto
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
+import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
+import no.nav.amt.lib.models.deltaker.DeltakerStatusDto
+import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
+import no.nav.amt.lib.models.deltaker.Navn
+import no.nav.amt.lib.models.deltaker.Personalia
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -103,7 +108,7 @@ object TestData {
 			),
 		),
 		detaljer = listOfNotNull(
-			Detalj("Status for deltakelse", deltaker.status.display()),
+			Detalj("Status for deltakelse", displayText(deltaker.status)),
 			Detalj("Arrangør", arrangor.navn),
 		),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
@@ -114,7 +119,7 @@ object TestData {
 		id: UUID = UUID.randomUUID(),
 		personident: String = "fnr",
 		deltakerlisteId: UUID = UUID.randomUUID(),
-		status: DeltakerStatus = DeltakerStatus(DeltakerStatus.Type.DELTAR, null),
+		status: DeltakerStatusModel = DeltakerStatusModel(no.nav.amt.lib.models.deltaker.DeltakerStatus.Type.DELTAR, null),
 		dagerPerUke: Float? = 5.0f,
 		prosentStilling: Double? = 100.0,
 		oppstartsdato: LocalDate? = LocalDate.now().minusWeeks(4),
@@ -183,17 +188,55 @@ object TestData {
 		arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
 	)
 
-	fun Deltaker.toDto() = DeltakerDto(
+	fun Deltaker.toDto() = DeltakerKafkaPayload(
 		id = this.id,
-		personalia = DeltakerDto.DeltakerPersonaliaDto(this.personident),
+		personalia = Personalia(
+			personId = UUID.randomUUID(),
+			personident = this.personident,
+			navn = Navn(fornavn = "Fornavn", mellomnavn = null, etternavn = "Etternavn"),
+			kontaktinformasjon = Kontaktinformasjon("23123", "fjwoei@fjweio.no"),
+			skjermet = false,
+			adresse = null,
+			adressebeskyttelse = null,
+		),
 		deltakerlisteId = this.deltakerlisteId,
-		status = DeltakerDto.DeltakerStatusDto(this.status.type, this.status.aarsak),
+		status = DeltakerStatusDto(
+			id = UUID.randomUUID(),
+			type = this.status.type,
+			aarsak = this.status.aarsak,
+			aarsaksbeskrivelse = null,
+			gyldigFra = LocalDateTime.now(),
+			opprettetDato = LocalDateTime.now(),
+		),
 		dagerPerUke = this.dagerPerUke,
 		prosentStilling = this.prosentStilling,
 		oppstartsdato = this.oppstartsdato,
 		sluttdato = this.sluttdato,
 		deltarPaKurs = this.deltarPaKurs,
 		kilde = this.kilde,
+		deltakerliste = no.nav.amt.lib.models.deltaker.Deltakerliste(
+			id = this.deltakerlisteId,
+			navn = "Navn",
+			tiltak = no.nav.amt.lib.models.deltakerliste.tiltakstype
+				.Tiltak("test", Tiltakskode.OPPFOLGING),
+			startdato = null,
+			sluttdato = null,
+			oppstartstype = null,
+		),
+		innsoktDato = LocalDate.now(),
+		forsteVedtakFattet = null,
+		bestillingTekst = null,
+		innhold = null,
+		historikk = null,
+		vurderingerFraArrangor = null,
+		erManueltDeltMedArrangor = false,
+		sisteEndring = null,
+		navKontor = null,
+		navVeileder = null,
+		oppfolgingsperioder = emptyList(),
+		sistEndret = null,
+		sistEndretAv = null,
+		sistEndretAvEnhet = null,
 	)
 
 	fun Arrangor.toDto() = ArrangorDto(

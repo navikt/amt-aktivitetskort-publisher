@@ -8,13 +8,14 @@ import no.nav.amt.aktivitetskort.IntegrationTest
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
-import no.nav.amt.aktivitetskort.domain.DeltakerStatus
+import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.utils.objectMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -226,7 +227,7 @@ class KafkaConsumerTest(
 	fun `listen - tombstone for deltaker som har inaktivt aktivitetskort - deltaker slettes og aktivitetskort endres ikke`() {
 		val ctx = TestData.MockContext(
 			oppfolgingsperiodeId = UUID.randomUUID(),
-			deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, null)),
+			deltaker = TestData.deltaker(status = DeltakerStatusModel(DeltakerStatus.Type.HAR_SLUTTET, null)),
 		)
 		ctx.oppfolgingsperiodeId.shouldNotBeNull()
 
@@ -260,7 +261,7 @@ class KafkaConsumerTest(
 
 	@Test
 	fun `listen - tombstone for deltaker som ikke aktivitetskort - deltaker slettes og aktivitetskort opprettes ikke`() {
-		val deltaker = TestData.deltaker(status = DeltakerStatus(DeltakerStatus.Type.PABEGYNT_REGISTRERING, null))
+		val deltaker = TestData.deltaker(status = DeltakerStatusModel(DeltakerStatus.Type.PABEGYNT_REGISTRERING, null))
 		val deltakerliste = TestData.deltakerliste(deltaker.deltakerlisteId)
 		val arrangor = TestData.arrangor(deltakerliste.arrangorId)
 		arrangorRepository.upsert(arrangor)

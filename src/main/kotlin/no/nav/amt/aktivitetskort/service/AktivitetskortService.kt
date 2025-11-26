@@ -6,13 +6,11 @@ import no.nav.amt.aktivitetskort.client.VeilarboppfolgingClient
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
-import no.nav.amt.aktivitetskort.domain.DeltakerStatus
 import no.nav.amt.aktivitetskort.domain.Deltakerliste
 import no.nav.amt.aktivitetskort.domain.EndretAv
 import no.nav.amt.aktivitetskort.domain.Handling
 import no.nav.amt.aktivitetskort.domain.IKKE_AVTALT_MED_NAV_STATUSER
 import no.nav.amt.aktivitetskort.domain.IdentType
-import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.domain.LenkeType
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
@@ -29,6 +27,8 @@ import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivite
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.aktivitetskort.unleash.UnleashConfig.Companion.AKTIVITETSKORT_APP_NAME
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

@@ -1,10 +1,10 @@
 package no.nav.amt.aktivitetskort.internal
 
 import jakarta.servlet.http.HttpServletRequest
-import no.nav.amt.aktivitetskort.domain.Kilde
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.service.AktivitetskortService
+import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.security.token.support.core.api.Unprotected
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus

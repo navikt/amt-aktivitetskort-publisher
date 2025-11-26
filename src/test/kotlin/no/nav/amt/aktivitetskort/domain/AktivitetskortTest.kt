@@ -56,7 +56,7 @@ class AktivitetskortTest {
 
 		val detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor)
 
-		detaljer[0] shouldBe Detalj("Status for deltakelse", deltaker.status.display())
+		detaljer[0] shouldBe Detalj("Status for deltakelse", displayText(deltaker.status))
 		detaljer[1] shouldBe Detalj("Deltakelsesmengde", "100%")
 		detaljer[2] shouldBe Detalj("Arrangør", arrangor.navn)
 	}
