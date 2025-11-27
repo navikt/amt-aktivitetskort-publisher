@@ -119,7 +119,12 @@ object TestData {
 		id: UUID = UUID.randomUUID(),
 		personident: String = "fnr",
 		deltakerlisteId: UUID = UUID.randomUUID(),
-		status: DeltakerStatusModel = DeltakerStatusModel(no.nav.amt.lib.models.deltaker.DeltakerStatus.Type.DELTAR, null),
+		status: DeltakerStatusModel =
+			DeltakerStatusModel(
+				type = no.nav.amt.lib.models.deltaker.DeltakerStatus.Type.DELTAR,
+				aarsak = null,
+				gyldigFra = LocalDate.now().atStartOfDay(),
+			),
 		dagerPerUke: Float? = 5.0f,
 		prosentStilling: Double? = 100.0,
 		oppstartsdato: LocalDate? = LocalDate.now().minusWeeks(4),
@@ -205,7 +210,7 @@ object TestData {
 			type = this.status.type,
 			aarsak = this.status.aarsak,
 			aarsaksbeskrivelse = null,
-			gyldigFra = LocalDateTime.now(),
+			gyldigFra = this.status.gyldigFra ?: LocalDateTime.now(),
 			opprettetDato = LocalDateTime.now(),
 		),
 		dagerPerUke = this.dagerPerUke,

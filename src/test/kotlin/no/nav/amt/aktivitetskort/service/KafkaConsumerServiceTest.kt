@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.SimpleTransactionStatus
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.LocalDateTime
 import java.util.function.Consumer
 
 class KafkaConsumerServiceTest {
@@ -106,7 +107,9 @@ class KafkaConsumerServiceTest {
 
 		@Test
 		fun `deltaker finnes ikke, status feilregistrert - publiserer ikke melding`() {
-			val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null))
+			val mockDeltaker = ctx.deltaker.copy(
+				status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null, gyldigFra = LocalDateTime.now()),
+			)
 
 			every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.NoChange()
 
@@ -119,7 +122,7 @@ class KafkaConsumerServiceTest {
 
 		@Test
 		fun `deltaker finnes, status feilregistrert - publiserer melding`() {
-			val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null))
+			val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null, LocalDateTime.now()))
 			val mockAktivitetskort = ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
 
 			every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.Modified(mockDeltaker)

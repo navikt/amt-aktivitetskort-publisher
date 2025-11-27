@@ -206,7 +206,7 @@ class KafkaConsumerService(
 		id = id,
 		personident = personalia.personident,
 		deltakerlisteId = deltakerliste.id,
-		status = DeltakerStatusModel(status.type, status.aarsak),
+		status = DeltakerStatusModel(status.type, status.aarsak, status.gyldigFra),
 		dagerPerUke = dagerPerUke,
 		prosentStilling = prosentStilling,
 		oppstartsdato = oppstartsdato,

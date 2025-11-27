@@ -16,6 +16,7 @@ import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Oppgave
 import no.nav.amt.aktivitetskort.domain.OppgaveWrapper
+import no.nav.amt.aktivitetskort.exceptions.FeilOppfolgingsperiodeException
 import no.nav.amt.aktivitetskort.exceptions.HistoriskArenaDeltakerException
 import no.nav.amt.aktivitetskort.exceptions.IngenOppfolgingsperiodeException
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
@@ -28,6 +29,7 @@ import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.aktivitetskort.unleash.UnleashConfig.Companion.AKTIVITETSKORT_APP_NAME
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.DeltakerStatus.Companion.avsluttendeStatuser
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.slf4j.LoggerFactory
@@ -141,8 +143,10 @@ class AktivitetskortService(
 			return opprettMelding(deltaker, meldingId)
 		} catch (e: IngenOppfolgingsperiodeException) {
 			log.warn("Kan ikke opprette aktivitetskort for deltaker ${deltaker.id} uten oppfølgingsperiode", e)
-		} catch (_: HistoriskArenaDeltakerException) {
-			log.error("Kan ikke opprette aktivitetskort for historisk arena deltaker ${deltaker.id}")
+		} catch (e: HistoriskArenaDeltakerException) {
+			log.error("Kan ikke opprette aktivitetskort for historisk arena deltaker ${deltaker.id}", e)
+		} catch (e: FeilOppfolgingsperiodeException) {
+			log.info("Kan ikke opprette aktivitetskort for deltaker ${deltaker.id}", e)
 		}
 		return null
 	}
@@ -159,6 +163,19 @@ class AktivitetskortService(
 		val oppfolgingsperiode = veilarboppfolgingClient.hentOppfolgingperiode(deltaker.personident)
 			?: throw IngenOppfolgingsperiodeException("Kan ikke opprette aktivitetskort på deltaker ${deltaker.id} som ikke er under oppfølging")
 
+		val nyesteAktivitetskortForDeltaker = getSisteMeldingForDeltaker(deltaker.id)
+
+		if (deltaker.kilde == Kilde.ARENA &&
+			nyesteAktivitetskortForDeltaker == null &&
+			deltaker.status.type in avsluttendeStatuser &&
+			deltaker.status.gyldigFra?.isBefore(oppfolgingsperiode.startDato) == true
+		) {
+			throw FeilOppfolgingsperiodeException(
+				"Lager ikke aktivitetskort for ukjent arenadeltaker " +
+					"${deltaker.id} som er avsluttet ${deltaker.status.gyldigFra} " +
+					"før nåværende oppfølgingsperiode startet ${oppfolgingsperiode.startDato}",
+			)
+		}
 		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker, oppfolgingsperiode)
 		val aktivitetskort = lagAktivitetskort(
 			aktivitetskortId,
