@@ -52,6 +52,10 @@ class DeltakerRepository(
 	}
 
 	fun upsert(deltaker: Deltaker, offset: Long): RepositoryResult<Deltaker> {
+		// fix for å reversere endring 26.11.2025 hvor gyldigFra ble lagt til
+		fun Deltaker.isEqualTo(other: Deltaker?): Boolean =
+			this.copy(status = status.copy(gyldigFra = null)) == other?.copy(status = other.status.copy(gyldigFra = null))
+
 		val oldDeltaker = getDeltakerMedOffset(deltaker.id)
 
 		if (oldDeltaker != null && oldDeltaker.offset > offset) {
@@ -63,7 +67,7 @@ class DeltakerRepository(
 			return RepositoryResult.NoChange()
 		}
 
-		if (deltaker == oldDeltaker?.deltaker && !unleashToggle.skalOppdatereForUendretDeltaker()) return RepositoryResult.NoChange()
+		if (deltaker.isEqualTo(oldDeltaker?.deltaker) && !unleashToggle.skalOppdatereForUendretDeltaker()) return RepositoryResult.NoChange()
 
 		if (deltaker.status.type in avsluttendeStatuser &&
 			deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&
