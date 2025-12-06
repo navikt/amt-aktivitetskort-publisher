@@ -27,7 +27,18 @@ val mockkVersion = "1.14.6"
 val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
 val tokenSupportVersion = "5.0.39"
 val unleashVersion = "11.1.1"
-val amtLibVersion = "1.2025.11.19_09.28-aa476c365a8f"
+val amtLibVersion = "1.2025.12.06_12.56-a9fdb0b96ea0"
+
+// fjernes ved neste release av org.apache.kafka:kafka-clients
+configurations.configureEach {
+	resolutionStrategy {
+		capabilitiesResolution {
+			withCapability("org.lz4:lz4-java") {
+				select(candidates.first { (it.id as ModuleComponentIdentifier).group == "at.yawk.lz4" })
+			}
+		}
+	}
+}
 
 dependencyManagement {
 	imports {
@@ -36,6 +47,7 @@ dependencyManagement {
 }
 
 dependencies {
+	implementation("at.yawk.lz4:lz4-java:1.10.1") // fjernes ved neste release av org.apache.kafka:kafka-clients
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
