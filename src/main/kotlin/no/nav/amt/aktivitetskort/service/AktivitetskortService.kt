@@ -176,7 +176,6 @@ class AktivitetskortService(
 					"deltaker ${deltaker.id} er avsluttet ${deltaker.status.gyldigFra} " +
 					"før nåværende oppfølgingsperiode startet ${oppfolgingsperiode.startDato}",
 			)
-
 		}
 		val aktivitetskortId = meldingId ?: getAktivitetskortId(deltaker, oppfolgingsperiode)
 		val aktivitetskort = lagAktivitetskort(
