@@ -170,9 +170,10 @@ class AktivitetskortService(
 			deltaker.status.type in avsluttendeStatuser &&
 			deltaker.status.gyldigFra?.isBefore(oppfolgingsperiode.startDato) == true
 		) {
+			oppfolgingsperiodeRepository.upsert(oppfolgingsperiode)
 			throw FeilOppfolgingsperiodeException(
-				"Lager ikke aktivitetskort for ukjent arenadeltaker " +
-					"${deltaker.id} som er avsluttet ${deltaker.status.gyldigFra} " +
+				"Lager ikke aktivitetskort for ukjent arenadeltaker i oppfølgingsperiode: ${oppfolgingsperiode.id}" +
+					"deltaker ${deltaker.id} er avsluttet ${deltaker.status.gyldigFra} " +
 					"før nåværende oppfølgingsperiode startet ${oppfolgingsperiode.startDato}",
 			)
 		}
