@@ -38,9 +38,9 @@ spec:
   resources:
     requests:
       cpu: 20m
-      memory: 512Mi
+      memory: 700Mi
     limits:
-      memory: 2048Mi
+      memory: 1100Mi
   azure:
     application:
       enabled: true
@@ -63,7 +63,7 @@ spec:
     - secret: amt-aktivitetskort-publisher-unleash-api-token
   env:
     - name: JDK_JAVA_OPTIONS
-      value: "-XX:MaxRAMPercentage=60.0"
+      value: "-XX:MaxRAMPercentage=70.0"
     - name: AMT_ARENA_ACL_URL
       value: http://amt-arena-acl.amt.svc.cluster.local
     - name: AMT_ARENA_ACL_SCOPE
