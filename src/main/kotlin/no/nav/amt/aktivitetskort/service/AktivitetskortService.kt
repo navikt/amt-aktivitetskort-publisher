@@ -31,7 +31,6 @@ import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.DeltakerStatus.Companion.avsluttendeStatuser
 import no.nav.amt.lib.models.deltaker.Kilde
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -230,7 +229,7 @@ class AktivitetskortService(
 		endretTidspunkt = LocalDateTime.now(),
 		avtaltMedNav = deltaker.status.type !in IKKE_AVTALT_MED_NAV_STATUSER,
 		oppgave = oppgaver(deltaker, deltakerliste, arrangor),
-		handlinger = getHandlinger(deltaker, deltakerliste.tiltak.tiltakskode),
+		handlinger = getHandlinger(deltaker),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
 		tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
@@ -274,25 +273,20 @@ class AktivitetskortService(
 		)
 	}
 
-	private fun getHandlinger(deltaker: Deltaker, tiltakskode: Tiltakskode): List<Handling>? {
-		if (!unleashToggle.erKometMasterForTiltakstype(tiltakskode)) {
-			return null
-		}
-		return listOf(
-			Handling(
-				tekst = "Les mer om din deltakelse",
-				subtekst = "",
-				url = "$veilederUrlBasePath/${deltaker.id}",
-				lenkeType = LenkeType.INTERN,
-			),
-			Handling(
-				tekst = "Les mer om din deltakelse",
-				subtekst = "",
-				url = deltaker.deltakerUrl(),
-				lenkeType = LenkeType.EKSTERN,
-			),
-		)
-	}
+	private fun getHandlinger(deltaker: Deltaker): List<Handling>? = listOf(
+		Handling(
+			tekst = "Les mer om din deltakelse",
+			subtekst = "",
+			url = "$veilederUrlBasePath/${deltaker.id}",
+			lenkeType = LenkeType.INTERN,
+		),
+		Handling(
+			tekst = "Les mer om din deltakelse",
+			subtekst = "",
+			url = deltaker.deltakerUrl(),
+			lenkeType = LenkeType.EKSTERN,
+		),
+	)
 
 	private fun Deltaker.deltakerUrl() = "$deltakerUrlBasePath/${this.id}"
 }
