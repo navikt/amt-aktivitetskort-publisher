@@ -27,7 +27,7 @@ val mockkVersion = "1.14.6"
 val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
 val tokenSupportVersion = "5.0.39"
 val unleashVersion = "11.1.1"
-val amtLibVersion = "1.2025.12.06_12.56-a9fdb0b96ea0"
+val amtLibVersion = "1.2025.12.11_11.16-62287e250f37"
 
 // fjernes ved neste release av org.apache.kafka:kafka-clients
 configurations.configureEach {

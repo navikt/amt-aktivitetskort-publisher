@@ -26,7 +26,7 @@ class UnleashToggle(
 		const val OPPDATER_ALLE_AKTIVITETSKORT = "amt.oppdater-alle-aktivitetskort"
 		const val LES_ARENA_DELTAKERE = "amt.les-arena-deltakere"
 
-		private val tiltakstyperKometErMasterFor = setOf(
+		val tiltakstyperKometErMasterFor = setOf(
 			Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
 			Tiltakskode.OPPFOLGING,
 			Tiltakskode.AVKLARING,
@@ -38,7 +38,7 @@ class UnleashToggle(
 			Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
 		)
 
-		private val tiltakstyperKometKanLese = setOf(
+		val tiltakstyperKometKanLese = setOf(
 			Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
 			Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
 			Tiltakskode.HOYERE_UTDANNING,

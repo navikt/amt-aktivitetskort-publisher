@@ -2,6 +2,8 @@ package no.nav.amt.aktivitetskort.domain
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.aktivitetskort.database.TestData
+import no.nav.amt.aktivitetskort.unleash.UnleashToggle.Companion.tiltakstyperKometErMasterFor
+import no.nav.amt.aktivitetskort.unleash.UnleashToggle.Companion.tiltakstyperKometKanLese
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.junit.jupiter.api.Test
 
@@ -10,24 +12,38 @@ class AktivitetskortTest {
 	fun `lagTittel - deltakerliste og arrangor - lager riktig tittel basert på type tiltak`() {
 		val arrangor = TestData.arrangor()
 		val deltakerlister =
-			Tiltakskode.entries.map {
-				val tiltaksnavn = when (it) {
-					Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> "Arbforb Tiltak"
-					Tiltakskode.ARBEIDSRETTET_REHABILITERING -> "ARR"
-					Tiltakskode.AVKLARING -> "Avklaringstiltaket"
-					Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> "Digitalt jobbsøkerkurs"
-					Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> "Grupper AMO"
-					Tiltakskode.JOBBKLUBB -> "Jobbklubben"
-					Tiltakskode.OPPFOLGING -> "Oppfølgingstiltak"
-					Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "VTA"
-					Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> "Gruppe yrkesfaglig utanning"
-					Tiltakskode.HOYERE_UTDANNING,
-					Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
-					Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
-					-> "Enkeltplass"
+			Tiltakskode.entries
+				.filter { it in tiltakstyperKometErMasterFor.plus(tiltakstyperKometKanLese) }
+				.map {
+					val tiltaksnavn = when (it) {
+						Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> "Arbforb Tiltak"
+
+						Tiltakskode.ARBEIDSRETTET_REHABILITERING -> "ARR"
+
+						Tiltakskode.AVKLARING -> "Avklaringstiltaket"
+
+						Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> "Digitalt jobbsøkerkurs"
+
+						Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> "Grupper AMO"
+
+						Tiltakskode.JOBBKLUBB -> "Jobbklubben"
+
+						Tiltakskode.OPPFOLGING -> "Oppfølgingstiltak"
+
+						Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "VTA"
+
+						Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> "Gruppe yrkesfaglig utanning"
+
+						Tiltakskode.HOYERE_UTDANNING,
+						Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
+						Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
+						-> "Enkeltplass"
+
+						else -> throw IllegalStateException("Ukjent tiltaksnavn")
+					}
+
+					TestData.deltakerliste(tiltak = Tiltak(tiltaksnavn, it), arrangorId = arrangor.id)
 				}
-				TestData.deltakerliste(tiltak = Tiltak(tiltaksnavn, it), arrangorId = arrangor.id)
-			}
 
 		deltakerlister.forEach {
 			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor, true)
