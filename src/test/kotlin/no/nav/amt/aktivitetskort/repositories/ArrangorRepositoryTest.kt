@@ -12,7 +12,7 @@ class ArrangorRepositoryTest(
 ) : RepositoryTestBase() {
 	@Test
 	fun `get(uuid) - finnes - returnerer arrangor`() {
-		val arrangor = TestData.arrangor()
+		val arrangor = TestData.lagArrangor()
 		testDatabase.insertArrangor(arrangor)
 		arrangorRepository.get(arrangor.id) shouldBe arrangor
 	}
@@ -24,7 +24,7 @@ class ArrangorRepositoryTest(
 
 	@Test
 	fun `get(orgnr) - finnes - returnerer arrangor`() {
-		val arrangor = TestData.arrangor()
+		val arrangor = TestData.lagArrangor()
 		testDatabase.insertArrangor(arrangor)
 		arrangorRepository.get(arrangor.organisasjonsnummer) shouldBe arrangor
 	}
@@ -36,7 +36,7 @@ class ArrangorRepositoryTest(
 
 	@Test
 	fun `upsert - finnes ikke - returnerer Created Result - finnes in database`() {
-		val arrangor = TestData.arrangor()
+		val arrangor = TestData.lagArrangor()
 		when (val result = arrangorRepository.upsert(arrangor)) {
 			is RepositoryResult.Created -> result.data shouldBe arrangor
 			else -> fail("Should be Created, was $result")
@@ -48,12 +48,18 @@ class ArrangorRepositoryTest(
 	@Test
 	fun `upsert - finnes - returnerer NoChange Result`() {
 		val arrangor = TestData
-			.arrangor()
+			.lagArrangor()
 			.also { arrangorRepository.upsert(it) }
 
 		when (val result = arrangorRepository.upsert(arrangor)) {
-			is RepositoryResult.Created -> fail("Should be NoChange, was $result")
-			is RepositoryResult.Modified -> fail("Should be NoChange, was $result")
+			is RepositoryResult.Created -> {
+				fail("Should be NoChange, was $result")
+			}
+
+			is RepositoryResult.Modified -> {
+				fail("Should be NoChange, was $result")
+			}
+
 			is RepositoryResult.NoChange -> {}
 		}
 	}
@@ -61,7 +67,7 @@ class ArrangorRepositoryTest(
 	@Test
 	fun `upsert - endret - returnerer Modified Result og oppdaterer database`() {
 		val initialArrangor = TestData
-			.arrangor()
+			.lagArrangor()
 			.also { arrangorRepository.upsert(it) }
 
 		val updatedArrangor = initialArrangor.copy(

@@ -116,11 +116,11 @@ class AktivitetskortServiceTest {
 
 	@Test
 	fun `lagAktivitetskort(deltaker) - kilde=KOMET - lager nytt aktivitetskort med lenker`() {
-		val deltakerliste = TestData.deltakerliste(
+		val deltakerliste = TestData.lagDeltakerliste(
 			tiltak = Tiltak("Arbeidsforberedende trening", Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
 		)
 		val deltaker =
-			TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id, prosentStilling = null, dagerPerUke = null)
+			TestData.lagDeltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id, prosentStilling = null, dagerPerUke = null)
 		val ctx = TestData.MockContext(deltaker = deltaker, deltakerliste = deltakerliste)
 
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
@@ -170,10 +170,10 @@ class AktivitetskortServiceTest {
 
 	@Test
 	fun `lagAktivitetskort(deltaker) - kilde=KOMET, arenaId finnes ikke - oppretter med ny aktivitetskortId`() = mockCluster {
-		val deltakerliste = TestData.deltakerliste(
+		val deltakerliste = TestData.lagDeltakerliste(
 			tiltak = Tiltak("Arbeidsforberedende trening", Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
 		)
-		val deltaker = TestData.deltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id)
+		val deltaker = TestData.lagDeltaker(kilde = Kilde.KOMET, deltakerlisteId = deltakerliste.id)
 		val ctx = TestData.MockContext(deltaker = deltaker, deltakerliste = deltakerliste)
 
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
@@ -222,7 +222,7 @@ class AktivitetskortServiceTest {
 
 	@Test
 	fun `lagAktivitetskort(deltaker) - tidligere meldinger uten oppfølgingsperiode - oppdaterer eksisterende aktivitetskort`() {
-		val ctx = TestData.MockContext(oppfolgingsperiodeId = null, deltaker = TestData.deltaker(kilde = Kilde.KOMET))
+		val ctx = TestData.MockContext(oppfolgingsperiodeId = null, deltaker = TestData.lagDeltaker(kilde = Kilde.KOMET))
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns listOf(ctx.melding)
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
 		every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
@@ -238,7 +238,7 @@ class AktivitetskortServiceTest {
 	fun `lagAktivitetskort(deltaker) - meldinger finnes med en annen oppfølgingsperiode - lager nytt aktivitetskort`() {
 		val ctx = TestData.MockContext(
 			oppfolgingsperiodeId = UUID.randomUUID(),
-			deltaker = TestData.deltaker(kilde = Kilde.KOMET),
+			deltaker = TestData.lagDeltaker(kilde = Kilde.KOMET),
 		)
 		every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns listOf(ctx.melding)
 		every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
@@ -253,7 +253,7 @@ class AktivitetskortServiceTest {
 
 	fun `lagAktivitetskort(deltaker) - gamle arenameldinger fra tidligere oppfølgingsperiode - ignorerer`() {
 		val ctx = TestData.MockContext(
-			deltaker = TestData.deltaker(
+			deltaker = TestData.lagDeltaker(
 				kilde = Kilde.ARENA,
 				status = DeltakerStatusModel(DeltakerStatus.Type.FULLFORT, null, nyPeriode.startDato.minusDays(10)),
 			),

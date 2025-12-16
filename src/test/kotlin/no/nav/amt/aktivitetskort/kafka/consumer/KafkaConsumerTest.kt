@@ -16,6 +16,7 @@ import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -43,7 +44,7 @@ class KafkaConsumerTest(
 
 	@Test
 	fun `listen - melding om ny arrangor - arrangor upsertes`() {
-		val arrangor = TestData.arrangor()
+		val arrangor = TestData.lagArrangor()
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -81,7 +82,9 @@ class KafkaConsumerTest(
 		arrangorRepository.upsert(ctx.arrangor)
 		tiltakstypeRepository.upsert(ctx.tiltakstype)
 
-		val deltakerlistePayload = ctx.deltakerlistePayload()
+		val deltakerlistePayload = ctx.deltakerlisteGruppePayload.copy(
+			tiltakskode = Tiltakskode.OPPFOLGING,
+		)
 
 		kafkaProducer.send(
 			ProducerRecord(
@@ -227,7 +230,7 @@ class KafkaConsumerTest(
 	fun `listen - tombstone for deltaker som har inaktivt aktivitetskort - deltaker slettes og aktivitetskort endres ikke`() {
 		val ctx = TestData.MockContext(
 			oppfolgingsperiodeId = UUID.randomUUID(),
-			deltaker = TestData.deltaker(status = DeltakerStatusModel(DeltakerStatus.Type.HAR_SLUTTET, null)),
+			deltaker = TestData.lagDeltaker(status = DeltakerStatusModel(DeltakerStatus.Type.HAR_SLUTTET, null)),
 		)
 		ctx.oppfolgingsperiodeId.shouldNotBeNull()
 
@@ -261,9 +264,9 @@ class KafkaConsumerTest(
 
 	@Test
 	fun `listen - tombstone for deltaker som ikke aktivitetskort - deltaker slettes og aktivitetskort opprettes ikke`() {
-		val deltaker = TestData.deltaker(status = DeltakerStatusModel(DeltakerStatus.Type.PABEGYNT_REGISTRERING, null))
-		val deltakerliste = TestData.deltakerliste(deltaker.deltakerlisteId)
-		val arrangor = TestData.arrangor(deltakerliste.arrangorId)
+		val deltaker = TestData.lagDeltaker(status = DeltakerStatusModel(DeltakerStatus.Type.PABEGYNT_REGISTRERING, null))
+		val deltakerliste = TestData.lagDeltakerliste(deltaker.deltakerlisteId)
+		val arrangor = TestData.lagArrangor(deltakerliste.arrangorId)
 		arrangorRepository.upsert(arrangor)
 		deltakerlisteRepository.upsert(deltakerliste)
 		deltakerRepository.upsert(deltaker, offset)

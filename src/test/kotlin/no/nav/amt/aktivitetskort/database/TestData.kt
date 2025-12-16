@@ -18,7 +18,6 @@ import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.domain.Tiltakstype
 import no.nav.amt.aktivitetskort.domain.displayText
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
@@ -27,9 +26,13 @@ import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
 import no.nav.amt.lib.models.deltaker.Navn
 import no.nav.amt.lib.models.deltaker.Personalia
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
+import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 object TestData {
@@ -115,7 +118,7 @@ object TestData {
 		tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
 	)
 
-	fun deltaker(
+	fun lagDeltaker(
 		id: UUID = UUID.randomUUID(),
 		personident: String = "fnr",
 		deltakerlisteId: UUID = UUID.randomUUID(),
@@ -150,47 +153,87 @@ object TestData {
 		sluttdato: LocalDateTime? = null,
 	) = Oppfolgingsperiode(id, startDato = startDato, sluttDato = sluttdato)
 
-	fun arrangor(
+	fun lagArrangor(
 		id: UUID = UUID.randomUUID(),
 		organisasjonsnummer: String = (100_000_000..900_000_000).random().toString(),
 		navn: String = "Navn",
 		overordnetArrangorId: UUID? = null,
 	) = Arrangor(id, organisasjonsnummer, navn, overordnetArrangorId)
 
-	fun deltakerliste(
+	fun lagTiltak(navn: String = "Jobbklubb", tiltakskode: Tiltakskode = Tiltakskode.JOBBKLUBB) =
+		Tiltak(navn = navn, tiltakskode = tiltakskode)
+
+	fun lagDeltakerliste(
 		id: UUID = UUID.randomUUID(),
-		tiltak: Tiltak = Tiltak("Oppfølging", Tiltakskode.OPPFOLGING),
-		navn: String = "navn",
+		tiltak: Tiltak = lagTiltak(navn = "Oppfølging", tiltakskode = Tiltakskode.OPPFOLGING),
+		navn: String = "~deltakerlistenavn~",
 		arrangorId: UUID = UUID.randomUUID(),
 	) = Deltakerliste(id, tiltak, navn, arrangorId)
 
+	fun lagEnkeltplassDeltakerlistePayload(
+		arrangor: Arrangor = lagArrangor(),
+		deltakerliste: Deltakerliste = lagDeltakerliste(arrangorId = arrangor.id),
+	) = GjennomforingV2KafkaPayload.Enkeltplass(
+		id = deltakerliste.id,
+		tiltakskode = deltakerliste.tiltak.tiltakskode,
+		arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
+		oppdatertTidspunkt = OffsetDateTime.now(),
+		opprettetTidspunkt = OffsetDateTime.now(),
+	)
+
+	fun lagGruppeDeltakerlistePayload(
+		arrangor: Arrangor = lagArrangor(),
+		deltakerliste: Deltakerliste = lagDeltakerliste(arrangorId = arrangor.id),
+	) = GjennomforingV2KafkaPayload.Gruppe(
+		id = deltakerliste.id,
+		navn = deltakerliste.navn,
+		tiltakskode = deltakerliste.tiltak.tiltakskode,
+		startDato = LocalDate.now(),
+		sluttDato = LocalDate.now().plusDays(1),
+		status = GjennomforingStatusType.GJENNOMFORES,
+		oppstart = Oppstartstype.LOPENDE,
+		apentForPamelding = true,
+		oppmoteSted = null,
+		tilgjengeligForArrangorFraOgMedDato = null,
+		antallPlasser = 42,
+		deltidsprosent = 42.0,
+		arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
+		oppdatertTidspunkt = OffsetDateTime.now(),
+		opprettetTidspunkt = OffsetDateTime.now(),
+	)
+
 	data class MockContext(
-		val deltaker: Deltaker = deltaker(),
-		val deltakerliste: Deltakerliste = deltakerliste(id = deltaker.deltakerlisteId),
-		val arrangor: Arrangor = arrangor(id = deltakerliste.arrangorId),
+		val deltaker: Deltaker = lagDeltaker(),
+		val deltakerliste: Deltakerliste = lagDeltakerliste(id = deltaker.deltakerlisteId),
+		val arrangor: Arrangor = lagArrangor(id = deltakerliste.arrangorId),
 		val tiltakstype: Tiltakstype = Tiltakstype(
 			id = UUID.randomUUID(),
 			navn = "Oppfølging",
 			tiltakskode = Tiltakskode.OPPFOLGING,
 		),
 		val aktivitetskortId: UUID = UUID.randomUUID(),
-		val aktivitetskort: Aktivitetskort = aktivitetskort(aktivitetskortId, deltaker, deltakerliste, arrangor),
+		val aktivitetskort: Aktivitetskort = aktivitetskort(
+			id = aktivitetskortId,
+			deltaker = deltaker,
+			deltakerliste = deltakerliste,
+			arrangor = arrangor,
+		),
 		val oppfolgingsperiodeId: UUID? = null,
-		val melding: Melding = melding(deltaker.id, deltakerliste.id, arrangor.id, aktivitetskort, oppfolgingsperiodeId),
-	) {
-		fun deltakerlistePayload() = DeltakerlistePayload(
-			id = this.deltakerliste.id,
-			tiltakstype = this.deltakerliste.tiltak.toDto(),
-			navn = this.deltakerliste.navn,
-			arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
-		)
-	}
-
-	fun Deltakerliste.toDto(arrangor: Arrangor) = DeltakerlistePayload(
-		id = this.id,
-		tiltakstype = this.tiltak.toDto(),
-		navn = this.navn,
-		arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
+		val melding: Melding = melding(
+			deltakerId = deltaker.id,
+			deltakerlisteId = deltakerliste.id,
+			arrangorId = arrangor.id,
+			aktivitetskort = aktivitetskort,
+			oppfolgingsperiode = oppfolgingsperiodeId,
+		),
+		val deltakerlisteGruppePayload: GjennomforingV2KafkaPayload.Gruppe = lagGruppeDeltakerlistePayload(
+			deltakerliste = deltakerliste,
+			arrangor = arrangor,
+		),
+		val deltakerlisteEnkeltplassPayload: GjennomforingV2KafkaPayload.Enkeltplass = lagEnkeltplassDeltakerlistePayload(
+			deltakerliste = deltakerliste,
+			arrangor = arrangor,
+		),
 	)
 
 	fun Deltaker.toDto() = DeltakerKafkaPayload(
@@ -251,5 +294,5 @@ object TestData {
 		overordnetArrangorId = this.overordnetArrangorId,
 	)
 
-	fun Tiltak.toDto(): DeltakerlistePayload.Tiltakstype = DeltakerlistePayload.Tiltakstype(this.tiltakskode.name)
+	// fun Tiltak.toDto(): DeltakerlistePayload.Tiltakstype = DeltakerlistePayload.Tiltakstype(this.tiltakskode.name)
 }

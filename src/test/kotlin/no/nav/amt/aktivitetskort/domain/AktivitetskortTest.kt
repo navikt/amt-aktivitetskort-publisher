@@ -8,26 +8,47 @@ import org.junit.jupiter.api.Test
 class AktivitetskortTest {
 	@Test
 	fun `lagTittel - deltakerliste og arrangor - lager riktig tittel basert på type tiltak`() {
-		val arrangor = TestData.arrangor()
+		val arrangor = TestData.lagArrangor()
 		val deltakerlister =
-			Tiltakskode.entries.map {
-				val tiltaksnavn = when (it) {
-					Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> "Arbforb Tiltak"
-					Tiltakskode.ARBEIDSRETTET_REHABILITERING -> "ARR"
-					Tiltakskode.AVKLARING -> "Avklaringstiltaket"
-					Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> "Digitalt jobbsøkerkurs"
-					Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> "Grupper AMO"
-					Tiltakskode.JOBBKLUBB -> "Jobbklubben"
-					Tiltakskode.OPPFOLGING -> "Oppfølgingstiltak"
-					Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "VTA"
-					Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> "Gruppe yrkesfaglig utanning"
-					Tiltakskode.HOYERE_UTDANNING,
-					Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
-					Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
-					-> "Enkeltplass"
+			Tiltakskode.entries
+				.filter {
+					// TODO: Disse tiltakstypene er ennå ikke støttet
+					it !in setOf(
+						Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
+						Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+						Tiltakskode.STUDIESPESIALISERING,
+						Tiltakskode.FAG_OG_YRKESOPPLAERING,
+						Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
+					)
+				}.map {
+					val tiltaksnavn = when (it) {
+						Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> "Arbforb Tiltak"
+
+						Tiltakskode.ARBEIDSRETTET_REHABILITERING -> "ARR"
+
+						Tiltakskode.AVKLARING -> "Avklaringstiltaket"
+
+						Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> "Digitalt jobbsøkerkurs"
+
+						Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> "Grupper AMO"
+
+						Tiltakskode.JOBBKLUBB -> "Jobbklubben"
+
+						Tiltakskode.OPPFOLGING -> "Oppfølgingstiltak"
+
+						Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "VTA"
+
+						Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> "Gruppe yrkesfaglig utanning"
+
+						Tiltakskode.HOYERE_UTDANNING,
+						Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
+						Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
+						-> "Enkeltplass"
+
+						else -> throw IllegalStateException("Ukjent tiltaksnavn for tiltakskode: $it")
+					}
+					TestData.lagDeltakerliste(tiltak = Tiltak(tiltaksnavn, it), arrangorId = arrangor.id)
 				}
-				TestData.deltakerliste(tiltak = Tiltak(tiltaksnavn, it), arrangorId = arrangor.id)
-			}
 
 		deltakerlister.forEach {
 			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor, true)
@@ -48,11 +69,11 @@ class AktivitetskortTest {
 
 	@Test
 	fun `lagDetaljer - deltakerliste med deltakelsesmengde - lager detaljer i riktig rekkefølge`() {
-		val deltakerliste = TestData.deltakerliste(
+		val deltakerliste = TestData.lagDeltakerliste(
 			tiltak = Tiltak("VTA 100%", Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET),
 		)
-		val deltaker = TestData.deltaker(prosentStilling = 100.0, dagerPerUke = 2.5f, deltakerlisteId = deltakerliste.id)
-		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
+		val deltaker = TestData.lagDeltaker(prosentStilling = 100.0, dagerPerUke = 2.5f, deltakerlisteId = deltakerliste.id)
+		val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
 
 		val detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor)
 
@@ -63,11 +84,11 @@ class AktivitetskortTest {
 
 	@Test
 	fun `lagDetaljer - deltaker ikke 100 prosent deltakelsesmengde - lager detalj med antall dager i uken`() {
-		val deltakerliste = TestData.deltakerliste(
+		val deltakerliste = TestData.lagDeltakerliste(
 			tiltak = Tiltak("AFT 50% 2 dager i uken", Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
 		)
-		val deltaker = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = 2.0f, deltakerlisteId = deltakerliste.id)
-		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
+		val deltaker = TestData.lagDeltaker(prosentStilling = 50.0, dagerPerUke = 2.0f, deltakerlisteId = deltakerliste.id)
+		val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
 
 		val detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor)
 
@@ -76,13 +97,13 @@ class AktivitetskortTest {
 
 	@Test
 	fun `lagDetaljer - deltaker ikke 100 prosent deltakelsesmengde og uten dager per uke - lager detalj med prosent`() {
-		val deltakerliste = TestData.deltakerliste(
+		val deltakerliste = TestData.lagDeltakerliste(
 			tiltak = Tiltak("AFT 50%", Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
 		)
-		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
+		val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
 
-		val deltaker1 = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = 0.0f, deltakerlisteId = deltakerliste.id)
-		val deltaker2 = TestData.deltaker(prosentStilling = 50.0, dagerPerUke = null, deltakerlisteId = deltakerliste.id)
+		val deltaker1 = TestData.lagDeltaker(prosentStilling = 50.0, dagerPerUke = 0.0f, deltakerlisteId = deltakerliste.id)
+		val deltaker2 = TestData.lagDeltaker(prosentStilling = 50.0, dagerPerUke = null, deltakerlisteId = deltakerliste.id)
 
 		val detaljer1 = Aktivitetskort.lagDetaljer(deltaker1, deltakerliste, arrangor)
 		val detaljer2 = Aktivitetskort.lagDetaljer(deltaker2, deltakerliste, arrangor)
@@ -93,13 +114,13 @@ class AktivitetskortTest {
 
 	@Test
 	fun `lagDetaljer - deltaker uten prosentstilling - lager detalj med dager per uke`() {
-		val deltakerliste = TestData.deltakerliste(
+		val deltakerliste = TestData.lagDeltakerliste(
 			tiltak = Tiltak("AFT noen dager", Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
 		)
-		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
+		val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
 
-		val deltaker1 = TestData.deltaker(prosentStilling = 0.0, dagerPerUke = 5f, deltakerlisteId = deltakerliste.id)
-		val deltaker2 = TestData.deltaker(prosentStilling = null, dagerPerUke = 1f, deltakerlisteId = deltakerliste.id)
+		val deltaker1 = TestData.lagDeltaker(prosentStilling = 0.0, dagerPerUke = 5f, deltakerlisteId = deltakerliste.id)
+		val deltaker2 = TestData.lagDeltaker(prosentStilling = null, dagerPerUke = 1f, deltakerlisteId = deltakerliste.id)
 
 		val detaljer1 = Aktivitetskort.lagDetaljer(deltaker1, deltakerliste, arrangor)
 		val detaljer2 = Aktivitetskort.lagDetaljer(deltaker2, deltakerliste, arrangor)
@@ -110,12 +131,12 @@ class AktivitetskortTest {
 
 	@Test
 	fun `lagDetaljer - deltaker med 0 prosent og 0 dager - lager ikke detalj med deltakelsesmengde`() {
-		val deltakerliste = TestData.deltakerliste(
+		val deltakerliste = TestData.lagDeltakerliste(
 			tiltak = Tiltak("AFT", Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
 		)
-		val deltaker1 = TestData.deltaker(dagerPerUke = 0f, prosentStilling = 0.0)
-		val deltaker2 = TestData.deltaker(dagerPerUke = null, prosentStilling = null)
-		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
+		val deltaker1 = TestData.lagDeltaker(dagerPerUke = 0f, prosentStilling = 0.0)
+		val deltaker2 = TestData.lagDeltaker(dagerPerUke = null, prosentStilling = null)
+		val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
 
 		val detaljer1 = Aktivitetskort.lagDetaljer(deltaker1, deltakerliste, arrangor)
 		val detaljer2 = Aktivitetskort.lagDetaljer(deltaker2, deltakerliste, arrangor)
@@ -126,11 +147,11 @@ class AktivitetskortTest {
 
 	@Test
 	fun `lagDetaljer - tiltak uten deltakelsesmengde - lager ikke detalj med deltakelsesmengde`() {
-		val deltakerliste = TestData.deltakerliste(
+		val deltakerliste = TestData.lagDeltakerliste(
 			tiltak = Tiltak("Oppfølgingstiltak", Tiltakskode.OPPFOLGING),
 		)
-		val deltaker = TestData.deltaker()
-		val arrangor = TestData.arrangor(id = deltakerliste.arrangorId)
+		val deltaker = TestData.lagDeltaker()
+		val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
 
 		val detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor)
 
