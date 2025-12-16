@@ -8,7 +8,7 @@ import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
-import no.nav.amt.aktivitetskort.kafka.consumer.dto.DeltakerlistePayload
+import no.nav.amt.aktivitetskort.kafka.consumer.toModel
 import no.nav.amt.aktivitetskort.kafka.producer.AktivitetskortProducer
 import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
@@ -18,6 +18,8 @@ import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivite
 import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -86,31 +88,37 @@ class KafkaConsumerService(
 			return
 		}
 
-		val deltakerlistePayload: DeltakerlistePayload = objectMapper.readValue(value)
+		val deltakerlistePayload: GjennomforingV2KafkaPayload = objectMapper.readValue(value)
 
-		if (unleashToggle.skipProsesseringAvGjennomforing(deltakerlistePayload.effectiveTiltakskode)) {
+		if (unleashToggle.skipProsesseringAvGjennomforing(deltakerlistePayload.tiltakskode.name)) {
 			return
 		}
 
 		val arrangor = arrangorRepository.get(deltakerlistePayload.arrangor.organisasjonsnummer)
 			?: hentOgLagreArrangorFraAmtArrangor(deltakerlistePayload.arrangor.organisasjonsnummer)
 
-		val tiltakstype = tiltakstypeRepository.getByTiltakskode(deltakerlistePayload.effectiveTiltakskode)
-			?: throw NoSuchElementException("Fant ikke tiltakstype med tiltakskode ${deltakerlistePayload.effectiveTiltakskode}")
+		val tiltakstype = tiltakstypeRepository.getByTiltakskode(deltakerlistePayload.tiltakskode.name)
+			?: throw NoSuchElementException("Fant ikke tiltakstype med tiltakskode ${deltakerlistePayload.tiltakskode}")
+
+		val deltakerlisteModel = deltakerlistePayload.toModel(
+			{ gruppe -> gruppe.toModel(arrangor.id, tiltakstype.navn) },
+			{ enkeltplass -> enkeltplass.toModel(arrangor.id, tiltakstype.navn) },
+		)
 
 		transactionTemplate.executeWithoutResult {
-			when (
-				val result = deltakerlisteRepository.upsert(
-					deltakerlistePayload.toModel(arrangorId = arrangor.id, navnTiltakstype = tiltakstype.navn),
-				)
-			) {
+			when (val result = deltakerlisteRepository.upsert(deltakerlisteModel)) {
 				is RepositoryResult.Modified -> {
 					log.info("Ny hendelse for deltakerliste ${deltakerlistePayload.id}: Oppdatering")
 					aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(result.data))
 				}
 
-				is RepositoryResult.Created -> log.info("Ny hendelse for deltakerliste ${deltakerlistePayload.id}: Opprettelse")
-				is RepositoryResult.NoChange -> log.info("Ny hendelse for deltakerliste ${deltakerlistePayload.id}: Ingen endring")
+				is RepositoryResult.Created -> {
+					log.info("Ny hendelse for deltakerliste ${deltakerlistePayload.id}: Opprettelse")
+				}
+
+				is RepositoryResult.NoChange -> {
+					log.info("Ny hendelse for deltakerliste ${deltakerlistePayload.id}: Ingen endring")
+				}
 			}
 			log.info("Konsumerte melding med deltakerliste ${deltakerlistePayload.id}")
 		}
@@ -129,8 +137,13 @@ class KafkaConsumerService(
 					aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(result.data))
 				}
 
-				is RepositoryResult.Created -> log.info("Ny hendelse for arrangør ${arrangor.id}: Opprettelse")
-				is RepositoryResult.NoChange -> log.info("Ny hendelse for arrangør ${arrangor.id}: Ingen endring")
+				is RepositoryResult.Created -> {
+					log.info("Ny hendelse for arrangør ${arrangor.id}: Opprettelse")
+				}
+
+				is RepositoryResult.NoChange -> {
+					log.info("Ny hendelse for arrangør ${arrangor.id}: Ingen endring")
+				}
 			}
 			log.info("Konsumerte melding med arrangør $id")
 		}
@@ -183,7 +196,7 @@ class KafkaConsumerService(
 
 	private fun avbrytAktivitetskort(aktivitetskort: Aktivitetskort, deltaker: Deltaker) {
 		if (skalAvbryteAktivtetskort(aktivitetskort.aktivitetStatus)) {
-			val avbruttDeltaker = deltaker.copy(status = DeltakerStatusModel(no.nav.amt.lib.models.deltaker.DeltakerStatus.Type.AVBRUTT, null))
+			val avbruttDeltaker = deltaker.copy(status = DeltakerStatusModel(DeltakerStatus.Type.AVBRUTT, null))
 
 			aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskortForSlettetdeltaker(avbruttDeltaker, aktivitetskort.id))
 			log.info(

@@ -30,8 +30,8 @@ class AmtArrangorClientTest {
 
 	@Test
 	fun `hentArrangor - arrangor finnes - parser response og returnerer arrangor`() {
-		val overordnetArrangor = TestData.arrangor(navn = "Overordnet Arrangor")
-		val arrangor = TestData.arrangor(overordnetArrangorId = overordnetArrangor.id)
+		val overordnetArrangor = TestData.lagArrangor(navn = "Overordnet Arrangor")
+		val arrangor = TestData.lagArrangor(overordnetArrangorId = overordnetArrangor.id)
 		server.enqueue(
 			MockResponse().setBody(
 				"""

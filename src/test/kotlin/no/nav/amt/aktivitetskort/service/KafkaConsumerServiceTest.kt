@@ -6,6 +6,9 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.database.TestData
+import no.nav.amt.aktivitetskort.database.TestData.lagArrangor
+import no.nav.amt.aktivitetskort.database.TestData.lagDeltakerliste
+import no.nav.amt.aktivitetskort.database.TestData.lagGruppeDeltakerlistePayload
 import no.nav.amt.aktivitetskort.database.TestData.toDto
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
@@ -122,7 +125,8 @@ class KafkaConsumerServiceTest {
 
 		@Test
 		fun `deltaker finnes, status feilregistrert - publiserer melding`() {
-			val mockDeltaker = ctx.deltaker.copy(status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null, LocalDateTime.now()))
+			val mockDeltaker =
+				ctx.deltaker.copy(status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null, LocalDateTime.now()))
 			val mockAktivitetskort = ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
 
 			every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.Modified(mockDeltaker)
@@ -141,7 +145,7 @@ class KafkaConsumerServiceTest {
 		@Test
 		fun `mottar tombstone for deltakerliste - sletter deltakerliste`() {
 			kafkaConsumerService.deltakerlisteHendelse(
-				id = ctx.deltakerlistePayload().id,
+				id = ctx.deltakerlisteGruppePayload.id,
 				value = null,
 			)
 
@@ -155,8 +159,8 @@ class KafkaConsumerServiceTest {
 			every { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
 			kafkaConsumerService.deltakerlisteHendelse(
-				id = ctx.deltakerlistePayload().id,
-				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				id = ctx.deltakerlisteGruppePayload.id,
+				value = objectMapper.writeValueAsString(ctx.deltakerlisteGruppePayload),
 			)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
@@ -170,8 +174,8 @@ class KafkaConsumerServiceTest {
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 
 			kafkaConsumerService.deltakerlisteHendelse(
-				id = ctx.deltakerlistePayload().id,
-				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				id = ctx.deltakerlisteGruppePayload.id,
+				value = objectMapper.writeValueAsString(ctx.deltakerlisteGruppePayload),
 			)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
@@ -186,8 +190,8 @@ class KafkaConsumerServiceTest {
 			every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns true
 
 			kafkaConsumerService.deltakerlisteHendelse(
-				id = ctx.deltakerlistePayload().id,
-				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				id = ctx.deltakerlisteGruppePayload.id,
+				value = objectMapper.writeValueAsString(ctx.deltakerlisteGruppePayload),
 			)
 
 			verify(exactly = 0) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
@@ -199,8 +203,8 @@ class KafkaConsumerServiceTest {
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
 
 			kafkaConsumerService.deltakerlisteHendelse(
-				id = ctx.deltakerlistePayload().id,
-				value = objectMapper.writeValueAsString(ctx.deltakerlistePayload()),
+				id = ctx.deltakerlisteGruppePayload.id,
+				value = objectMapper.writeValueAsString(ctx.deltakerlisteGruppePayload),
 			)
 
 			verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
@@ -210,28 +214,36 @@ class KafkaConsumerServiceTest {
 
 		@Test
 		fun `arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
-			val arrangor = TestData.arrangor()
-			val deltakerliste =
-				TestData.deltakerliste(tiltak = Tiltak("Oppfølging", Tiltakskode.OPPFOLGING), arrangorId = arrangor.id)
+			val arrangorInTest = lagArrangor()
+			val deltakerlisteInTest =
+				lagDeltakerliste(
+					tiltak = Tiltak("Oppfølging", Tiltakskode.OPPFOLGING),
+					arrangorId = arrangorInTest.id,
+				)
 
-			every { arrangorRepository.get(arrangor.organisasjonsnummer) } returns null andThen arrangor
-			every { arrangorRepository.upsert(any()) } returns RepositoryResult.Created(arrangor)
-			every { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) } returns AmtArrangorClient.ArrangorMedOverordnetArrangorDto(
-				arrangor.id,
-				arrangor.navn,
-				arrangor.organisasjonsnummer,
+			every { arrangorRepository.get(arrangorInTest.organisasjonsnummer) } returns null andThen arrangorInTest
+			every { arrangorRepository.upsert(any()) } returns RepositoryResult.Created(arrangorInTest)
+			every { amtArrangorClient.hentArrangor(arrangorInTest.organisasjonsnummer) } returns AmtArrangorClient.ArrangorMedOverordnetArrangorDto(
+				arrangorInTest.id,
+				arrangorInTest.navn,
+				arrangorInTest.organisasjonsnummer,
 				null,
 			)
-			every { deltakerlisteRepository.upsert(deltakerliste) } returns RepositoryResult.Created(deltakerliste)
+			every { deltakerlisteRepository.upsert(deltakerlisteInTest) } returns RepositoryResult.Created(deltakerlisteInTest)
 
-			kafkaConsumerService.deltakerlisteHendelse(
-				id = ctx.deltakerlistePayload().id,
-				value = objectMapper.writeValueAsString(deltakerliste.toDto(arrangor)),
+			val deltakerlistePayload = lagGruppeDeltakerlistePayload(
+				arrangor = arrangorInTest,
+				deltakerliste = deltakerlisteInTest,
 			)
 
-			verify(exactly = 2) { arrangorRepository.get(arrangor.organisasjonsnummer) }
-			verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangor.organisasjonsnummer) }
-			verify(exactly = 1) { deltakerlisteRepository.upsert(deltakerliste) }
+			kafkaConsumerService.deltakerlisteHendelse(
+				id = deltakerlistePayload.id,
+				value = objectMapper.writeValueAsString(deltakerlistePayload),
+			)
+
+			verify(exactly = 2) { arrangorRepository.get(arrangorInTest.organisasjonsnummer) }
+			verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangorInTest.organisasjonsnummer) }
+			verify(exactly = 1) { deltakerlisteRepository.upsert(deltakerlisteInTest) }
 		}
 	}
 

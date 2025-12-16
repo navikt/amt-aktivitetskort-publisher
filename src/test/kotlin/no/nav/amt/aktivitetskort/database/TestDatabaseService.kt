@@ -1,8 +1,8 @@
 package no.nav.amt.aktivitetskort.database
 
-import no.nav.amt.aktivitetskort.database.TestData.arrangor
-import no.nav.amt.aktivitetskort.database.TestData.deltaker
-import no.nav.amt.aktivitetskort.database.TestData.deltakerliste
+import no.nav.amt.aktivitetskort.database.TestData.lagArrangor
+import no.nav.amt.aktivitetskort.database.TestData.lagDeltaker
+import no.nav.amt.aktivitetskort.database.TestData.lagDeltakerliste
 import no.nav.amt.aktivitetskort.database.TestData.oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Arrangor
 import no.nav.amt.aktivitetskort.domain.Deltaker
@@ -26,8 +26,8 @@ class TestDatabaseService(
 	private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
 	private val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
 ) {
-	fun insertDeltaker(deltaker: Deltaker = deltaker(), offset: Long = 0): Deltaker {
-		insertDeltakerliste(deltakerliste(id = deltaker.deltakerlisteId))
+	fun insertDeltaker(deltaker: Deltaker = lagDeltaker(), offset: Long = 0): Deltaker {
+		insertDeltakerliste(lagDeltakerliste(id = deltaker.deltakerlisteId))
 		return when (val result = deltakerRepository.upsert(deltaker, offset)) {
 			is RepositoryResult.Created -> result.data
 			is RepositoryResult.Modified -> result.data
@@ -38,14 +38,14 @@ class TestDatabaseService(
 	fun insertAktivOppfolgingsperiode(id: UUID = UUID.randomUUID()): Oppfolgingsperiode =
 		oppfolgingsperiodeRepository.upsert(oppfolgingsperiode(id))
 
-	fun insertArrangor(arrangor: Arrangor = arrangor()) = when (val result = arrangorRepository.upsert(arrangor)) {
+	fun insertArrangor(arrangor: Arrangor = lagArrangor()) = when (val result = arrangorRepository.upsert(arrangor)) {
 		is RepositoryResult.Created -> result.data
 		is RepositoryResult.Modified -> result.data
 		is RepositoryResult.NoChange -> arrangor
 	}
 
-	fun insertDeltakerliste(deltakerliste: Deltakerliste = deltakerliste()): Deltakerliste {
-		arrangorRepository.upsert(arrangor(id = deltakerliste.arrangorId))
+	fun insertDeltakerliste(deltakerliste: Deltakerliste = lagDeltakerliste()): Deltakerliste {
+		arrangorRepository.upsert(lagArrangor(id = deltakerliste.arrangorId))
 
 		return when (val result = deltakerlisteRepository.upsert(deltakerliste)) {
 			is RepositoryResult.Created -> result.data
