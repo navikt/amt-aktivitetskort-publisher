@@ -37,8 +37,8 @@ spec:
         thresholdPercentage: 200
   resources:
     requests:
-      cpu: 20m
-      memory: 700Mi
+      cpu: 10m
+      memory: 800Mi
     limits:
       memory: 1100Mi
   azure:
@@ -63,7 +63,7 @@ spec:
     - secret: amt-aktivitetskort-publisher-unleash-api-token
   env:
     - name: JDK_JAVA_OPTIONS
-      value: "-XX:MaxRAMPercentage=70.0"
+      value: "-XX:MaxRAMPercentage=75.0"
     - name: AMT_ARENA_ACL_URL
       value: http://amt-arena-acl.amt.svc.cluster.local
     - name: AMT_ARENA_ACL_SCOPE
