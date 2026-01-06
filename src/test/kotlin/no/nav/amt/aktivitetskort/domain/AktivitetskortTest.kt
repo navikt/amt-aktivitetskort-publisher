@@ -11,16 +11,7 @@ class AktivitetskortTest {
 		val arrangor = TestData.lagArrangor()
 		val deltakerlister =
 			Tiltakskode.entries
-				.filter {
-					// TODO: Disse tiltakstypene er ennå ikke støttet
-					it !in setOf(
-						Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
-						Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
-						Tiltakskode.STUDIESPESIALISERING,
-						Tiltakskode.FAG_OG_YRKESOPPLAERING,
-						Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
-					)
-				}.map {
+				.map {
 					val tiltaksnavn = when (it) {
 						Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> "Arbforb Tiltak"
 
@@ -45,25 +36,27 @@ class AktivitetskortTest {
 						Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
 						-> "Enkeltplass"
 
-						else -> throw IllegalStateException("Ukjent tiltaksnavn for tiltakskode: $it")
+						else -> "Default tiltaksnavn"
 					}
 					TestData.lagDeltakerliste(tiltak = Tiltak(tiltaksnavn, it), arrangorId = arrangor.id)
 				}
 
 		deltakerlister.forEach {
-			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor, true)
+			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor)
 			when (it.tiltak.tiltakskode) {
 				Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> aktivitetskortTittel shouldBe "Digitalt jobbsøkerkurs hos ${arrangor.navn}"
 				Tiltakskode.JOBBKLUBB -> aktivitetskortTittel shouldBe "Jobbsøkerkurs hos ${arrangor.navn}"
 				Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
-				Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> aktivitetskortTittel shouldBe "Kurs: ${it.navn}"
-				Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> aktivitetskortTittel shouldBe it.navn
+				Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+				Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+				Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
+				Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+				Tiltakskode.STUDIESPESIALISERING,
+				Tiltakskode.FAG_OG_YRKESOPPLAERING,
+				Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
+				-> aktivitetskortTittel shouldBe it.navn
 				else -> aktivitetskortTittel shouldBe "${it.tiltak.navn} hos ${arrangor.navn}"
 			}
-		}
-		deltakerlister.find { it.tiltak.tiltakskode == Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING }?.let {
-			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor, false)
-			aktivitetskortTittel shouldBe it.navn
 		}
 	}
 
