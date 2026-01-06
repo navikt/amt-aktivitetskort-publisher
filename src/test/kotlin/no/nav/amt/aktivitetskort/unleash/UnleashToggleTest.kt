@@ -51,9 +51,11 @@ class UnleashToggleTest {
 		@EnumSource(
 			value = Tiltakskode::class,
 			names = [
-				"ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING",
-				"ENKELTPLASS_FAG_OG_YRKESOPPLAERING",
-				"HOYERE_UTDANNING",
+				"ARBEIDSMARKEDSOPPLAERING",
+				"NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV",
+				"STUDIESPESIALISERING",
+				"FAG_OG_YRKESOPPLAERING",
+				"HOYERE_YRKESFAGLIG_UTDANNING",
 			],
 		)
 		fun `returnerer true hvis toggle ENABLE_KOMET_DELTAKERE er pa for kanskje-master-typer`(kode: Tiltakskode) {
@@ -124,7 +126,7 @@ class UnleashToggleTest {
 	}
 
 	@Nested
-	inner class SkipProsesseringAvGjennomforing {
+	inner class SkalProsessereGjennomforing {
 		@ParameterizedTest
 		@EnumSource(
 			value = Tiltakskode::class,
@@ -140,11 +142,11 @@ class UnleashToggleTest {
 				"GRUPPE_FAG_OG_YRKESOPPLAERING",
 			],
 		)
-		fun `returnerer false for tiltakskoder Komet er master for `(tiltakskode: Tiltakskode) {
+		fun `returnerer true for tiltakskoder Komet er master for `(tiltakskode: Tiltakskode) {
 			every { unleashClient.isEnabled(ENABLE_KOMET_DELTAKERE) } returns true
 			every { unleashClient.isEnabled(LES_ARENA_DELTAKERE) } returns false
 
-			sut.skipProsesseringAvGjennomforing(tiltakskode.name) shouldBe false
+			sut.skalLeseGjennomforing(tiltakskode.name) shouldBe true
 		}
 
 		@ParameterizedTest
@@ -156,27 +158,19 @@ class UnleashToggleTest {
 				"HOYERE_UTDANNING",
 			],
 		)
-		fun `returnerer false for enkeltplass tiltakskoder `(tiltakskode: Tiltakskode) {
+		fun `returnerer true for enkeltplass tiltakskoder `(tiltakskode: Tiltakskode) {
 			every { unleashClient.isEnabled(ENABLE_KOMET_DELTAKERE) } returns false
 			every { unleashClient.isEnabled(LES_ARENA_DELTAKERE) } returns true
 
-			sut.skipProsesseringAvGjennomforing(tiltakskode.name) shouldBe false
+			sut.skalLeseGjennomforing(tiltakskode.name) shouldBe true
 		}
 
 		@Test
-		fun `returnerer true for tiltakskoder som ikke skal prosesseres`() {
+		fun `returnerer false for tiltakskoder som ikke skal prosesseres`() {
 			every { unleashClient.isEnabled(ENABLE_KOMET_DELTAKERE) } returns false
 			every { unleashClient.isEnabled(LES_ARENA_DELTAKERE) } returns true
 
-			sut.skipProsesseringAvGjennomforing("~tiltakskode~") shouldBe true
-		}
-
-		@Test
-		fun `returnerer true for tiltakskoder som ikke skal prosesseres #2`() {
-			every { unleashClient.isEnabled(ENABLE_KOMET_DELTAKERE) } returns true
-			every { unleashClient.isEnabled(LES_ARENA_DELTAKERE) } returns false
-
-			sut.skipProsesseringAvGjennomforing("~tiltakskode~") shouldBe true
+			sut.skalLeseGjennomforing("~tiltakskode~") shouldBe false
 		}
 	}
 }
