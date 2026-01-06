@@ -90,7 +90,7 @@ class KafkaConsumerService(
 
 		val deltakerlistePayload: GjennomforingV2KafkaPayload = objectMapper.readValue(value)
 
-		if (unleashToggle.skipProsesseringAvGjennomforing(deltakerlistePayload.tiltakskode.name)) {
+		if (!unleashToggle.skalLeseGjennomforing(deltakerlistePayload.tiltakskode.name)) {
 			return
 		}
 

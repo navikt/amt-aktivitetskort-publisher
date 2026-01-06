@@ -18,8 +18,9 @@ class UnleashToggle(
 	fun skalLeseArenaDataForTiltakstype(tiltakskode: String): Boolean =
 		unleashClient.isEnabled(LES_ARENA_DELTAKERE) && tiltakstyperKometKanLese.any { it.name == tiltakskode }
 
-	fun skipProsesseringAvGjennomforing(tiltakskode: String): Boolean =
-		!(erKometMasterForTiltakstype(tiltakskode) || tiltakstyperKometKanLese.any { it.name == tiltakskode })
+	fun skalLeseGjennomforing(tiltakskode: String): Boolean = tiltakstyperKometErMasterFor.any { it.name == tiltakskode } ||
+		tiltakstyperKometKanLese.any { it.name == tiltakskode } ||
+		tiltakstyperKometKanskjeErMasterFor.any { it.name == tiltakskode }
 
 	companion object {
 		const val ENABLE_KOMET_DELTAKERE = "amt.enable-komet-deltakere"
@@ -44,6 +45,12 @@ class UnleashToggle(
 			Tiltakskode.HOYERE_UTDANNING,
 		)
 
-		private val tiltakstyperKometKanskjeErMasterFor = tiltakstyperKometKanLese
+		private val tiltakstyperKometKanskjeErMasterFor = setOf(
+			Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
+			Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+			Tiltakskode.STUDIESPESIALISERING,
+			Tiltakskode.FAG_OG_YRKESOPPLAERING,
+			Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
+		)
 	}
 }

@@ -68,7 +68,7 @@ class KafkaConsumerServiceTest {
 			(firstArg() as Consumer<TransactionStatus>).accept(SimpleTransactionStatus())
 		}
 		every { tiltakstypeRepository.getByTiltakskode(any()) } returns ctx.tiltakstype
-		every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns false
+		every { unleashToggle.skalLeseGjennomforing(any<String>()) } returns true
 	}
 
 	@Nested
@@ -187,7 +187,7 @@ class KafkaConsumerServiceTest {
 		fun `Komet er ikke master for tiltak - ikke prosesser melding`() {
 			every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
 			every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
-			every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns true
+			every { unleashToggle.skalLeseGjennomforing(any<String>()) } returns false
 
 			kafkaConsumerService.deltakerlisteHendelse(
 				id = ctx.deltakerlisteGruppePayload.id,

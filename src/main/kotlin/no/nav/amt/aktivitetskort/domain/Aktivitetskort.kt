@@ -81,19 +81,21 @@ data class Aktivitetskort(
 	)
 
 	companion object {
-		fun lagTittel(
-			deltakerliste: Deltakerliste,
-			arrangor: Arrangor,
-			erKurs: Boolean,
-		): String = when (deltakerliste.tiltak.tiltakskode) {
+		fun lagTittel(deltakerliste: Deltakerliste, arrangor: Arrangor): String = when (deltakerliste.tiltak.tiltakskode) {
 			Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "Tilrettelagt arbeid hos ${arrangor.navn}"
 			Tiltakskode.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
-			Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> if (erKurs) "Kurs: ${deltakerliste.navn}" else deltakerliste.navn
-			Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> deltakerliste.navn
 			Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
 			Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
 			Tiltakskode.HOYERE_UTDANNING,
 			-> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
+			Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+			Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+			Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
+			Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+			Tiltakskode.STUDIESPESIALISERING,
+			Tiltakskode.FAG_OG_YRKESOPPLAERING,
+			Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
+			-> deltakerliste.navn
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 

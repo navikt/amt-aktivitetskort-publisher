@@ -220,7 +220,7 @@ class AktivitetskortService(
 	) = Aktivitetskort(
 		id = id,
 		personident = deltaker.personident,
-		tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor, deltaker.deltarPaKurs),
+		tittel = Aktivitetskort.lagTittel(deltakerliste, arrangor),
 		aktivitetStatus = deltakerStatusTilAktivitetStatus(deltaker.status.type).getOrThrow(),
 		startDato = deltaker.oppstartsdato,
 		sluttDato = deltaker.sluttdato,
