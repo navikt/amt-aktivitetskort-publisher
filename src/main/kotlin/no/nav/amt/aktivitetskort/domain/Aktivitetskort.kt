@@ -1,7 +1,6 @@
 package no.nav.amt.aktivitetskort.domain
 
 import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortDto
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.text.DecimalFormat
 import java.time.LocalDate
@@ -25,7 +24,7 @@ data class Aktivitetskort(
 	val handlinger: List<Handling>? = null,
 	val detaljer: List<Detalj>,
 	val etiketter: List<Tag>,
-	val tiltakstype: ArenaKode,
+	val tiltakstype: AktivitetskortTiltakstype,
 ) {
 	fun toAktivitetskortDto(): AktivitetskortDto = AktivitetskortDto(
 		id = id,

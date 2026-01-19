@@ -16,6 +16,7 @@ import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.domain.Oppgave
 import no.nav.amt.aktivitetskort.domain.OppgaveWrapper
+import no.nav.amt.aktivitetskort.domain.toAktivitetskortTiltakstype
 import no.nav.amt.aktivitetskort.exceptions.FeilOppfolgingsperiodeException
 import no.nav.amt.aktivitetskort.exceptions.HistoriskArenaDeltakerException
 import no.nav.amt.aktivitetskort.exceptions.IngenOppfolgingsperiodeException
@@ -232,7 +233,7 @@ class AktivitetskortService(
 		handlinger = getHandlinger(deltaker),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-		tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
+		tiltakstype = deltakerliste.tiltak.tiltakskode.toAktivitetskortTiltakstype(),
 	)
 
 	private fun oppgaver(
