@@ -134,7 +134,8 @@ class KafkaConsumerService(
 			when (val result = arrangorRepository.upsert(arrangor.toModel())) {
 				is RepositoryResult.Modified -> {
 					log.info("Ny hendelse for arrangor ${arrangor.id}: Oppdatering")
-					aktivitetskortProducer.send(aktivitetskortService.oppdaterAktivitetskort(result.data))
+					val aktivitetskort = aktivitetskortService.oppdaterAktivitetskort(result.data)
+					aktivitetskortProducer.send(aktivitetskort)
 				}
 
 				is RepositoryResult.Created -> {

@@ -17,6 +17,7 @@ import no.nav.amt.aktivitetskort.domain.Tag
 import no.nav.amt.aktivitetskort.domain.Tiltak
 import no.nav.amt.aktivitetskort.domain.Tiltakstype
 import no.nav.amt.aktivitetskort.domain.displayText
+import no.nav.amt.aktivitetskort.domain.toAktivitetskortTiltakstype
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
@@ -76,7 +77,7 @@ object TestData {
 		handlinger = null,
 		detaljer = detaljer,
 		etiketter = etiketter,
-		tiltakstype = tiltakstype.toArenaKode(),
+		tiltakstype = tiltakstype.toAktivitetskortTiltakstype(),
 	)
 
 	fun aktivitetskort(
@@ -115,7 +116,7 @@ object TestData {
 			Detalj("Arrangør", arrangor.navn),
 		),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
-		tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
+		tiltakstype = deltakerliste.tiltak.tiltakskode.toAktivitetskortTiltakstype(),
 	)
 
 	fun lagDeltaker(
