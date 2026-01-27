@@ -25,7 +25,7 @@ val klintVersion = "1.4.1"
 val mockkVersion = "1.14.7"
 val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
 val tokenSupportVersion = "5.0.39"
-val unleashVersion = "11.2.1"
+val unleashVersion = "12.0.1"
 val amtLibVersion = "1.2025.12.12_11.03-2e0d1281814d"
 
 // fjernes ved neste release av org.apache.kafka:kafka-clients
