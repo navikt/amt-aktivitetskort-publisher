@@ -19,8 +19,6 @@ abstract class MockHttpServer(
 
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	private var lastRequestCount = 0
-
 	private val responses = mutableMapOf<(request: RecordedRequest) -> Boolean, ResponseHolder>()
 
 	fun start() {
@@ -36,7 +34,7 @@ abstract class MockHttpServer(
 								"	Body: ${request.getBodyAsString()}",
 						)
 
-					response.count = response.count + 1
+					response.count += 1
 
 					log.info("Responding [${request.method}: ${request.path}]: $response")
 					return response.response.invoke(request)
@@ -62,34 +60,9 @@ abstract class MockHttpServer(
 		return addResponseHandler(predicate) { response }
 	}
 
-	fun resetHttpServer() {
-		responses.clear()
-		lastRequestCount = server.requestCount
-	}
-
 	fun serverUrl(): String = server.url("").toString().removeSuffix("/")
 
-	fun latestRequest(): RecordedRequest = server.takeRequest()
-
-	fun requestCount(): Int = server.requestCount - lastRequestCount
-
-	fun shutdown() {
-		server.shutdown()
-	}
-
-	fun getRequestCount(id: UUID): Int {
-		val responseCount = responses.entries
-			.find { it.value.id == id }
-			?.value
-			?.count
-			?: throw IllegalStateException("No request with id $id")
-
-		return responseCount
-	}
-
-	fun clearResponses() {
-		responses.clear()
-	}
+	fun clearResponses() = responses.clear()
 
 	private fun printHeaders(headers: Headers): String = headers.joinToString("\n") { "		${it.first} : ${it.second}" }
 
