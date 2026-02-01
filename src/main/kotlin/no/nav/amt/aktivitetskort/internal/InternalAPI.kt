@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
+@Suppress("SpringMvcPathVariableDeclarationInspection")
 @RestController
 @RequestMapping("/internal")
 class InternalAPI(

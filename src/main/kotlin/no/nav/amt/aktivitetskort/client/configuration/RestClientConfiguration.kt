@@ -10,10 +10,13 @@ import no.nav.security.token.support.spring.api.EnableJwtTokenValidation
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import tools.jackson.databind.ObjectMapper
 
 @Configuration(proxyBeanMethods = false)
 @EnableJwtTokenValidation
-class RestClientConfiguration {
+class RestClientConfiguration(
+	private val objectMapper: ObjectMapper,
+) {
 	@Bean
 	fun machineToMachineTokenClient(
 		@Value($$"${nais.env.azureAppClientId}") azureAdClientId: String,
@@ -34,6 +37,7 @@ class RestClientConfiguration {
 	) = AmtArenaAclClient(
 		baseUrl = amtArenaAclUrl,
 		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(amtArenaAclScope) },
+		objectMapper = objectMapper,
 	)
 
 	@Bean
@@ -44,6 +48,7 @@ class RestClientConfiguration {
 	) = AmtArrangorClient(
 		baseUrl = amtArrangorUrl,
 		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(amtArrangorScope) },
+		objectMapper = objectMapper,
 	)
 
 	@Bean
@@ -54,6 +59,7 @@ class RestClientConfiguration {
 	) = AktivitetArenaAclClient(
 		baseUrl = aktivitetArenaAclUrl,
 		tokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(aktivitetArenaAclScope) },
+		objectMapper = objectMapper,
 	)
 
 	@Bean
@@ -64,5 +70,6 @@ class RestClientConfiguration {
 	) = VeilarboppfolgingClient(
 		baseUrl = "$veilarboppfolgingUrl/veilarboppfolging",
 		veilarboppfolgingTokenProvider = { machineToMachineTokenClient.createMachineToMachineToken(veilarboppfolgingScope) },
+		objectMapper = objectMapper,
 	)
 }

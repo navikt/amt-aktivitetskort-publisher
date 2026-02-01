@@ -7,37 +7,34 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 
-@Configuration(proxyBeanMethods = false)
-class TestKafkaConfig(
+@TestConfiguration(proxyBeanMethods = false)
+class KafkaTestConfiguration(
 	private val kafkaConfig: KafkaConfig,
 ) {
-	fun testConsumerProps(groupId: String) = mapOf(
-		ConsumerConfig.GROUP_ID_CONFIG to groupId,
-		ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
-		ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
-		ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
-	) + kafkaConfig.commonConfig()
-
 	@Bean
 	fun testKafkaConsumer(): Consumer<String, String> = DefaultKafkaConsumerFactory(
-		testConsumerProps("amt-aktivitetskort-publisher-consumer"),
+		mapOf(
+			ConsumerConfig.GROUP_ID_CONFIG to "amt-aktivitetskort-publisher-consumer",
+			ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
+			ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
+			ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
+		) + kafkaConfig.commonConfig(),
 		StringDeserializer(),
 		StringDeserializer(),
 	).createConsumer()
 
 	@Bean
-	fun testKafkaProducer(): KafkaProducer<String, String> {
-		val config = mapOf(
+	fun testKafkaProducer(): KafkaProducer<String, String> = KafkaProducer(
+		mapOf(
 			ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
 			ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
 			ProducerConfig.ACKS_CONFIG to "all",
 			ProducerConfig.RETRIES_CONFIG to 10,
 			ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100,
-		) + kafkaConfig.commonConfig()
-		return KafkaProducer(config)
-	}
+		) + kafkaConfig.commonConfig(),
+	)
 }

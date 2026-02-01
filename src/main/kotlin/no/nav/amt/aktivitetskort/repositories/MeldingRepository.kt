@@ -1,20 +1,21 @@
 package no.nav.amt.aktivitetskort.repositories
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.domain.Melding
 import no.nav.amt.aktivitetskort.utils.getZonedDateTime
 import no.nav.amt.aktivitetskort.utils.sqlParameters
-import no.nav.amt.lib.utils.objectMapper
 import org.postgresql.util.PGobject
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.util.UUID
 
 @Repository
 class MeldingRepository(
 	private val template: NamedParameterJdbcTemplate,
+	private val objectMapper: ObjectMapper,
 ) {
 	private val rowMapper = RowMapper { rs, _ ->
 		Melding(

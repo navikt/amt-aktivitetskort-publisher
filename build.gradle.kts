@@ -1,6 +1,6 @@
 plugins {
 	val kotlinVersion = "2.3.0"
-	id("org.springframework.boot") version "3.5.7"
+	id("org.springframework.boot") version "4.0.2"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
 	kotlin("plugin.spring") version kotlinVersion
@@ -20,13 +20,13 @@ val logstashEncoderVersion = "9.0"
 val okHttpVersion = "5.3.2"
 val kafkaClientsVersion = "4.1.1"
 val kotestVersion = "6.0.7"
-val testcontainersVersion = "2.0.3"
 val klintVersion = "1.4.1"
 val mockkVersion = "1.14.7"
-val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
-val tokenSupportVersion = "5.0.39"
+val commonVersion = "3.2025.11.10_14.07-a9f44944d7bc"
+val tokenSupportVersion = "6.0.1"
 val unleashVersion = "11.2.1"
-val amtLibVersion = "1.2025.12.12_11.03-2e0d1281814d"
+val amtLibVersion = "1.2026.01.25_18.20-82949d0f1ae0"
+val jacksonModuleKotlinVersion = "3.0.3"
 
 // fjernes ved neste release av org.apache.kafka:kafka-clients
 configurations.configureEach {
@@ -39,30 +39,21 @@ configurations.configureEach {
 	}
 }
 
-dependencyManagement {
-	imports {
-		mavenBom("org.testcontainers:testcontainers-bom:$testcontainersVersion")
-	}
-}
-
 dependencies {
 	implementation("at.yawk.lz4:lz4-java:1.10.2") // fjernes ved neste release av org.apache.kafka:kafka-clients
-	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-logging")
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
 	implementation("org.springframework.boot:spring-boot-configuration-processor")
+	implementation("org.springframework.boot:spring-boot-flyway")
+	implementation("org.springframework.boot:spring-boot-kafka")
 
-	implementation("org.springframework.kafka:spring-kafka")
+	implementation("tools.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
+
 	implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
 
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.jetbrains.kotlin:kotlin-stdlib")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-
-	implementation("org.flywaydb:flyway-core")
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.postgresql:postgresql")
 
@@ -82,18 +73,23 @@ dependencies {
 	implementation("no.nav.amt.lib:models:$amtLibVersion")
 	implementation("no.nav.amt.lib:utils:$amtLibVersion")
 
-	testImplementation(kotlin("test"))
 	testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
 	testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
-	testImplementation("org.springframework.boot:spring-boot-testcontainers")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude("com.vaadin.external.google", "android-json")
 	}
+	testImplementation("org.springframework.boot:spring-boot-data-jdbc-test")
+	testImplementation("org.springframework.boot:spring-boot-resttestclient")
+	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 
-	testImplementation("org.testcontainers:postgresql")
-	testImplementation("org.testcontainers:kafka")
+	testImplementation("org.testcontainers:testcontainers-postgresql")
+	testImplementation("org.testcontainers:testcontainers-kafka")
+
 	testImplementation("io.mockk:mockk-jvm:$mockkVersion")
 	testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
+
+	testImplementation("no.nav.amt.lib:kafka:$amtLibVersion")
 }
 
 kotlin {
@@ -112,11 +108,11 @@ ktlint {
 	version = klintVersion
 }
 
-tasks.jar {
+tasks.named<Jar>("jar") {
 	enabled = false
 }
 
-tasks.test {
+tasks.named<Test>("test") {
 	useJUnitPlatform()
 	jvmArgs(
 		"-Xshare:off",
