@@ -22,7 +22,7 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 @SpringBootTest(classes = [Application::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(KafkaTestConfiguration::class, UnleashTestConfiguration::class)
+@Import(UnleashTestConfiguration::class)
 abstract class IntegrationTest : RepositoryTestBase() {
 	@LocalServerPort
 	private var port: Int = 0

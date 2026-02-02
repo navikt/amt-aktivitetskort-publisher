@@ -18,11 +18,11 @@ import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.kafka.core.KafkaTemplate
 import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -33,7 +33,7 @@ class KafkaConsumerTest(
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val meldingRepository: MeldingRepository,
-	private val testKafkaProducer: KafkaProducer<String, String>,
+	private val kafkaTemplate: KafkaTemplate<String, String>,
 ) : IntegrationTest() {
 	private val offset: Long = 0
 
@@ -44,7 +44,7 @@ class KafkaConsumerTest(
 	fun `listen - melding om ny arrangor - arrangor upsertes`() {
 		val arrangor = TestData.lagArrangor()
 
-		testKafkaProducer
+		kafkaTemplate
 			.send(
 				ProducerRecord(
 					ARRANGOR_TOPIC,
@@ -62,7 +62,7 @@ class KafkaConsumerTest(
 	fun `listen - melding om ny tiltakstype - tiltakstype upsertes`() {
 		val ctx = TestData.MockContext()
 
-		testKafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				TILTAKSTYPE_TOPIC,
 				ctx.tiltakstype.id.toString(),
@@ -85,7 +85,7 @@ class KafkaConsumerTest(
 			tiltakskode = Tiltakskode.OPPFOLGING,
 		)
 
-		testKafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKERLISTE_V2_TOPIC,
 				deltakerlistePayload.id.toString(),
@@ -108,7 +108,7 @@ class KafkaConsumerTest(
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.melding.id)
 		mockVeilarboppfolgingServer.addResponse()
 
-		testKafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
@@ -163,7 +163,7 @@ class KafkaConsumerTest(
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, nyId)
 		mockVeilarboppfolgingServer.addResponse()
 
-		testKafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
@@ -206,7 +206,7 @@ class KafkaConsumerTest(
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
 		mockVeilarboppfolgingServer.addResponse()
 
-		testKafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
@@ -242,7 +242,7 @@ class KafkaConsumerTest(
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
 
-		testKafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
@@ -270,7 +270,7 @@ class KafkaConsumerTest(
 		deltakerlisteRepository.upsert(deltakerliste)
 		deltakerRepository.upsert(deltaker, offset)
 
-		testKafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				deltaker.id.toString(),
