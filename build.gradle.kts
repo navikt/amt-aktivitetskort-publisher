@@ -24,7 +24,7 @@ val klintVersion = "1.4.1"
 val mockkVersion = "1.14.7"
 val commonVersion = "3.2025.11.10_14.07-a9f44944d7bc"
 val tokenSupportVersion = "6.0.1"
-val unleashVersion = "11.2.1"
+val unleashVersion = "12.1.0"
 val amtLibVersion = "1.2026.01.25_18.20-82949d0f1ae0"
 val jacksonModuleKotlinVersion = "3.0.4"
 
