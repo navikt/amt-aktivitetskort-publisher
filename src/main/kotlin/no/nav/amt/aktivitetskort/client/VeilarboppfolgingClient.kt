@@ -1,14 +1,14 @@
 package no.nav.amt.aktivitetskort.client
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.domain.Oppfolgingsperiode
 import no.nav.amt.aktivitetskort.utils.toSystemZoneLocalDateTime
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.common.rest.client.RestClient.baseClient
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.time.ZonedDateTime
 import java.util.UUID
 import java.util.function.Supplier
@@ -16,6 +16,7 @@ import java.util.function.Supplier
 class VeilarboppfolgingClient(
 	private val baseUrl: String,
 	private val veilarboppfolgingTokenProvider: Supplier<String>,
+	private val objectMapper: ObjectMapper,
 	private val httpClient: OkHttpClient = baseClient(),
 ) {
 	companion object {

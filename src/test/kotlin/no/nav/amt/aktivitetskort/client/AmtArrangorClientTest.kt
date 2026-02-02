@@ -1,6 +1,7 @@
 package no.nav.amt.aktivitetskort.client
 
 import io.kotest.matchers.shouldBe
+import no.nav.amt.aktivitetskort.TestUtils.staticObjectMapper
 import no.nav.amt.aktivitetskort.database.TestData
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -20,6 +21,7 @@ class AmtArrangorClientTest {
 		client = AmtArrangorClient(
 			baseUrl = server.url("").toString().removeSuffix("/"),
 			tokenProvider = { token },
+			objectMapper = staticObjectMapper,
 		)
 	}
 

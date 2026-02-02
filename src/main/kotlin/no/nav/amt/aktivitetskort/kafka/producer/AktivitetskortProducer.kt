@@ -4,16 +4,17 @@ import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.kafka.consumer.AKTIVITETSKORT_TOPIC
 import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortPayload
 import no.nav.amt.aktivitetskort.service.MetricsService
-import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
+import tools.jackson.databind.ObjectMapper
 import java.util.UUID
 
 @Component
 class AktivitetskortProducer(
 	private val template: KafkaTemplate<String, String>,
 	private val metricsService: MetricsService,
+	private val objectMapper: ObjectMapper,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 

@@ -251,6 +251,7 @@ class AktivitetskortServiceTest {
 		aktivitetskort?.id shouldNotBe ctx.aktivitetskort.id
 	}
 
+	@Test
 	fun `lagAktivitetskort(deltaker) - gamle arenameldinger fra tidligere oppfølgingsperiode - ignorerer`() {
 		val ctx = TestData.MockContext(
 			deltaker = TestData.lagDeltaker(

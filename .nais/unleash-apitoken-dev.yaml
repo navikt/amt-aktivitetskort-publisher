@@ -13,5 +13,5 @@ spec:
   secretName: amt-aktivitetskort-publisher-unleash-api-token
 
   # Specify which environment the API token should be created for.
-  # Can be one of: development, or production.
+  # Can be one of: development or production.
   environment: development

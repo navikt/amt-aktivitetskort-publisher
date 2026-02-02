@@ -274,7 +274,7 @@ class AktivitetskortService(
 		)
 	}
 
-	private fun getHandlinger(deltaker: Deltaker): List<Handling>? = listOf(
+	private fun getHandlinger(deltaker: Deltaker): List<Handling> = listOf(
 		Handling(
 			tekst = "Les mer om din deltakelse",
 			subtekst = "",

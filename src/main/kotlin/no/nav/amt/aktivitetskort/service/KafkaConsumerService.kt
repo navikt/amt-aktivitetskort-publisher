@@ -1,6 +1,5 @@
 package no.nav.amt.aktivitetskort.service
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.client.AmtArrangorClient
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
@@ -20,10 +19,11 @@ import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
-import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.util.UUID
 
 @Service
@@ -37,6 +37,7 @@ class KafkaConsumerService(
 	private val aktivitetskortProducer: AktivitetskortProducer,
 	private val transactionTemplate: TransactionTemplate,
 	private val unleashToggle: UnleashToggle,
+	private val objectMapper: ObjectMapper,
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 

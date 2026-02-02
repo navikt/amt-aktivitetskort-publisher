@@ -5,6 +5,7 @@ import no.nav.amt.aktivitetskort.mock.MockAmtArenaAclServer
 import no.nav.amt.aktivitetskort.mock.MockMachineToMachineServer
 import no.nav.amt.aktivitetskort.mock.MockVeilarboppfolgingServer
 import no.nav.amt.aktivitetskort.repositories.RepositoryTestBase
+import no.nav.amt.aktivitetskort.unleash.UnleashTestConfiguration
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -12,6 +13,7 @@ import okhttp3.Response
 import org.awaitility.Awaitility
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.kafka.KafkaContainer
@@ -20,6 +22,7 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 @SpringBootTest(classes = [Application::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(UnleashTestConfiguration::class)
 abstract class IntegrationTest : RepositoryTestBase() {
 	@LocalServerPort
 	private var port: Int = 0
@@ -41,18 +44,18 @@ abstract class IntegrationTest : RepositoryTestBase() {
 		val mockMachineToMachineServer = MockMachineToMachineServer()
 		val mockVeilarboppfolgingServer = MockVeilarboppfolgingServer()
 
+		@Suppress("unused")
+		val kafkaContainer = KafkaContainer(DockerImageName.parse("apache/kafka")).apply {
+			// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
+			withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9092,BROKER://:9093,CONTROLLER://:9094")
+			start()
+			System.setProperty("KAFKA_BROKERS", bootstrapServers)
+		}
+
 		@JvmStatic
 		@DynamicPropertySource
 		@Suppress("unused")
 		fun registerProperties(registry: DynamicPropertyRegistry) {
-			KafkaContainer(DockerImageName.parse("apache/kafka"))
-				.withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9092,BROKER://:9093,CONTROLLER://:9094")
-				// workaround for https://github.com/testcontainers/testcontainers-java/issues/9506
-				.apply {
-					start()
-					System.setProperty("KAFKA_BROKERS", bootstrapServers)
-				}
-
 			mockMachineToMachineServer.start()
 			registry.add("nais.env.azureOpenIdConfigTokenEndpoint") {
 				mockMachineToMachineServer.serverUrl() + MockMachineToMachineServer.TOKEN_PATH

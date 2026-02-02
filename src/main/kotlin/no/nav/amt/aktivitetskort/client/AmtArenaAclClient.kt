@@ -1,20 +1,21 @@
 package no.nav.amt.aktivitetskort.client
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.aktivitetskort.exceptions.HistoriskArenaDeltakerException
-import no.nav.amt.lib.utils.objectMapper
 import no.nav.common.rest.client.RestClient.baseClient
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.util.UUID
 import java.util.function.Supplier
 
 class AmtArenaAclClient(
 	private val baseUrl: String,
 	private val tokenProvider: Supplier<String>,
+	private val objectMapper: ObjectMapper,
 	private val httpClient: OkHttpClient = baseClient(),
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)

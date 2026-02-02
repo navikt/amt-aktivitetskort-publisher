@@ -5,6 +5,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.aktivitetskort.IntegrationTest
+import no.nav.amt.aktivitetskort.TestUtils.staticObjectMapper
 import no.nav.amt.aktivitetskort.database.TestData
 import no.nav.amt.aktivitetskort.database.TestData.toDto
 import no.nav.amt.aktivitetskort.domain.AktivitetStatus
@@ -17,45 +18,43 @@ import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.utils.objectMapper
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.kafka.core.KafkaTemplate
 import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class KafkaConsumerTest(
-	private val kafkaProducer: KafkaProducer<String, String?>,
 	private val arrangorRepository: ArrangorRepository,
 	private val tiltakstypeRepository: TiltakstypeRepository,
 	private val deltakerlisteRepository: DeltakerlisteRepository,
 	private val deltakerRepository: DeltakerRepository,
 	private val meldingRepository: MeldingRepository,
+	private val kafkaTemplate: KafkaTemplate<String, String>,
 ) : IntegrationTest() {
 	private val offset: Long = 0
 
 	@BeforeEach
-	fun setup() {
-		mockAktivitetArenaAclServer.clearResponses()
-	}
+	fun setup() = mockAktivitetArenaAclServer.clearResponses()
 
 	@Test
 	fun `listen - melding om ny arrangor - arrangor upsertes`() {
 		val arrangor = TestData.lagArrangor()
 
-		kafkaProducer.send(
-			ProducerRecord(
-				ARRANGOR_TOPIC,
-				arrangor.id.toString(),
-				objectMapper.writeValueAsString(arrangor.toDto()),
-			),
-		)
+		kafkaTemplate
+			.send(
+				ProducerRecord(
+					ARRANGOR_TOPIC,
+					arrangor.id.toString(),
+					staticObjectMapper.writeValueAsString(arrangor.toDto()),
+				),
+			).get()
 
-		await().atMost(5, TimeUnit.SECONDS).until {
-			arrangorRepository.get(arrangor.id) != null
+		await().untilAsserted {
+			arrangorRepository.get(arrangor.id).shouldNotBeNull()
 		}
 	}
 
@@ -63,11 +62,11 @@ class KafkaConsumerTest(
 	fun `listen - melding om ny tiltakstype - tiltakstype upsertes`() {
 		val ctx = TestData.MockContext()
 
-		kafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				TILTAKSTYPE_TOPIC,
 				ctx.tiltakstype.id.toString(),
-				objectMapper.writeValueAsString(ctx.tiltakstype),
+				staticObjectMapper.writeValueAsString(ctx.tiltakstype),
 			),
 		)
 
@@ -86,16 +85,16 @@ class KafkaConsumerTest(
 			tiltakskode = Tiltakskode.OPPFOLGING,
 		)
 
-		kafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKERLISTE_V2_TOPIC,
 				deltakerlistePayload.id.toString(),
-				objectMapper.writeValueAsString(deltakerlistePayload),
+				staticObjectMapper.writeValueAsString(deltakerlistePayload),
 			),
 		)
 
-		await().atMost(5, TimeUnit.SECONDS).until {
-			deltakerlisteRepository.get(deltakerlistePayload.id) != null
+		await().untilAsserted {
+			deltakerlisteRepository.get(deltakerlistePayload.id).shouldNotBeNull()
 		}
 	}
 
@@ -109,11 +108,11 @@ class KafkaConsumerTest(
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.melding.id)
 		mockVeilarboppfolgingServer.addResponse()
 
-		kafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
-				objectMapper.writeValueAsString(ctx.deltaker.toDto()),
+				staticObjectMapper.writeValueAsString(ctx.deltaker.toDto()),
 			),
 		)
 
@@ -164,11 +163,11 @@ class KafkaConsumerTest(
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, nyId)
 		mockVeilarboppfolgingServer.addResponse()
 
-		kafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
-				objectMapper.writeValueAsString(endretDeltaker.toDto()),
+				staticObjectMapper.writeValueAsString(endretDeltaker.toDto()),
 			),
 		)
 
@@ -207,7 +206,7 @@ class KafkaConsumerTest(
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
 		mockVeilarboppfolgingServer.addResponse()
 
-		kafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
@@ -243,7 +242,7 @@ class KafkaConsumerTest(
 		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
 		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
 
-		kafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				ctx.deltaker.id.toString(),
@@ -271,7 +270,7 @@ class KafkaConsumerTest(
 		deltakerlisteRepository.upsert(deltakerliste)
 		deltakerRepository.upsert(deltaker, offset)
 
-		kafkaProducer.send(
+		kafkaTemplate.send(
 			ProducerRecord(
 				DELTAKER_TOPIC,
 				deltaker.id.toString(),

@@ -1,12 +1,12 @@
 package no.nav.amt.aktivitetskort.kafka.consumer
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
+import no.nav.amt.aktivitetskort.TestUtils.staticObjectMapper
 import no.nav.amt.aktivitetskort.kafka.consumer.dto.AktivitetskortFeilmelding
-import no.nav.amt.lib.utils.objectMapper
+import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.readValue
 import java.time.Year
 import java.time.ZonedDateTime
-import kotlin.test.Test
 
 class AktivitetskortFeilmeldingTest {
 	@Test
@@ -23,7 +23,7 @@ class AktivitetskortFeilmeldingTest {
 			}
 			""".trimIndent()
 
-		val deserialized = objectMapper.readValue<AktivitetskortFeilmelding>(json)
+		val deserialized = staticObjectMapper.readValue<AktivitetskortFeilmelding>(json)
 
 		deserialized.timestamp shouldBe ZonedDateTime.parse("${Year.now()}-01-02T11:34:56Z")
 	}
