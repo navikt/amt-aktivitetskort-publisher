@@ -229,18 +229,14 @@ class AktivitetskortService(
 		endretAv = EndretAv(AKTIVITETSKORT_APP_NAME, IdentType.SYSTEM),
 		endretTidspunkt = LocalDateTime.now(),
 		avtaltMedNav = deltaker.status.type !in IKKE_AVTALT_MED_NAV_STATUSER,
-		oppgave = oppgaver(deltaker, deltakerliste, arrangor),
+		oppgave = oppgaver(deltaker, deltakerliste),
 		handlinger = getHandlinger(deltaker),
 		detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor),
 		etiketter = listOfNotNull(deltakerStatusTilEtikett(deltaker.status)),
 		tiltakstype = deltakerliste.tiltak.tiltakskode.toAktivitetskortTiltakstype(),
 	)
 
-	private fun oppgaver(
-		deltaker: Deltaker,
-		deltakerliste: Deltakerliste,
-		arrangor: Arrangor,
-	): OppgaveWrapper? {
+	private fun oppgaver(deltaker: Deltaker, deltakerliste: Deltakerliste): OppgaveWrapper? {
 		if (!unleashToggle.erKometMasterForTiltakstype(deltakerliste.tiltak.tiltakskode)) {
 			return null
 		}
@@ -249,28 +245,13 @@ class AktivitetskortService(
 			return null
 		}
 
-		val (tekst, subtekst) = oppgavetekst(deltaker, arrangor)
-
 		return OppgaveWrapper(
 			ekstern = Oppgave(
-				tekst = tekst,
-				subtekst = subtekst,
+				tekst = "Du har mottatt et utkast til påmelding",
+				subtekst = "Vi vil at du leser gjennom og godkjenner utkastet, slik at vi kan melde deg på aktiviteten.",
 				url = deltaker.deltakerUrl(),
 			),
 			intern = null,
-		)
-	}
-
-	private fun oppgavetekst(deltaker: Deltaker, arrangor: Arrangor): Pair<String, String> = if (deltaker.deltarPaKurs) {
-		Pair(
-			"Du har mottatt et utkast til søknad",
-			"Før søknaden sendes vil vi gjerne at du leser gjennom. Hvis du godkjenner utkastet blir søknaden sendt inn.",
-		)
-	} else {
-		Pair(
-			"Du har mottatt et utkast til påmelding",
-			"Før vi sender dette til ${arrangor.navn} vil vi gjerne at du leser gjennom. " +
-				"Hvis du godkjenner utkastet blir du meldt på, vedtaket fattes og ${arrangor.navn} mottar informasjon.",
 		)
 	}
 
