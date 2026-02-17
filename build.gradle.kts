@@ -1,5 +1,5 @@
 plugins {
-	val kotlinVersion = "2.3.0"
+	val kotlinVersion = "2.3.10"
 	id("org.springframework.boot") version "4.0.2"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
@@ -19,7 +19,7 @@ repositories {
 val logstashEncoderVersion = "9.0"
 val okHttpVersion = "5.3.2"
 val kafkaClientsVersion = "4.1.1"
-val kotestVersion = "6.1.2"
+val kotestVersion = "6.1.3"
 val klintVersion = "1.4.1"
 val mockkVersion = "1.14.9"
 val commonVersion = "3.2025.11.10_14.07-a9f44944d7bc"
