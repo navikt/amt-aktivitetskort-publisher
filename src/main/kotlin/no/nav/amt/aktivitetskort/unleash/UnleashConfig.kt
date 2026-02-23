@@ -3,6 +3,7 @@ package no.nav.amt.aktivitetskort.unleash
 import io.getunleash.DefaultUnleash
 import io.getunleash.Unleash
 import io.getunleash.util.UnleashConfig
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -25,6 +26,9 @@ class UnleashConfig {
 			.build()
 		return DefaultUnleash(config)
 	}
+
+	@Bean
+	fun commonUnleashToggle(unleash: Unleash): CommonUnleashToggle = CommonUnleashToggle(unleash)
 
 	companion object {
 		const val AKTIVITETSKORT_APP_NAME = "amt-aktivitetskort-publisher"

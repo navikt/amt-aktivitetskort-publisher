@@ -23,11 +23,11 @@ import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.MeldingRepository
 import no.nav.amt.aktivitetskort.repositories.OppfolgingsperiodeRepository
-import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.shouldBeCloseTo
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -60,7 +60,7 @@ class AktivitetskortServiceTest {
 		deltakerRepository = deltakerRepository,
 		aktivitetArenaAclClient = aktivitetArenaAclClient,
 		amtArenaAclClient = amtArenaAclClient,
-		unleashToggle = UnleashToggle(unleash),
+		unleashToggle = CommonUnleashToggle(unleash),
 		veilarboppfolgingClient = veilarboppfolgingClient,
 		oppfolgingsperiodeRepository = oppfolgingsperiodeRepository,
 		transactionTemplate = transactionTemplate,
