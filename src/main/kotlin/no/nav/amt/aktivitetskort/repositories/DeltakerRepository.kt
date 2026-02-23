@@ -2,13 +2,13 @@ package no.nav.amt.aktivitetskort.repositories
 
 import no.nav.amt.aktivitetskort.domain.Deltaker
 import no.nav.amt.aktivitetskort.domain.DeltakerStatusModel
-import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.aktivitetskort.utils.getNullableLocalDateTime
 import no.nav.amt.aktivitetskort.utils.sqlParameters
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.DeltakerStatus.Companion.avsluttendeStatuser
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -19,7 +19,7 @@ import java.util.UUID
 @Repository
 class DeltakerRepository(
 	private val template: NamedParameterJdbcTemplate,
-	private val unleashToggle: UnleashToggle,
+	private val unleashToggle: CommonUnleashToggle,
 ) {
 	val lanseringAktivitetsplan: LocalDate = LocalDate.of(2017, 12, 4)
 
@@ -67,7 +67,7 @@ class DeltakerRepository(
 			return RepositoryResult.NoChange()
 		}
 
-		if (deltaker.isEqualTo(oldDeltaker?.deltaker) && !unleashToggle.skalOppdatereForUendretDeltaker()) return RepositoryResult.NoChange()
+		if (deltaker.isEqualTo(oldDeltaker?.deltaker) && !unleashToggle.skalOppdatereUendredeAktivitetskort()) return RepositoryResult.NoChange()
 
 		if (deltaker.status.type in avsluttendeStatuser &&
 			deltaker.sluttdato?.isBefore(lanseringAktivitetsplan) == true &&

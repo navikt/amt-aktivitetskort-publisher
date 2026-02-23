@@ -20,11 +20,11 @@ import no.nav.amt.aktivitetskort.repositories.ArrangorRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerRepository
 import no.nav.amt.aktivitetskort.repositories.DeltakerlisteRepository
 import no.nav.amt.aktivitetskort.repositories.TiltakstypeRepository
-import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.aktivitetskort.utils.RepositoryResult
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -43,7 +43,7 @@ class KafkaConsumerServiceTest {
 	private val aktivitetskortProducer = mockk<AktivitetskortProducer>(relaxed = true)
 	private val tiltakstypeRepository = mockk<TiltakstypeRepository>()
 	private val transactionTemplate = mockk<TransactionTemplate>()
-	private val unleashToggle = mockk<UnleashToggle>()
+	private val unleashToggle = mockk<CommonUnleashToggle>()
 
 	private val ctx: TestData.MockContext = TestData.MockContext()
 

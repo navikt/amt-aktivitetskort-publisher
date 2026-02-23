@@ -28,10 +28,10 @@ import no.nav.amt.aktivitetskort.repositories.OppfolgingsperiodeRepository
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.aktivitetskort.unleash.UnleashConfig.Companion.AKTIVITETSKORT_APP_NAME
-import no.nav.amt.aktivitetskort.unleash.UnleashToggle
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.DeltakerStatus.Companion.avsluttendeStatuser
 import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -47,7 +47,7 @@ class AktivitetskortService(
 	private val deltakerRepository: DeltakerRepository,
 	private val aktivitetArenaAclClient: AktivitetArenaAclClient,
 	private val amtArenaAclClient: AmtArenaAclClient,
-	private val unleashToggle: UnleashToggle,
+	private val unleashToggle: CommonUnleashToggle,
 	private val veilarboppfolgingClient: VeilarboppfolgingClient,
 	private val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
 	private val transactionTemplate: TransactionTemplate,
