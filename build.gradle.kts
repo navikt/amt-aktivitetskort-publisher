@@ -22,14 +22,13 @@ val kafkaClientsVersion = "4.2.0"
 val kotestVersion = "6.1.3"
 val klintVersion = "1.4.1"
 val mockkVersion = "1.14.9"
-val commonVersion = "3.2025.11.10_14.07-a9f44944d7bc"
+val commonVersion = "3.2026.03.03_07.58-86d37775258a"
 val tokenSupportVersion = "6.0.1"
 val unleashVersion = "12.1.2"
 val amtLibVersion = "1.2026.02.23_08.30-77f31be8b175"
 val jacksonModuleKotlinVersion = "3.1.0"
 
 dependencies {
-	implementation("at.yawk.lz4:lz4-java:1.10.3") // fjernes ved neste release av org.apache.kafka:kafka-clients
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
