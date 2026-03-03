@@ -28,17 +28,6 @@ val unleashVersion = "12.1.2"
 val amtLibVersion = "1.2026.02.23_08.30-77f31be8b175"
 val jacksonModuleKotlinVersion = "3.1.0"
 
-// fjernes ved neste release av org.apache.kafka:kafka-clients
-configurations.configureEach {
-	resolutionStrategy {
-		capabilitiesResolution {
-			withCapability("org.lz4:lz4-java") {
-				select(candidates.first { (it.id as ModuleComponentIdentifier).group == "at.yawk.lz4" })
-			}
-		}
-	}
-}
-
 dependencies {
 	implementation("at.yawk.lz4:lz4-java:1.10.3") // fjernes ved neste release av org.apache.kafka:kafka-clients
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
