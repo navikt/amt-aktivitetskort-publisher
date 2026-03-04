@@ -25,7 +25,7 @@ val mockkVersion = "1.14.9"
 val commonVersion = "3.2026.03.03_07.58-86d37775258a"
 val tokenSupportVersion = "6.0.1"
 val unleashVersion = "12.1.2"
-val amtLibVersion = "1.2026.02.23_08.30-77f31be8b175"
+val amtLibVersion = "1.2026.03.01_23.16-831b1856e93b"
 val jacksonModuleKotlinVersion = "3.1.0"
 
 dependencies {
@@ -58,8 +58,8 @@ dependencies {
 
 	implementation("io.getunleash:unleash-client-java:$unleashVersion")
 
-	implementation("no.nav.amt.lib:models:$amtLibVersion")
-	implementation("no.nav.amt.lib:utils:$amtLibVersion")
+	implementation("no.nav.amt.deltakelser.lib:models:$amtLibVersion")
+	implementation("no.nav.amt.deltakelser.lib:utils:$amtLibVersion")
 
 	testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
 	testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
@@ -77,7 +77,7 @@ dependencies {
 	testImplementation("io.mockk:mockk-jvm:$mockkVersion")
 	testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 
-	testImplementation("no.nav.amt.lib:kafka:$amtLibVersion")
+	testImplementation("no.nav.amt.deltakelser.lib:kafka:$amtLibVersion")
 }
 
 kotlin {
