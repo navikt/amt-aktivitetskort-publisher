@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
 	val kotlinVersion = "2.3.10"
 	id("org.springframework.boot") version "4.0.3"
@@ -25,7 +27,7 @@ val mockkVersion = "1.14.9"
 val commonVersion = "3.2026.03.03_07.58-86d37775258a"
 val tokenSupportVersion = "6.0.1"
 val unleashVersion = "12.1.2"
-val amtLibVersion = "1.2026.03.01_23.16-831b1856e93b"
+val amtLibVersion = "1.2026.03.09_08.53-79eac2a4df2a"
 val jacksonModuleKotlinVersion = "3.1.0"
 
 dependencies {
@@ -81,8 +83,9 @@ dependencies {
 }
 
 kotlin {
-	jvmToolchain(21)
+	jvmToolchain(25)
 	compilerOptions {
+		jvmTarget = JvmTarget.JVM_25
 		freeCompilerArgs.addAll(
 			"-Xjsr305=strict",
 			"-Xannotation-default-target=param-property",
