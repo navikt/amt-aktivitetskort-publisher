@@ -78,8 +78,6 @@ dependencies {
 
 	testImplementation("io.mockk:mockk-jvm:$mockkVersion")
 	testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
-
-	testImplementation("no.nav.amt.deltakelser.lib:kafka:$amtLibVersion")
 }
 
 kotlin {
