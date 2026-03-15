@@ -27,7 +27,7 @@ val mockkVersion = "1.14.9"
 val commonVersion = "3.2026.03.03_07.58-86d37775258a"
 val tokenSupportVersion = "6.0.1"
 val unleashVersion = "12.2.0"
-val amtLibVersion = "1.2026.03.09_15.52-6a513965cd5d"
+val amtLibVersion = "1.2026.03.15_00.13-2aec41852959"
 val jacksonModuleKotlinVersion = "3.1.0"
 
 dependencies {
