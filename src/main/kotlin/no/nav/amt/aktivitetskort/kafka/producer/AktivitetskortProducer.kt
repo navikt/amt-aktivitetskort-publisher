@@ -59,7 +59,7 @@ class AktivitetskortProducer(
 			AKTIVITETSKORT_TOPIC,
 			aktivitetskortId.toString(),
 			objectMapper.writeValueAsString(payload),
-		)
+		).get()
 
 		log.info("Slettet aktivitetskort: $aktivitetskortId")
 	}
