@@ -55,11 +55,12 @@ class AktivitetskortProducer(
 			begrunnelse = "Kassering av duplikat aktivitetskort",
 		)
 
-		template.send(
-			AKTIVITETSKORT_TOPIC,
-			aktivitetskortId.toString(),
-			objectMapper.writeValueAsString(payload),
-		).get()
+		template
+			.send(
+				AKTIVITETSKORT_TOPIC,
+				aktivitetskortId.toString(),
+				objectMapper.writeValueAsString(payload),
+			).get()
 
 		log.info("Slettet aktivitetskort: $aktivitetskortId")
 	}
