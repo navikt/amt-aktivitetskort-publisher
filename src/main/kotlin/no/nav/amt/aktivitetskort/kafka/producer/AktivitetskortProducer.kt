@@ -2,6 +2,7 @@ package no.nav.amt.aktivitetskort.kafka.producer
 
 import no.nav.amt.aktivitetskort.domain.Aktivitetskort
 import no.nav.amt.aktivitetskort.kafka.consumer.AKTIVITETSKORT_TOPIC
+import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortKasseringPayload
 import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortPayload
 import no.nav.amt.aktivitetskort.service.MetricsService
 import org.slf4j.LoggerFactory
@@ -39,5 +40,27 @@ class AktivitetskortProducer(
 			log.info("Sendte aktivitetskort til aktivitetsplanen: ${currentAktivitetskort.id}} messageId: $messageId")
 			metricsService.incSendtAktivitetskort()
 		}
+	}
+
+	fun slettAktivitetskort(
+		aktivitetskortId: UUID,
+		personIdent: String,
+		navIdent: String,
+	) {
+		val payload = AktivitetskortKasseringPayload(
+			messageId = aktivitetskortId,
+			aktivitetsId = aktivitetskortId,
+			personIdent = personIdent,
+			navIdent = navIdent,
+			begrunnelse = "Kassering av duplikat aktivitetskort",
+		)
+
+		template.send(
+			AKTIVITETSKORT_TOPIC,
+			aktivitetskortId.toString(),
+			objectMapper.writeValueAsString(payload),
+		)
+
+		log.info("Slettet aktivitetskort: $aktivitetskortId")
 	}
 }

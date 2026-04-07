@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -121,8 +122,29 @@ class InternalAPI(
 		throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 	}
 
+	@Unprotected
+	@PostMapping("/slett/")
+	fun slettAktivitetskort(
+		servlet: HttpServletRequest,
+		@RequestBody body: SlettAktivitetskortBody,
+	) = if (isInternal(servlet)) {
+		aktivitetskortProducer.slettAktivitetskort(
+			aktivitetskortId = body.aktivitetskortId,
+			personIdent = body.personIdent,
+			navIdent = body.navIdent,
+		)
+	} else {
+		throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+	}
+
 	data class DeltakereBody(
 		val deltakere: List<UUID>,
+	)
+
+	data class SlettAktivitetskortBody(
+		val aktivitetskortId: UUID,
+		val personIdent: String,
+		val navIdent: String,
 	)
 
 	companion object {
