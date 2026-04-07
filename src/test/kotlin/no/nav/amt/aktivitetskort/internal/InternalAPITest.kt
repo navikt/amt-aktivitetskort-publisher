@@ -54,7 +54,7 @@ class InternalAPITest : IntegrationTest() {
 		val body = """{"aktivitetskortId": "$aktivitetskortId", "personIdent": "12345678901", "navIdent": "Z123456"}"""
 
 		kafkaConsumer().use { consumer ->
-			postInternal("/internal/slett/", body).code shouldBe 200
+			postInternal("/internal/slett/", body).use { it.code shouldBe 200 }
 
 			var payload: AktivitetskortKasseringPayload? = null
 			await().atMost(10, TimeUnit.SECONDS).untilAsserted {
@@ -80,6 +80,6 @@ class InternalAPITest : IntegrationTest() {
 		postInternal(
 			"/internal/slett/",
 			"""{ "aktivitetskortId": "${UUID.randomUUID()}" }""",
-		).code shouldBe 400
+		).use { it.code shouldBe 400 }
 	}
 }
