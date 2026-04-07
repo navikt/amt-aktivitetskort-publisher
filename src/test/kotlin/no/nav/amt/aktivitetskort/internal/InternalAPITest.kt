@@ -42,7 +42,10 @@ class InternalAPITest : IntegrationTest() {
 		),
 	).also {
 		it.subscribe(listOf(AKTIVITETSKORT_TOPIC))
-		while (it.assignment().isEmpty()) it.poll(Duration.ofMillis(100))
+		await().atMost(10, TimeUnit.SECONDS).until {
+			it.poll(Duration.ofMillis(100))
+			it.assignment().isNotEmpty()
+		}
 	}
 
 	@Test
