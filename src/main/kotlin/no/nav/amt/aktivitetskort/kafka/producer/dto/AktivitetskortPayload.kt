@@ -2,7 +2,8 @@ package no.nav.amt.aktivitetskort.kafka.producer.dto
 
 import no.nav.amt.aktivitetskort.domain.AktivitetskortTiltakstype
 import no.nav.amt.aktivitetskort.kafka.consumer.SOURCE
-import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.UUID
 
 data class AktivitetskortPayload(
@@ -20,6 +21,6 @@ data class AktivitetskortKasseringPayload(
 	val personIdent: String,
 	val navIdent: String,
 	val begrunnelse: String,
-	val sendt: String = LocalDateTime.now().toString(),
+	val sendt: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC),
 	val source: String = SOURCE,
 )
