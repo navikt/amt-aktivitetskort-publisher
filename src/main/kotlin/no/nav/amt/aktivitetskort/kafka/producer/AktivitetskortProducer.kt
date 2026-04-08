@@ -48,7 +48,7 @@ class AktivitetskortProducer(
 		navIdent: String,
 	) {
 		val payload = AktivitetskortKasseringPayload(
-			messageId = aktivitetskortId,
+			messageId = UUID.randomUUID(),
 			aktivitetsId = aktivitetskortId,
 			personIdent = personIdent,
 			navIdent = navIdent,
