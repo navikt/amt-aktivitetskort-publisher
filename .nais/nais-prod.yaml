@@ -20,15 +20,21 @@ spec:
         insights:
           enabled: true
   port: 8080
+  terminationGracePeriodSeconds: 60
   prometheus:
     enabled: true
     path: /internal/prometheus
+
+  startup:
+    path: /internal/health/liveness
+    initialDelay: 5
+    periodSeconds: 5
+    failureThreshold: 10
   readiness:
     path: /internal/health/readiness
-    initialDelay: 30
   liveness:
     path: /internal/health/liveness
-    initialDelay: 30
+
   replicas:
     min: 1
     max: 3
@@ -63,7 +69,7 @@ spec:
     - secret: amt-aktivitetskort-publisher-unleash-api-token
   env:
     - name: JDK_JAVA_OPTIONS
-      value: "-XX:MaxRAMPercentage=75.0"
+      value: "-XX:MaxRAMPercentage=75.0 -Xshare:off --enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow"
     - name: AMT_ARENA_ACL_URL
       value: http://amt-arena-acl.amt.svc.cluster.local
     - name: AMT_ARENA_ACL_SCOPE
