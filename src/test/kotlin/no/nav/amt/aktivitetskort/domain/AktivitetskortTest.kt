@@ -29,7 +29,7 @@ class AktivitetskortTest {
 
                         Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "VTA"
 
-                        Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> "Gruppe yrkesfaglig utanning"
+                        Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> "Gruppe yrkesfaglig utdanning"
 
                         Tiltakskode.HOYERE_UTDANNING,
                         Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
