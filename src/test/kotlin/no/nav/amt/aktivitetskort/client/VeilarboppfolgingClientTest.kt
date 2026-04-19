@@ -18,68 +18,68 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 class VeilarboppfolgingClientTest : ClientTestBase() {
-	private lateinit var client: VeilarboppfolgingClient
+    private lateinit var client: VeilarboppfolgingClient
 
-	@BeforeEach
-	fun createClient() {
-		client = VeilarboppfolgingClient(
-			baseUrl = server.url("/").toString().removeSuffix("/"),
-			veilarboppfolgingTokenProvider = tokenProvider,
-			objectMapper = staticObjectMapper,
-		)
-	}
+    @BeforeEach
+    fun createClient() {
+        client = VeilarboppfolgingClient(
+            baseUrl = server.url("/").toString().removeSuffix("/"),
+            veilarboppfolgingTokenProvider = tokenProvider,
+            objectMapper = staticObjectMapper,
+        )
+    }
 
-	@ParameterizedTest
-	@ValueSource(booleans = [true, false])
-	fun `hentOppfolgingperiode - returnerer gyldig oppfolgingsperiode`(useEndDate: Boolean) {
-		val expected = createOppfolgingPeriodeDTO(useEndDate)
-		val expectedAsJson = staticObjectMapper.writeValueAsString(expected)
-		enqueueJson(expectedAsJson)
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun `hentOppfolgingperiode - returnerer gyldig oppfolgingsperiode`(useEndDate: Boolean) {
+        val expected = createOppfolgingPeriodeDTO(useEndDate)
+        val expectedAsJson = staticObjectMapper.writeValueAsString(expected)
+        enqueueJson(expectedAsJson)
 
-		val oppfolgingsperiode = client.hentOppfolgingperiode("123456789")
+        val oppfolgingsperiode = client.hentOppfolgingperiode("123456789")
 
-		assertSoftly(oppfolgingsperiode.shouldNotBeNull()) {
-			id shouldBe expected.uuid
-			startDato shouldBe nowAsLocalDateTime
+        assertSoftly(oppfolgingsperiode.shouldNotBeNull()) {
+            id shouldBe expected.uuid
+            startDato shouldBe nowAsLocalDateTime
 
-			if (sluttDato != null) {
-				sluttDato shouldBe nowAsLocalDateTime.plusDays(1)
-			} else {
-				sluttDato.shouldBeNull()
-			}
-		}
-	}
+            if (sluttDato != null) {
+                sluttDato shouldBe nowAsLocalDateTime.plusDays(1)
+            } else {
+                sluttDato.shouldBeNull()
+            }
+        }
+    }
 
-	@Test
-	fun `hentOppfolgingperiode - returnerer null ved 204 No Content`() {
-		enqueueHttpStatus(HttpStatus.NO_CONTENT)
+    @Test
+    fun `hentOppfolgingperiode - returnerer null ved 204 No Content`() {
+        enqueueHttpStatus(HttpStatus.NO_CONTENT)
 
-		val result = client.hentOppfolgingperiode("12345678910")
+        val result = client.hentOppfolgingperiode("12345678910")
 
-		result.shouldBeNull()
-	}
+        result.shouldBeNull()
+    }
 
-	@Test
-	fun `hentOppfolgingperiode - kaster feil ved 500 status`() {
-		enqueueHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @Test
+    fun `hentOppfolgingperiode - kaster feil ved 500 status`() {
+        enqueueHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 
-		val thrown = shouldThrow<RuntimeException> {
-			client.hentOppfolgingperiode("12345678910")
-		}
+        val thrown = shouldThrow<RuntimeException> {
+            client.hentOppfolgingperiode("12345678910")
+        }
 
-		thrown.message shouldBe "Uventet status ved hent status-kall mot veilarboppfolging 500"
-	}
+        thrown.message shouldBe "Uventet status ved hent status-kall mot veilarboppfolging 500"
+    }
 
-	companion object {
-		private val nowAsZonedDateTimeUtc: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
-		private val nowAsLocalDateTime: LocalDateTime = nowAsZonedDateTimeUtc
-			.withZoneSameInstant(ZoneId.systemDefault())
-			.toLocalDateTime()
+    companion object {
+        private val nowAsZonedDateTimeUtc: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+        private val nowAsLocalDateTime: LocalDateTime = nowAsZonedDateTimeUtc
+            .withZoneSameInstant(ZoneId.systemDefault())
+            .toLocalDateTime()
 
-		private fun createOppfolgingPeriodeDTO(useEndDate: Boolean) = VeilarboppfolgingClient.OppfolgingPeriodeDTO(
-			uuid = UUID.randomUUID(),
-			startDato = nowAsZonedDateTimeUtc,
-			sluttDato = if (useEndDate) nowAsZonedDateTimeUtc.plusDays(1) else null,
-		)
-	}
+        private fun createOppfolgingPeriodeDTO(useEndDate: Boolean) = VeilarboppfolgingClient.OppfolgingPeriodeDTO(
+            uuid = UUID.randomUUID(),
+            startDato = nowAsZonedDateTimeUtc,
+            sluttDato = if (useEndDate) nowAsZonedDateTimeUtc.plusDays(1) else null,
+        )
+    }
 }

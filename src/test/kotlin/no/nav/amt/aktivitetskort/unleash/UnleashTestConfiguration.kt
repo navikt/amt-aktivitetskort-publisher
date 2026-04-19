@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Bean
 
 @TestConfiguration(proxyBeanMethods = false)
 class UnleashTestConfiguration {
-	@Bean
-	fun unleashClient() = FakeUnleash().apply { enableAll() }
+    @Bean
+    fun unleashClient() = FakeUnleash().apply { enableAll() }
 
-	@Bean
-	fun unleashToggle(unleash: Unleash) = CommonUnleashToggle(unleash)
+    @Bean
+    fun unleashToggle(unleash: Unleash) = CommonUnleashToggle(unleash)
 }

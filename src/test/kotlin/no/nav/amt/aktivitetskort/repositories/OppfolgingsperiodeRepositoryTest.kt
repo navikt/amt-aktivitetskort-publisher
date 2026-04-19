@@ -13,63 +13,63 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class OppfolgingsperiodeRepositoryTest(
-	private val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
+    private val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
 ) : RepositoryTestBase() {
-	@ParameterizedTest
-	@ValueSource(booleans = [true, false])
-	fun `upsert - ny periode med eller uten sluttdato gir korrekt resultat`(useEndDate: Boolean) {
-		val expected = createExpected(useEndDate)
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun `upsert - ny periode med eller uten sluttdato gir korrekt resultat`(useEndDate: Boolean) {
+        val expected = createExpected(useEndDate)
 
-		val actual = oppfolgingsperiodeRepository.upsert(expected)
+        val actual = oppfolgingsperiodeRepository.upsert(expected)
 
-		assertSoftly(actual) {
-			id shouldBe expected.id
-			startDato.shouldBeCloseTo(now)
+        assertSoftly(actual) {
+            id shouldBe expected.id
+            startDato.shouldBeCloseTo(now)
 
-			if (useEndDate) {
-				sluttDato.shouldNotBeNull()
-				sluttDato.shouldBeCloseTo(tomorrow)
-			} else {
-				sluttDato.shouldBeNull()
-			}
-		}
-	}
+            if (useEndDate) {
+                sluttDato.shouldNotBeNull()
+                sluttDato.shouldBeCloseTo(tomorrow)
+            } else {
+                sluttDato.shouldBeNull()
+            }
+        }
+    }
 
-	@Test
-	fun `upsert - eksisterende periode oppdateres med ny sluttdato`() {
-		val expected = createExpected(true)
+    @Test
+    fun `upsert - eksisterende periode oppdateres med ny sluttdato`() {
+        val expected = createExpected(true)
 
-		var actual = oppfolgingsperiodeRepository.upsert(expected)
-		assertSoftly(actual.sluttDato.shouldNotBeNull()) {
-			it.shouldBeCloseTo(tomorrow)
-		}
+        var actual = oppfolgingsperiodeRepository.upsert(expected)
+        assertSoftly(actual.sluttDato.shouldNotBeNull()) {
+            it.shouldBeCloseTo(tomorrow)
+        }
 
-		actual = oppfolgingsperiodeRepository.upsert(expected.copy(sluttDato = nextWeek))
-		assertSoftly(actual.sluttDato.shouldNotBeNull()) {
-			it.shouldBeCloseTo(nextWeek)
-		}
-	}
+        actual = oppfolgingsperiodeRepository.upsert(expected.copy(sluttDato = nextWeek))
+        assertSoftly(actual.sluttDato.shouldNotBeNull()) {
+            it.shouldBeCloseTo(nextWeek)
+        }
+    }
 
-	@Test
-	fun `upsert - eksisterende periode kan fa fjernet sluttdato`() {
-		val expected = createExpected(true)
+    @Test
+    fun `upsert - eksisterende periode kan fa fjernet sluttdato`() {
+        val expected = createExpected(true)
 
-		var actual = oppfolgingsperiodeRepository.upsert(expected)
-		actual.sluttDato.shouldNotBeNull()
+        var actual = oppfolgingsperiodeRepository.upsert(expected)
+        actual.sluttDato.shouldNotBeNull()
 
-		actual = oppfolgingsperiodeRepository.upsert(expected.copy(sluttDato = null))
-		actual.sluttDato.shouldBeNull()
-	}
+        actual = oppfolgingsperiodeRepository.upsert(expected.copy(sluttDato = null))
+        actual.sluttDato.shouldBeNull()
+    }
 
-	companion object {
-		private val now: LocalDateTime = LocalDateTime.now()
-		private val tomorrow: LocalDateTime = now.plusDays(1)
-		private val nextWeek: LocalDateTime = now.plusDays(7)
+    companion object {
+        private val now: LocalDateTime = LocalDateTime.now()
+        private val tomorrow: LocalDateTime = now.plusDays(1)
+        private val nextWeek: LocalDateTime = now.plusDays(7)
 
-		private fun createExpected(useEndDate: Boolean) = Oppfolgingsperiode(
-			id = UUID.randomUUID(),
-			startDato = now,
-			sluttDato = if (useEndDate) tomorrow else null,
-		)
-	}
+        private fun createExpected(useEndDate: Boolean) = Oppfolgingsperiode(
+            id = UUID.randomUUID(),
+            startDato = now,
+            sluttDato = if (useEndDate) tomorrow else null,
+        )
+    }
 }

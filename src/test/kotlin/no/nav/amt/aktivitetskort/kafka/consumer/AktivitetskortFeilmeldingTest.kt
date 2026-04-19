@@ -9,22 +9,22 @@ import java.time.Year
 import java.time.ZonedDateTime
 
 class AktivitetskortFeilmeldingTest {
-	@Test
-	fun `skal deserialisere JSON til AktivitetskortFeilmelding`() {
-		val json =
-			"""
-			{
-			  "key": "123e4567-e89b-12d3-a456-426614174000",
-			  "source": "some-source",
-			  "timestamp": "${Year.now()}-01-02T12:34:56+01:00",
-			  "failingMessage": "original message",
-			  "errorMessage": "noe gikk galt",
-			  "errorType": "TECHNICAL"
-			}
-			""".trimIndent()
+    @Test
+    fun `skal deserialisere JSON til AktivitetskortFeilmelding`() {
+        val json =
+            """
+            {
+              "key": "123e4567-e89b-12d3-a456-426614174000",
+              "source": "some-source",
+              "timestamp": "${Year.now()}-01-02T12:34:56+01:00",
+              "failingMessage": "original message",
+              "errorMessage": "noe gikk galt",
+              "errorType": "TECHNICAL"
+            }
+            """.trimIndent()
 
-		val deserialized = staticObjectMapper.readValue<AktivitetskortFeilmelding>(json)
+        val deserialized = staticObjectMapper.readValue<AktivitetskortFeilmelding>(json)
 
-		deserialized.timestamp shouldBe ZonedDateTime.parse("${Year.now()}-01-02T11:34:56Z")
-	}
+        deserialized.timestamp shouldBe ZonedDateTime.parse("${Year.now()}-01-02T11:34:56Z")
+    }
 }

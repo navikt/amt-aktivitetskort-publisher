@@ -18,36 +18,36 @@ import javax.sql.DataSource
 
 @ActiveProfiles("test")
 @SpringBootTest(
-	classes = [
-		ArrangorRepository::class, DeltakerlisteRepository::class, DeltakerRepository::class,
-		FeilmeldingRepository::class, MeldingRepository::class, OppfolgingsperiodeRepository::class,
-		TiltakstypeRepository::class, UnleashTestConfiguration::class, TestDatabaseService::class,
-	],
+    classes = [
+        ArrangorRepository::class, DeltakerlisteRepository::class, DeltakerRepository::class,
+        FeilmeldingRepository::class, MeldingRepository::class, OppfolgingsperiodeRepository::class,
+        TiltakstypeRepository::class, UnleashTestConfiguration::class, TestDatabaseService::class,
+    ],
 )
 @AutoConfigureJdbc
 @AutoConfigureJson
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 abstract class RepositoryTestBase {
-	@Autowired
-	private lateinit var dataSource: DataSource
+    @Autowired
+    private lateinit var dataSource: DataSource
 
-	@Autowired
-	protected lateinit var testDatabase: TestDatabaseService
+    @Autowired
+    protected lateinit var testDatabase: TestDatabaseService
 
-	@AfterEach
-	fun cleanDatabase() = DbTestDataUtils.cleanDatabase(dataSource)
+    @AfterEach
+    fun cleanDatabase() = DbTestDataUtils.cleanDatabase(dataSource)
 
-	companion object {
-		private const val POSTGRES_DOCKER_IMAGE_NAME = "postgres:17-alpine"
+    companion object {
+        private const val POSTGRES_DOCKER_IMAGE_NAME = "postgres:17-alpine"
 
-		@ServiceConnection
-		private val postgres = PostgreSQLContainer(
-			DockerImageName
-				.parse(POSTGRES_DOCKER_IMAGE_NAME)
-				.asCompatibleSubstituteFor("postgres"),
-		).apply {
-			addEnv("TZ", "Europe/Oslo")
-			waitingFor(Wait.forListeningPort())
-		}
-	}
+        @ServiceConnection
+        private val postgres = PostgreSQLContainer(
+            DockerImageName
+                .parse(POSTGRES_DOCKER_IMAGE_NAME)
+                .asCompatibleSubstituteFor("postgres"),
+        ).apply {
+            addEnv("TZ", "Europe/Oslo")
+            waitingFor(Wait.forListeningPort())
+        }
+    }
 }

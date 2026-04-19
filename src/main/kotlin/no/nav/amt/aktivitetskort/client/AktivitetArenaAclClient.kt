@@ -16,36 +16,36 @@ import java.util.function.Supplier
  *  Swagger: https://aktivitet-arena-acl.intern.dev.nav.no/internal/swagger-ui/index.html#/TranslationController/finnAktivitetsIdForArenaId
  */
 class AktivitetArenaAclClient(
-	private val baseUrl: String,
-	private val tokenProvider: Supplier<String>,
-	private val objectMapper: ObjectMapper,
-	private val httpClient: OkHttpClient = RestClient.baseClient(),
+    private val baseUrl: String,
+    private val tokenProvider: Supplier<String>,
+    private val objectMapper: ObjectMapper,
+    private val httpClient: OkHttpClient = RestClient.baseClient(),
 ) {
-	fun getAktivitetIdForArenaId(arenaId: Long): UUID {
-		val request = okhttp3.Request
-			.Builder()
-			.url("$baseUrl/api/translation/arenaid")
-			.header("Accept", APPLICATION_JSON_VALUE)
-			.header("Authorization", "Bearer " + tokenProvider.get())
-			.header("Content-Type", APPLICATION_JSON_VALUE)
-			.post(HentAktivitetIdRequest(arenaId).toRequest(objectMapper))
-			.build()
+    fun getAktivitetIdForArenaId(arenaId: Long): UUID {
+        val request = okhttp3.Request
+            .Builder()
+            .url("$baseUrl/api/translation/arenaid")
+            .header("Accept", APPLICATION_JSON_VALUE)
+            .header("Authorization", "Bearer " + tokenProvider.get())
+            .header("Content-Type", APPLICATION_JSON_VALUE)
+            .post(HentAktivitetIdRequest(arenaId).toRequest(objectMapper))
+            .build()
 
-		httpClient.newCall(request).execute().use { response ->
-			if (!response.isSuccessful) {
-				error("Klarte ikke å hente aktivitetId for ArenaId. Status: ${response.code}")
-			}
+        httpClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                error("Klarte ikke å hente aktivitetId for ArenaId. Status: ${response.code}")
+            }
 
-			return objectMapper.readValue(response.body.string())
-		}
-	}
+            return objectMapper.readValue(response.body.string())
+        }
+    }
 
-	data class HentAktivitetIdRequest(
-		val arenaId: Long,
-		val aktivitetKategori: String = "TILTAKSAKTIVITET",
-	) {
-		fun toRequest(objectMapper: ObjectMapper) = objectMapper
-			.writeValueAsString(this)
-			.toRequestBody(APPLICATION_JSON_VALUE.toMediaType())
-	}
+    data class HentAktivitetIdRequest(
+        val arenaId: Long,
+        val aktivitetKategori: String = "TILTAKSAKTIVITET",
+    ) {
+        fun toRequest(objectMapper: ObjectMapper) = objectMapper
+            .writeValueAsString(this)
+            .toRequestBody(APPLICATION_JSON_VALUE.toMediaType())
+    }
 }

@@ -5,15 +5,15 @@ import no.nav.amt.aktivitetskort.utils.toTitleCase
 import java.util.UUID
 
 data class ArrangorDto(
-	val id: UUID,
-	val organisasjonsnummer: String,
-	val navn: String,
-	val overordnetArrangorId: UUID?,
+    val id: UUID,
+    val organisasjonsnummer: String,
+    val navn: String,
+    val overordnetArrangorId: UUID?,
 ) {
-	fun toModel() = Arrangor(
-		this.id,
-		this.organisasjonsnummer,
-		toTitleCase(navn),
-		overordnetArrangorId,
-	)
+    fun toModel() = Arrangor(
+        this.id,
+        this.organisasjonsnummer,
+        toTitleCase(navn),
+        overordnetArrangorId,
+    )
 }

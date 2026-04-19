@@ -11,61 +11,61 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class AmtArrangorClientTest {
-	private lateinit var client: AmtArrangorClient
-	private lateinit var server: MockWebServer
-	private val token = "TOKEN"
+    private lateinit var client: AmtArrangorClient
+    private lateinit var server: MockWebServer
+    private val token = "TOKEN"
 
-	@BeforeEach
-	fun setup() {
-		server = MockWebServer()
-		client = AmtArrangorClient(
-			baseUrl = server.url("").toString().removeSuffix("/"),
-			tokenProvider = { token },
-			objectMapper = staticObjectMapper,
-		)
-	}
+    @BeforeEach
+    fun setup() {
+        server = MockWebServer()
+        client = AmtArrangorClient(
+            baseUrl = server.url("").toString().removeSuffix("/"),
+            tokenProvider = { token },
+            objectMapper = staticObjectMapper,
+        )
+    }
 
-	@AfterEach
-	fun cleanup() {
-		server.shutdown()
-	}
+    @AfterEach
+    fun cleanup() {
+        server.shutdown()
+    }
 
-	@Test
-	fun `hentArrangor - arrangor finnes - parser response og returnerer arrangor`() {
-		val overordnetArrangor = TestData.lagArrangor(navn = "Overordnet Arrangor")
-		val arrangor = TestData.lagArrangor(overordnetArrangorId = overordnetArrangor.id)
-		server.enqueue(
-			MockResponse().setBody(
-				"""
-				{
-					"id": "${arrangor.id}",
-					"organisasjonsnummer": "${arrangor.organisasjonsnummer}",
-					"navn": "${arrangor.navn}",
-					"overordnetArrangor": {
-						"id": "${overordnetArrangor.id}",
-						"organisasjonsnummer": "${overordnetArrangor.organisasjonsnummer}",
-						"navn": "${overordnetArrangor.navn}",
-						"overordnetArrangorId": null
-					}
-				}
-				""".trimIndent(),
-			),
-		)
+    @Test
+    fun `hentArrangor - arrangor finnes - parser response og returnerer arrangor`() {
+        val overordnetArrangor = TestData.lagArrangor(navn = "Overordnet Arrangor")
+        val arrangor = TestData.lagArrangor(overordnetArrangorId = overordnetArrangor.id)
+        server.enqueue(
+            MockResponse().setBody(
+                """
+                {
+                	"id": "${arrangor.id}",
+                	"organisasjonsnummer": "${arrangor.organisasjonsnummer}",
+                	"navn": "${arrangor.navn}",
+                	"overordnetArrangor": {
+                		"id": "${overordnetArrangor.id}",
+                		"organisasjonsnummer": "${overordnetArrangor.organisasjonsnummer}",
+                		"navn": "${overordnetArrangor.navn}",
+                		"overordnetArrangorId": null
+                	}
+                }
+                """.trimIndent(),
+            ),
+        )
 
-		client.hentArrangor(arrangor.organisasjonsnummer) shouldBe AmtArrangorClient.ArrangorMedOverordnetArrangorDto(
-			id = arrangor.id,
-			navn = arrangor.navn,
-			organisasjonsnummer = arrangor.organisasjonsnummer,
-			overordnetArrangor = overordnetArrangor,
-		)
-	}
+        client.hentArrangor(arrangor.organisasjonsnummer) shouldBe AmtArrangorClient.ArrangorMedOverordnetArrangorDto(
+            id = arrangor.id,
+            navn = arrangor.navn,
+            organisasjonsnummer = arrangor.organisasjonsnummer,
+            overordnetArrangor = overordnetArrangor,
+        )
+    }
 
-	@Test
-	fun `hentArrangor - arrangor finnes ikke - skal ikke skje, kaster RuntimeException`() {
-		server.enqueue(MockResponse().setResponseCode(404))
+    @Test
+    fun `hentArrangor - arrangor finnes ikke - skal ikke skje, kaster RuntimeException`() {
+        server.enqueue(MockResponse().setResponseCode(404))
 
-		assertThrows<RuntimeException> {
-			client.hentArrangor("foo")
-		}
-	}
+        assertThrows<RuntimeException> {
+            client.hentArrangor("foo")
+        }
+    }
 }

@@ -11,41 +11,41 @@ import org.junit.jupiter.api.assertThrows
 import java.util.UUID
 
 class AktivitetArenaAclClientTest {
-	private lateinit var client: AktivitetArenaAclClient
-	private lateinit var server: MockWebServer
-	private val token = "TOKEN"
+    private lateinit var client: AktivitetArenaAclClient
+    private lateinit var server: MockWebServer
+    private val token = "TOKEN"
 
-	@BeforeEach
-	fun setup() {
-		server = MockWebServer()
-		client = AktivitetArenaAclClient(
-			baseUrl = server.url("").toString().removeSuffix("/"),
-			tokenProvider = { token },
-			objectMapper = staticObjectMapper,
-		)
-	}
+    @BeforeEach
+    fun setup() {
+        server = MockWebServer()
+        client = AktivitetArenaAclClient(
+            baseUrl = server.url("").toString().removeSuffix("/"),
+            tokenProvider = { token },
+            objectMapper = staticObjectMapper,
+        )
+    }
 
-	@AfterEach
-	fun cleanup() {
-		server.shutdown()
-	}
+    @AfterEach
+    fun cleanup() {
+        server.shutdown()
+    }
 
-	@Test
-	fun `getAktivitetIdForArenaId - returnerer id om eksisterer`() {
-		val response = UUID.randomUUID()
-		server.enqueue(MockResponse().setBody(staticObjectMapper.writeValueAsString(response)))
+    @Test
+    fun `getAktivitetIdForArenaId - returnerer id om eksisterer`() {
+        val response = UUID.randomUUID()
+        server.enqueue(MockResponse().setBody(staticObjectMapper.writeValueAsString(response)))
 
-		val id = client.getAktivitetIdForArenaId(1L)
+        val id = client.getAktivitetIdForArenaId(1L)
 
-		id shouldBe response
-	}
+        id shouldBe response
+    }
 
-	@Test
-	fun `getAktivitetIdForArenaId - kaster feilmelding om 404`() {
-		server.enqueue(MockResponse().setResponseCode(404))
+    @Test
+    fun `getAktivitetIdForArenaId - kaster feilmelding om 404`() {
+        server.enqueue(MockResponse().setResponseCode(404))
 
-		assertThrows<IllegalStateException> {
-			client.getAktivitetIdForArenaId(1L)
-		}
-	}
+        assertThrows<IllegalStateException> {
+            client.getAktivitetIdForArenaId(1L)
+        }
+    }
 }

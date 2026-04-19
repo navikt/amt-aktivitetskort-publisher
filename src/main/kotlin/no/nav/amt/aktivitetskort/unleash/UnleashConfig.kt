@@ -11,26 +11,26 @@ import org.springframework.context.annotation.Profile
 
 @Configuration(proxyBeanMethods = false)
 class UnleashConfig {
-	@Bean
-	@Profile("default")
-	fun unleashClient(
-		@Value($$"${app.env.unleashUrl}") unleashUrl: String,
-		@Value($$"${app.env.unleashApiToken}") unleashApiToken: String,
-	): Unleash {
-		val config = UnleashConfig
-			.builder()
-			.appName(AKTIVITETSKORT_APP_NAME)
-			.instanceId(AKTIVITETSKORT_APP_NAME)
-			.unleashAPI(unleashUrl)
-			.apiKey(unleashApiToken)
-			.build()
-		return DefaultUnleash(config)
-	}
+    @Bean
+    @Profile("default")
+    fun unleashClient(
+        @Value($$"${app.env.unleashUrl}") unleashUrl: String,
+        @Value($$"${app.env.unleashApiToken}") unleashApiToken: String,
+    ): Unleash {
+        val config = UnleashConfig
+            .builder()
+            .appName(AKTIVITETSKORT_APP_NAME)
+            .instanceId(AKTIVITETSKORT_APP_NAME)
+            .unleashAPI(unleashUrl)
+            .apiKey(unleashApiToken)
+            .build()
+        return DefaultUnleash(config)
+    }
 
-	@Bean
-	fun commonUnleashToggle(unleash: Unleash): CommonUnleashToggle = CommonUnleashToggle(unleash)
+    @Bean
+    fun commonUnleashToggle(unleash: Unleash): CommonUnleashToggle = CommonUnleashToggle(unleash)
 
-	companion object {
-		const val AKTIVITETSKORT_APP_NAME = "amt-aktivitetskort-publisher"
-	}
+    companion object {
+        const val AKTIVITETSKORT_APP_NAME = "amt-aktivitetskort-publisher"
+    }
 }

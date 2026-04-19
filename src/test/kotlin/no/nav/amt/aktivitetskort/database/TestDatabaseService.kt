@@ -20,43 +20,46 @@ import java.util.UUID
 
 @Service
 class TestDatabaseService(
-	private val arrangorRepository: ArrangorRepository,
-	private val deltakerlisteRepository: DeltakerlisteRepository,
-	private val deltakerRepository: DeltakerRepository,
-	private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
-	private val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
+    private val arrangorRepository: ArrangorRepository,
+    private val deltakerlisteRepository: DeltakerlisteRepository,
+    private val deltakerRepository: DeltakerRepository,
+    private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
+    private val oppfolgingsperiodeRepository: OppfolgingsperiodeRepository,
 ) {
-	fun insertDeltaker(deltaker: Deltaker = lagDeltaker(), offset: Long = 0): Deltaker {
-		insertDeltakerliste(lagDeltakerliste(id = deltaker.deltakerlisteId))
-		return when (val result = deltakerRepository.upsert(deltaker, offset)) {
-			is RepositoryResult.Created -> result.data
-			is RepositoryResult.Modified -> result.data
-			is RepositoryResult.NoChange -> deltaker
-		}
-	}
+    fun insertDeltaker(
+        deltaker: Deltaker = lagDeltaker(),
+        offset: Long = 0,
+    ): Deltaker {
+        insertDeltakerliste(lagDeltakerliste(id = deltaker.deltakerlisteId))
+        return when (val result = deltakerRepository.upsert(deltaker, offset)) {
+            is RepositoryResult.Created -> result.data
+            is RepositoryResult.Modified -> result.data
+            is RepositoryResult.NoChange -> deltaker
+        }
+    }
 
-	fun insertAktivOppfolgingsperiode(id: UUID = UUID.randomUUID()): Oppfolgingsperiode =
-		oppfolgingsperiodeRepository.upsert(oppfolgingsperiode(id))
+    fun insertAktivOppfolgingsperiode(id: UUID = UUID.randomUUID()): Oppfolgingsperiode =
+        oppfolgingsperiodeRepository.upsert(oppfolgingsperiode(id))
 
-	fun insertArrangor(arrangor: Arrangor = lagArrangor()) = when (val result = arrangorRepository.upsert(arrangor)) {
-		is RepositoryResult.Created -> result.data
-		is RepositoryResult.Modified -> result.data
-		is RepositoryResult.NoChange -> arrangor
-	}
+    fun insertArrangor(arrangor: Arrangor = lagArrangor()) = when (val result = arrangorRepository.upsert(arrangor)) {
+        is RepositoryResult.Created -> result.data
+        is RepositoryResult.Modified -> result.data
+        is RepositoryResult.NoChange -> arrangor
+    }
 
-	fun insertDeltakerliste(deltakerliste: Deltakerliste = lagDeltakerliste()): Deltakerliste {
-		arrangorRepository.upsert(lagArrangor(id = deltakerliste.arrangorId))
+    fun insertDeltakerliste(deltakerliste: Deltakerliste = lagDeltakerliste()): Deltakerliste {
+        arrangorRepository.upsert(lagArrangor(id = deltakerliste.arrangorId))
 
-		return when (val result = deltakerlisteRepository.upsert(deltakerliste)) {
-			is RepositoryResult.Created -> result.data
-			is RepositoryResult.Modified -> result.data
-			is RepositoryResult.NoChange -> deltakerliste
-		}
-	}
+        return when (val result = deltakerlisteRepository.upsert(deltakerliste)) {
+            is RepositoryResult.Created -> result.data
+            is RepositoryResult.Modified -> result.data
+            is RepositoryResult.NoChange -> deltakerliste
+        }
+    }
 
-	fun feilmeldingErLagret(key: UUID): Boolean = namedParameterJdbcTemplate.queryForObject(
-		"SELECT exists(SELECT 1 from feilmelding where key = :key)",
-		sqlParameters("key" to key),
-		Boolean::class.java,
-	) ?: false
+    fun feilmeldingErLagret(key: UUID): Boolean = namedParameterJdbcTemplate.queryForObject(
+        "SELECT exists(SELECT 1 from feilmelding where key = :key)",
+        sqlParameters("key" to key),
+        Boolean::class.java,
+    ) ?: false
 }

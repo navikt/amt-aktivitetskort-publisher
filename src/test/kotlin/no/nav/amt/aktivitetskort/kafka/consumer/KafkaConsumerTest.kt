@@ -28,259 +28,259 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class KafkaConsumerTest(
-	private val arrangorRepository: ArrangorRepository,
-	private val tiltakstypeRepository: TiltakstypeRepository,
-	private val deltakerlisteRepository: DeltakerlisteRepository,
-	private val deltakerRepository: DeltakerRepository,
-	private val meldingRepository: MeldingRepository,
-	private val kafkaTemplate: KafkaTemplate<String, String>,
+    private val arrangorRepository: ArrangorRepository,
+    private val tiltakstypeRepository: TiltakstypeRepository,
+    private val deltakerlisteRepository: DeltakerlisteRepository,
+    private val deltakerRepository: DeltakerRepository,
+    private val meldingRepository: MeldingRepository,
+    private val kafkaTemplate: KafkaTemplate<String, String>,
 ) : IntegrationTest() {
-	private val offset: Long = 0
+    private val offset: Long = 0
 
-	@BeforeEach
-	fun setup() = mockAktivitetArenaAclServer.clearResponses()
+    @BeforeEach
+    fun setup() = mockAktivitetArenaAclServer.clearResponses()
 
-	@Test
-	fun `listen - melding om ny arrangor - arrangor upsertes`() {
-		val arrangor = TestData.lagArrangor()
+    @Test
+    fun `listen - melding om ny arrangor - arrangor upsertes`() {
+        val arrangor = TestData.lagArrangor()
 
-		kafkaTemplate
-			.send(
-				ProducerRecord(
-					ARRANGOR_TOPIC,
-					arrangor.id.toString(),
-					staticObjectMapper.writeValueAsString(arrangor.toDto()),
-				),
-			).get()
+        kafkaTemplate
+            .send(
+                ProducerRecord(
+                    ARRANGOR_TOPIC,
+                    arrangor.id.toString(),
+                    staticObjectMapper.writeValueAsString(arrangor.toDto()),
+                ),
+            ).get()
 
-		await().untilAsserted {
-			arrangorRepository.get(arrangor.id).shouldNotBeNull()
-		}
-	}
+        await().untilAsserted {
+            arrangorRepository.get(arrangor.id).shouldNotBeNull()
+        }
+    }
 
-	@Test
-	fun `listen - melding om ny tiltakstype - tiltakstype upsertes`() {
-		val ctx = TestData.MockContext()
+    @Test
+    fun `listen - melding om ny tiltakstype - tiltakstype upsertes`() {
+        val ctx = TestData.MockContext()
 
-		kafkaTemplate.send(
-			ProducerRecord(
-				TILTAKSTYPE_TOPIC,
-				ctx.tiltakstype.id.toString(),
-				staticObjectMapper.writeValueAsString(ctx.tiltakstype),
-			),
-		)
+        kafkaTemplate.send(
+            ProducerRecord(
+                TILTAKSTYPE_TOPIC,
+                ctx.tiltakstype.id.toString(),
+                staticObjectMapper.writeValueAsString(ctx.tiltakstype),
+            ),
+        )
 
-		await().atMost(5, TimeUnit.SECONDS).until {
-			tiltakstypeRepository.getById(ctx.tiltakstype.id) != null
-		}
-	}
+        await().atMost(5, TimeUnit.SECONDS).until {
+            tiltakstypeRepository.getById(ctx.tiltakstype.id) != null
+        }
+    }
 
-	@Test
-	fun `listen - melding om ny deltakerliste - deltakerliste upsertes`() {
-		val ctx = TestData.MockContext()
-		arrangorRepository.upsert(ctx.arrangor)
-		tiltakstypeRepository.upsert(ctx.tiltakstype)
+    @Test
+    fun `listen - melding om ny deltakerliste - deltakerliste upsertes`() {
+        val ctx = TestData.MockContext()
+        arrangorRepository.upsert(ctx.arrangor)
+        tiltakstypeRepository.upsert(ctx.tiltakstype)
 
-		val deltakerlistePayload = ctx.deltakerlisteGruppePayload.copy(
-			tiltakskode = Tiltakskode.OPPFOLGING,
-		)
+        val deltakerlistePayload = ctx.deltakerlisteGruppePayload.copy(
+            tiltakskode = Tiltakskode.OPPFOLGING,
+        )
 
-		kafkaTemplate.send(
-			ProducerRecord(
-				DELTAKERLISTE_V2_TOPIC,
-				deltakerlistePayload.id.toString(),
-				staticObjectMapper.writeValueAsString(deltakerlistePayload),
-			),
-		)
+        kafkaTemplate.send(
+            ProducerRecord(
+                DELTAKERLISTE_V2_TOPIC,
+                deltakerlistePayload.id.toString(),
+                staticObjectMapper.writeValueAsString(deltakerlistePayload),
+            ),
+        )
 
-		await().untilAsserted {
-			deltakerlisteRepository.get(deltakerlistePayload.id).shouldNotBeNull()
-		}
-	}
+        await().untilAsserted {
+            deltakerlisteRepository.get(deltakerlistePayload.id).shouldNotBeNull()
+        }
+    }
 
-	@Test
-	fun `listen - melding om ny deltaker - deltaker upsertes og aktivitetskort opprettes`() {
-		val ctx = TestData.MockContext()
-		arrangorRepository.upsert(ctx.arrangor)
-		deltakerlisteRepository.upsert(ctx.deltakerliste)
+    @Test
+    fun `listen - melding om ny deltaker - deltaker upsertes og aktivitetskort opprettes`() {
+        val ctx = TestData.MockContext()
+        arrangorRepository.upsert(ctx.arrangor)
+        deltakerlisteRepository.upsert(ctx.deltakerliste)
 
-		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
-		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.melding.id)
-		mockVeilarboppfolgingServer.addResponse()
+        mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
+        mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.melding.id)
+        mockVeilarboppfolgingServer.addResponse()
 
-		kafkaTemplate.send(
-			ProducerRecord(
-				DELTAKER_TOPIC,
-				ctx.deltaker.id.toString(),
-				staticObjectMapper.writeValueAsString(ctx.deltaker.toDto()),
-			),
-		)
+        kafkaTemplate.send(
+            ProducerRecord(
+                DELTAKER_TOPIC,
+                ctx.deltaker.id.toString(),
+                staticObjectMapper.writeValueAsString(ctx.deltaker.toDto()),
+            ),
+        )
 
-		await().untilAsserted {
-			ctx.melding.id shouldBe ctx.aktivitetskortId
-			ctx.melding.aktivitetskort.id shouldBe ctx.aktivitetskortId
-			val deltaker = deltakerRepository.get(ctx.deltaker.id)
+        await().untilAsserted {
+            ctx.melding.id shouldBe ctx.aktivitetskortId
+            ctx.melding.aktivitetskort.id shouldBe ctx.aktivitetskortId
+            val deltaker = deltakerRepository.get(ctx.deltaker.id)
 
-			deltaker.shouldNotBeNull()
-			deltaker shouldBe ctx.deltaker
+            deltaker.shouldNotBeNull()
+            deltaker shouldBe ctx.deltaker
 
-			val aktivitetskort = meldingRepository
-				.getByDeltakerId(deltaker.id)
-				.first()
-				.aktivitetskort
+            val aktivitetskort = meldingRepository
+                .getByDeltakerId(deltaker.id)
+                .first()
+                .aktivitetskort
 
-			assertSoftly(aktivitetskort) {
-				personident shouldBe ctx.aktivitetskort.personident
-				tittel shouldBe ctx.aktivitetskort.tittel
-				aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
-				startDato shouldBe ctx.aktivitetskort.startDato
-				sluttDato shouldBe ctx.aktivitetskort.sluttDato
-				beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
-				endretAv shouldBe ctx.aktivitetskort.endretAv
-				endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
-				avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
-				oppgave shouldBe ctx.aktivitetskort.oppgave
-				handlinger shouldNotBe null
-				detaljer shouldBe ctx.aktivitetskort.detaljer
-				etiketter shouldBe ctx.aktivitetskort.etiketter
-			}
-		}
-	}
+            assertSoftly(aktivitetskort) {
+                personident shouldBe ctx.aktivitetskort.personident
+                tittel shouldBe ctx.aktivitetskort.tittel
+                aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
+                startDato shouldBe ctx.aktivitetskort.startDato
+                sluttDato shouldBe ctx.aktivitetskort.sluttDato
+                beskrivelse shouldBe ctx.aktivitetskort.beskrivelse
+                endretAv shouldBe ctx.aktivitetskort.endretAv
+                endretTidspunkt shouldBeCloseTo ctx.aktivitetskort.endretTidspunkt
+                avtaltMedNav shouldBe ctx.aktivitetskort.avtaltMedNav
+                oppgave shouldBe ctx.aktivitetskort.oppgave
+                handlinger shouldNotBe null
+                detaljer shouldBe ctx.aktivitetskort.detaljer
+                etiketter shouldBe ctx.aktivitetskort.etiketter
+            }
+        }
+    }
 
-	@Test
-	fun `listen - melding om oppdatert deltaker, dab sender ny id - nytt aktivitetskort opprettes med mottatt id`() {
-		val ctx = TestData.MockContext(oppfolgingsperiodeId = null)
-		val endretDeltaker = ctx.deltaker.copy(
-			sluttdato = LocalDate.now().plusDays(1),
-		)
-		val nyId = UUID.randomUUID()
-		arrangorRepository.upsert(ctx.arrangor)
-		deltakerlisteRepository.upsert(ctx.deltakerliste)
-		deltakerRepository.upsert(ctx.deltaker, -1)
-		meldingRepository.upsert(ctx.melding)
+    @Test
+    fun `listen - melding om oppdatert deltaker, dab sender ny id - nytt aktivitetskort opprettes med mottatt id`() {
+        val ctx = TestData.MockContext(oppfolgingsperiodeId = null)
+        val endretDeltaker = ctx.deltaker.copy(
+            sluttdato = LocalDate.now().plusDays(1),
+        )
+        val nyId = UUID.randomUUID()
+        arrangorRepository.upsert(ctx.arrangor)
+        deltakerlisteRepository.upsert(ctx.deltakerliste)
+        deltakerRepository.upsert(ctx.deltaker, -1)
+        meldingRepository.upsert(ctx.melding)
 
-		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
-		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, nyId)
-		mockVeilarboppfolgingServer.addResponse()
+        mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
+        mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, nyId)
+        mockVeilarboppfolgingServer.addResponse()
 
-		kafkaTemplate.send(
-			ProducerRecord(
-				DELTAKER_TOPIC,
-				ctx.deltaker.id.toString(),
-				staticObjectMapper.writeValueAsString(endretDeltaker.toDto()),
-			),
-		)
+        kafkaTemplate.send(
+            ProducerRecord(
+                DELTAKER_TOPIC,
+                ctx.deltaker.id.toString(),
+                staticObjectMapper.writeValueAsString(endretDeltaker.toDto()),
+            ),
+        )
 
-		await().untilAsserted {
-			val deltaker = deltakerRepository.get(ctx.deltaker.id)
-			deltaker.shouldNotBeNull()
-			deltaker shouldBe endretDeltaker
+        await().untilAsserted {
+            val deltaker = deltakerRepository.get(ctx.deltaker.id)
+            deltaker.shouldNotBeNull()
+            deltaker shouldBe endretDeltaker
 
-			val aktivitetskort = meldingRepository
-				.getByDeltakerId(deltaker.id)
+            val aktivitetskort = meldingRepository
+                .getByDeltakerId(deltaker.id)
 
-			aktivitetskort.size shouldBe 2
-			val nyttAktivitetskort = aktivitetskort
-				.first()
-				.aktivitetskort
-			nyttAktivitetskort.id shouldBe nyId
-			nyttAktivitetskort shouldBe ctx.aktivitetskort.copy(
-				id = nyId,
-				sluttDato = endretDeltaker.sluttdato,
-			)
-		}
-	}
+            aktivitetskort.size shouldBe 2
+            val nyttAktivitetskort = aktivitetskort
+                .first()
+                .aktivitetskort
+            nyttAktivitetskort.id shouldBe nyId
+            nyttAktivitetskort shouldBe ctx.aktivitetskort.copy(
+                id = nyId,
+                sluttDato = endretDeltaker.sluttdato,
+            )
+        }
+    }
 
-	@Test
-	fun `listen - tombstone for deltaker som har aktivt aktivitetskort - deltaker slettes og aktivitetskort avbrytes`() {
-		val ctx = TestData.MockContext(oppfolgingsperiodeId = UUID.randomUUID())
-		ctx.oppfolgingsperiodeId.shouldNotBeNull()
+    @Test
+    fun `listen - tombstone for deltaker som har aktivt aktivitetskort - deltaker slettes og aktivitetskort avbrytes`() {
+        val ctx = TestData.MockContext(oppfolgingsperiodeId = UUID.randomUUID())
+        ctx.oppfolgingsperiodeId.shouldNotBeNull()
 
-		arrangorRepository.upsert(ctx.arrangor)
-		deltakerlisteRepository.upsert(ctx.deltakerliste)
-		deltakerRepository.upsert(ctx.deltaker, offset)
-		testDatabase.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId)
-		meldingRepository.upsert(ctx.melding)
+        arrangorRepository.upsert(ctx.arrangor)
+        deltakerlisteRepository.upsert(ctx.deltakerliste)
+        deltakerRepository.upsert(ctx.deltaker, offset)
+        testDatabase.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId)
+        meldingRepository.upsert(ctx.melding)
 
-		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
-		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
-		mockVeilarboppfolgingServer.addResponse()
+        mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
+        mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
+        mockVeilarboppfolgingServer.addResponse()
 
-		kafkaTemplate.send(
-			ProducerRecord(
-				DELTAKER_TOPIC,
-				ctx.deltaker.id.toString(),
-				null,
-			),
-		)
+        kafkaTemplate.send(
+            ProducerRecord(
+                DELTAKER_TOPIC,
+                ctx.deltaker.id.toString(),
+                null,
+            ),
+        )
 
-		await().untilAsserted {
-			val aktivitetskort = meldingRepository
-				.getByDeltakerId(ctx.deltaker.id)
-				.first()
-				.aktivitetskort
-			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.AVBRUTT
+        await().untilAsserted {
+            val aktivitetskort = meldingRepository
+                .getByDeltakerId(ctx.deltaker.id)
+                .first()
+                .aktivitetskort
+            aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.AVBRUTT
 
-			deltakerRepository.get(ctx.deltaker.id) shouldBe null
-		}
-	}
+            deltakerRepository.get(ctx.deltaker.id) shouldBe null
+        }
+    }
 
-	@Test
-	fun `listen - tombstone for deltaker som har inaktivt aktivitetskort - deltaker slettes og aktivitetskort endres ikke`() {
-		val ctx = TestData.MockContext(
-			oppfolgingsperiodeId = UUID.randomUUID(),
-			deltaker = TestData.lagDeltaker(status = DeltakerStatusModel(DeltakerStatus.Type.HAR_SLUTTET, null)),
-		)
-		ctx.oppfolgingsperiodeId.shouldNotBeNull()
+    @Test
+    fun `listen - tombstone for deltaker som har inaktivt aktivitetskort - deltaker slettes og aktivitetskort endres ikke`() {
+        val ctx = TestData.MockContext(
+            oppfolgingsperiodeId = UUID.randomUUID(),
+            deltaker = TestData.lagDeltaker(status = DeltakerStatusModel(DeltakerStatus.Type.HAR_SLUTTET, null)),
+        )
+        ctx.oppfolgingsperiodeId.shouldNotBeNull()
 
-		arrangorRepository.upsert(ctx.arrangor)
-		deltakerlisteRepository.upsert(ctx.deltakerliste)
-		deltakerRepository.upsert(ctx.deltaker, offset)
-		testDatabase.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId)
-		meldingRepository.upsert(ctx.melding)
+        arrangorRepository.upsert(ctx.arrangor)
+        deltakerlisteRepository.upsert(ctx.deltakerliste)
+        deltakerRepository.upsert(ctx.deltaker, offset)
+        testDatabase.insertAktivOppfolgingsperiode(id = ctx.oppfolgingsperiodeId)
+        meldingRepository.upsert(ctx.melding)
 
-		mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
-		mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
+        mockAmtArenaAclServer.addArenaIdResponse(ctx.deltaker.id, 1234)
+        mockAktivitetArenaAclServer.addAktivitetsIdResponse(1234, ctx.aktivitetskort.id)
 
-		kafkaTemplate.send(
-			ProducerRecord(
-				DELTAKER_TOPIC,
-				ctx.deltaker.id.toString(),
-				null,
-			),
-		)
+        kafkaTemplate.send(
+            ProducerRecord(
+                DELTAKER_TOPIC,
+                ctx.deltaker.id.toString(),
+                null,
+            ),
+        )
 
-		await().untilAsserted {
-			val aktivitetskort = meldingRepository
-				.getByDeltakerId(ctx.deltaker.id)
-				.first()
-				.aktivitetskort
+        await().untilAsserted {
+            val aktivitetskort = meldingRepository
+                .getByDeltakerId(ctx.deltaker.id)
+                .first()
+                .aktivitetskort
 
-			aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.FULLFORT
-			deltakerRepository.get(ctx.deltaker.id) shouldBe null
-		}
-	}
+            aktivitetskort.aktivitetStatus shouldBe AktivitetStatus.FULLFORT
+            deltakerRepository.get(ctx.deltaker.id) shouldBe null
+        }
+    }
 
-	@Test
-	fun `listen - tombstone for deltaker som ikke aktivitetskort - deltaker slettes og aktivitetskort opprettes ikke`() {
-		val deltaker = TestData.lagDeltaker(status = DeltakerStatusModel(DeltakerStatus.Type.PABEGYNT_REGISTRERING, null))
-		val deltakerliste = TestData.lagDeltakerliste(deltaker.deltakerlisteId)
-		val arrangor = TestData.lagArrangor(deltakerliste.arrangorId)
-		arrangorRepository.upsert(arrangor)
-		deltakerlisteRepository.upsert(deltakerliste)
-		deltakerRepository.upsert(deltaker, offset)
+    @Test
+    fun `listen - tombstone for deltaker som ikke aktivitetskort - deltaker slettes og aktivitetskort opprettes ikke`() {
+        val deltaker = TestData.lagDeltaker(status = DeltakerStatusModel(DeltakerStatus.Type.PABEGYNT_REGISTRERING, null))
+        val deltakerliste = TestData.lagDeltakerliste(deltaker.deltakerlisteId)
+        val arrangor = TestData.lagArrangor(deltakerliste.arrangorId)
+        arrangorRepository.upsert(arrangor)
+        deltakerlisteRepository.upsert(deltakerliste)
+        deltakerRepository.upsert(deltaker, offset)
 
-		kafkaTemplate.send(
-			ProducerRecord(
-				DELTAKER_TOPIC,
-				deltaker.id.toString(),
-				null,
-			),
-		)
+        kafkaTemplate.send(
+            ProducerRecord(
+                DELTAKER_TOPIC,
+                deltaker.id.toString(),
+                null,
+            ),
+        )
 
-		await().untilAsserted {
-			deltakerRepository.get(deltaker.id) shouldBe null
-			meldingRepository.getByDeltakerId(deltaker.id) shouldBe emptyList()
-		}
-	}
+        await().untilAsserted {
+            deltakerRepository.get(deltaker.id) shouldBe null
+            meldingRepository.getByDeltakerId(deltaker.id) shouldBe emptyList()
+        }
+    }
 }
