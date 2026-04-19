@@ -45,58 +45,71 @@ object StatusMapping {
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.VENTER_PA_OPPSTART,
 		)
+
 		DeltakerStatus.Type.SOKT_INN -> Tag(
 			tekst = "Søkt inn",
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.SOKT_INN,
 		)
+
 		DeltakerStatus.Type.VURDERES -> Tag(
 			tekst = "Vurderes",
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.VURDERES,
 		)
+
 		DeltakerStatus.Type.VENTELISTE -> Tag(
 			tekst = "Venteliste",
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.VENTELISTE,
 		)
+
 		DeltakerStatus.Type.IKKE_AKTUELL -> Tag(
 			tekst = "Ikke aktuell",
 			sentiment = Tag.Sentiment.NEGATIVE,
 			kode = Tag.Kode.IKKE_AKTUELL,
 		)
+
 		DeltakerStatus.Type.DELTAR -> null
+
 		DeltakerStatus.Type.HAR_SLUTTET -> null
+
 		DeltakerStatus.Type.FEILREGISTRERT -> Tag(
 			tekst = "Feilregistrert",
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.FEILREGISTRERT,
 		)
+
 		DeltakerStatus.Type.AVBRUTT -> Tag(
 			tekst = "Avbrutt",
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.AVBRUTT,
 		)
+
 		DeltakerStatus.Type.FULLFORT -> Tag(
 			tekst = "Fullført",
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.FULLFORT,
 		)
+
 		DeltakerStatus.Type.PABEGYNT_REGISTRERING -> Tag(
 			tekst = "Søkt inn",
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.SOKT_INN,
 		)
+
 		DeltakerStatus.Type.UTKAST_TIL_PAMELDING -> Tag(
 			tekst = "Utkast til påmelding",
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.UTKAST_TIL_PAMELDING,
 		)
+
 		DeltakerStatus.Type.AVBRUTT_UTKAST -> Tag(
 			tekst = "Avbrutt utkast",
 			sentiment = Tag.Sentiment.NEUTRAL,
 			kode = Tag.Kode.AVBRUTT_UTKAST,
 		)
+
 		else -> throw IllegalStateException("Deltakerstatus ${status.type.name} kunne ikke mappes til etikett")
 	}
 }
