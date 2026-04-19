@@ -23,9 +23,9 @@ class AktivitetskortProducer(
 
     fun send(aktivitetskort: List<Aktivitetskort>) {
         aktivitetskort.forEach { currentAktivitetskort ->
-            val messageId = UUID.randomUUID().toString()
+            val messageId = UUID.randomUUID()
             val payload = AktivitetskortPayload(
-                messageId = UUID.randomUUID(),
+                messageId = messageId,
                 aktivitetskortType = currentAktivitetskort.tiltakstype,
                 aktivitetskort = currentAktivitetskort.toAktivitetskortDto(),
             )
@@ -37,7 +37,7 @@ class AktivitetskortProducer(
                     objectMapper.writeValueAsString(payload),
                 ).get()
 
-            log.info("Sendte aktivitetskort til aktivitetsplanen: ${currentAktivitetskort.id}} messageId: $messageId")
+            log.info("Sendte aktivitetskort til aktivitetsplanen: ${currentAktivitetskort.id} messageId: $messageId")
             metricsService.incSendtAktivitetskort()
         }
     }
