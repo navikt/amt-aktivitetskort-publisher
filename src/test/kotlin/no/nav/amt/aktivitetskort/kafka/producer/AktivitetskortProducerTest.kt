@@ -26,7 +26,6 @@ class AktivitetskortProducerTest {
     @Test
     fun `slettAktivitetskort - sender kassering melding med riktige felter`() {
         val aktivitetskortId = UUID.randomUUID()
-        val messageId = UUID.randomUUID()
         val personIdent = "12345678901"
         val navIdent = "Z123456"
         val keySlot = slot<String>()
@@ -40,7 +39,6 @@ class AktivitetskortProducerTest {
 
         val payload = objectMapper.readValue<AktivitetskortKasseringPayload>(valueSlot.captured)
         assertSoftly(payload) {
-            messageId shouldBe messageId
             aktivitetsId shouldBe aktivitetskortId
             actionType shouldBe "KASSER_AKTIVITET"
             this.personIdent shouldBe personIdent
