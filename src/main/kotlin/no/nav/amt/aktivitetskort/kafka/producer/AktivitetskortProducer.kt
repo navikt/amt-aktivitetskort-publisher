@@ -23,9 +23,9 @@ class AktivitetskortProducer(
 
     fun send(aktivitetskort: List<Aktivitetskort>) {
         aktivitetskort.forEach { currentAktivitetskort ->
-            val messageId = UUID.randomUUID().toString()
+            val messageId = UUID.randomUUID()
             val payload = AktivitetskortPayload(
-                messageId = UUID.randomUUID(),
+                messageId = messageId,
                 aktivitetskortType = currentAktivitetskort.tiltakstype,
                 aktivitetskort = currentAktivitetskort.toAktivitetskortDto(),
             )
