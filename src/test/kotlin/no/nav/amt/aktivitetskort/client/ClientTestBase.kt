@@ -7,25 +7,25 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.http.HttpStatus
 
 abstract class ClientTestBase {
-	protected lateinit var server: MockWebServer
-	protected lateinit var serverUrl: String
+    protected lateinit var server: MockWebServer
+    protected lateinit var serverUrl: String
 
-	protected val tokenProvider: () -> String = { "TOKEN" }
+    protected val tokenProvider: () -> String = { "TOKEN" }
 
-	@BeforeEach
-	fun setup() {
-		server = MockWebServer()
-		serverUrl = server.url("/").toString().removeSuffix("/")
-	}
+    @BeforeEach
+    fun setup() {
+        server = MockWebServer()
+        serverUrl = server.url("/").toString().removeSuffix("/")
+    }
 
-	@AfterEach
-	fun shutdown() = server.shutdown()
+    @AfterEach
+    fun shutdown() = server.shutdown()
 
-	protected fun enqueueHttpStatus(httpStatus: HttpStatus) = server.enqueue(MockResponse().setResponseCode(httpStatus.value()))
+    protected fun enqueueHttpStatus(httpStatus: HttpStatus) = server.enqueue(MockResponse().setResponseCode(httpStatus.value()))
 
-	fun enqueueJson(json: String) = server.enqueue(
-		MockResponse()
-			.setResponseCode(HttpStatus.OK.value())
-			.setBody(json),
-	)
+    fun enqueueJson(json: String) = server.enqueue(
+        MockResponse()
+            .setResponseCode(HttpStatus.OK.value())
+            .setBody(json),
+    )
 }

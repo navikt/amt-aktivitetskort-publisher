@@ -6,6 +6,6 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 infix fun LocalDateTime.shouldBeCloseTo(expected: LocalDateTime?) {
-	expected.shouldNotBeNull()
-	expected.shouldBeWithin(Duration.ofSeconds(10), this)
+    expected.shouldNotBeNull()
+    expected.shouldBeWithin(Duration.ofSeconds(10), this)
 }

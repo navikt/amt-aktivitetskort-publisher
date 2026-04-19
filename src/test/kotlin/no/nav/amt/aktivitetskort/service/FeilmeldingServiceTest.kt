@@ -9,39 +9,39 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 class FeilmeldingServiceTest(
-	private val feilmeldingService: FeilmeldingService,
+    private val feilmeldingService: FeilmeldingService,
 ) : IntegrationTest() {
-	@Test
-	fun `handleFeilmelding - feilmelding med TEAM_KOMET som source - feilmelding lagres`() {
-		val key = UUID.randomUUID()
-		val feilmelding = AktivitetskortFeilmelding(
-			key = key,
-			source = SOURCE,
-			timestamp = ZonedDateTime.now(),
-			failingMessage = "melding som feiler",
-			errorMessage = "DeserialiseringsFeil Meldingspayload er ikke gyldig json",
-			errorType = "DESERIALISERINGSFEIL",
-		)
+    @Test
+    fun `handleFeilmelding - feilmelding med TEAM_KOMET som source - feilmelding lagres`() {
+        val key = UUID.randomUUID()
+        val feilmelding = AktivitetskortFeilmelding(
+            key = key,
+            source = SOURCE,
+            timestamp = ZonedDateTime.now(),
+            failingMessage = "melding som feiler",
+            errorMessage = "DeserialiseringsFeil Meldingspayload er ikke gyldig json",
+            errorType = "DESERIALISERINGSFEIL",
+        )
 
-		feilmeldingService.handleFeilmelding(key, feilmelding)
+        feilmeldingService.handleFeilmelding(key, feilmelding)
 
-		testDatabase.feilmeldingErLagret(key) shouldBe true
-	}
+        testDatabase.feilmeldingErLagret(key) shouldBe true
+    }
 
-	@Test
-	fun `handleFeilmelding - feilmelding med TEAM_TILTAK som source - feilmelding lagres ikke`() {
-		val key = UUID.randomUUID()
-		val feilmelding = AktivitetskortFeilmelding(
-			key = key,
-			source = "TEAM_TILTAK",
-			timestamp = ZonedDateTime.now(),
-			failingMessage = "melding som feiler",
-			errorMessage = "DeserialiseringsFeil Meldingspayload er ikke gyldig json",
-			errorType = "DESERIALISERINGSFEIL",
-		)
+    @Test
+    fun `handleFeilmelding - feilmelding med TEAM_TILTAK som source - feilmelding lagres ikke`() {
+        val key = UUID.randomUUID()
+        val feilmelding = AktivitetskortFeilmelding(
+            key = key,
+            source = "TEAM_TILTAK",
+            timestamp = ZonedDateTime.now(),
+            failingMessage = "melding som feiler",
+            errorMessage = "DeserialiseringsFeil Meldingspayload er ikke gyldig json",
+            errorType = "DESERIALISERINGSFEIL",
+        )
 
-		feilmeldingService.handleFeilmelding(key, feilmelding)
+        feilmeldingService.handleFeilmelding(key, feilmelding)
 
-		testDatabase.feilmeldingErLagret(key) shouldBe false
-	}
+        testDatabase.feilmeldingErLagret(key) shouldBe false
+    }
 }

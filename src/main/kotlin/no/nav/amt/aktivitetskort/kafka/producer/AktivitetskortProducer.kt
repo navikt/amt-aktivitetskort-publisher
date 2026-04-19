@@ -13,55 +13,55 @@ import java.util.UUID
 
 @Component
 class AktivitetskortProducer(
-	private val template: KafkaTemplate<String, String>,
-	private val metricsService: MetricsService,
-	private val objectMapper: ObjectMapper,
+    private val template: KafkaTemplate<String, String>,
+    private val metricsService: MetricsService,
+    private val objectMapper: ObjectMapper,
 ) {
-	private val log = LoggerFactory.getLogger(javaClass)
+    private val log = LoggerFactory.getLogger(javaClass)
 
-	fun send(aktivitetskort: Aktivitetskort) = send(listOf(aktivitetskort))
+    fun send(aktivitetskort: Aktivitetskort) = send(listOf(aktivitetskort))
 
-	fun send(aktivitetskort: List<Aktivitetskort>) {
-		aktivitetskort.forEach { currentAktivitetskort ->
-			val messageId = UUID.randomUUID().toString()
-			val payload = AktivitetskortPayload(
-				messageId = UUID.randomUUID(),
-				aktivitetskortType = currentAktivitetskort.tiltakstype,
-				aktivitetskort = currentAktivitetskort.toAktivitetskortDto(),
-			)
+    fun send(aktivitetskort: List<Aktivitetskort>) {
+        aktivitetskort.forEach { currentAktivitetskort ->
+            val messageId = UUID.randomUUID().toString()
+            val payload = AktivitetskortPayload(
+                messageId = UUID.randomUUID(),
+                aktivitetskortType = currentAktivitetskort.tiltakstype,
+                aktivitetskort = currentAktivitetskort.toAktivitetskortDto(),
+            )
 
-			template
-				.send(
-					AKTIVITETSKORT_TOPIC,
-					currentAktivitetskort.id.toString(),
-					objectMapper.writeValueAsString(payload),
-				).get()
+            template
+                .send(
+                    AKTIVITETSKORT_TOPIC,
+                    currentAktivitetskort.id.toString(),
+                    objectMapper.writeValueAsString(payload),
+                ).get()
 
-			log.info("Sendte aktivitetskort til aktivitetsplanen: ${currentAktivitetskort.id}} messageId: $messageId")
-			metricsService.incSendtAktivitetskort()
-		}
-	}
+            log.info("Sendte aktivitetskort til aktivitetsplanen: ${currentAktivitetskort.id}} messageId: $messageId")
+            metricsService.incSendtAktivitetskort()
+        }
+    }
 
-	fun slettAktivitetskort(
-		aktivitetskortId: UUID,
-		personIdent: String,
-		navIdent: String,
-	) {
-		val payload = AktivitetskortKasseringPayload(
-			messageId = UUID.randomUUID(),
-			aktivitetsId = aktivitetskortId,
-			personIdent = personIdent,
-			navIdent = navIdent,
-			begrunnelse = "Kassering av duplikat aktivitetskort",
-		)
+    fun slettAktivitetskort(
+        aktivitetskortId: UUID,
+        personIdent: String,
+        navIdent: String,
+    ) {
+        val payload = AktivitetskortKasseringPayload(
+            messageId = UUID.randomUUID(),
+            aktivitetsId = aktivitetskortId,
+            personIdent = personIdent,
+            navIdent = navIdent,
+            begrunnelse = "Kassering av duplikat aktivitetskort",
+        )
 
-		template
-			.send(
-				AKTIVITETSKORT_TOPIC,
-				aktivitetskortId.toString(),
-				objectMapper.writeValueAsString(payload),
-			).get()
+        template
+            .send(
+                AKTIVITETSKORT_TOPIC,
+                aktivitetskortId.toString(),
+                objectMapper.writeValueAsString(payload),
+            ).get()
 
-		log.info("Slettet aktivitetskort: $aktivitetskortId")
-	}
+        log.info("Slettet aktivitetskort: $aktivitetskortId")
+    }
 }

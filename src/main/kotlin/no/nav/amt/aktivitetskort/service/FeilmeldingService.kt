@@ -9,18 +9,21 @@ import java.util.UUID
 
 @Service
 class FeilmeldingService(
-	private val feilmeldingRepository: FeilmeldingRepository,
-	private val metricsService: MetricsService,
+    private val feilmeldingRepository: FeilmeldingRepository,
+    private val metricsService: MetricsService,
 ) {
-	private val log = LoggerFactory.getLogger(javaClass)
+    private val log = LoggerFactory.getLogger(javaClass)
 
-	fun handleFeilmelding(key: UUID, feilmelding: AktivitetskortFeilmelding?) {
-		if (feilmelding == null || feilmelding.source != SOURCE) {
-			return
-		}
-		log.warn("Mottok feilmelding fra AkaaS for key $key: ${feilmelding.errorMessage}, ${feilmelding.errorType}")
-		feilmeldingRepository.insert(feilmelding)
-		metricsService.incMottattFeilmelding(feilmelding.errorType)
-		log.info("Lagret feilmelding for key $key")
-	}
+    fun handleFeilmelding(
+        key: UUID,
+        feilmelding: AktivitetskortFeilmelding?,
+    ) {
+        if (feilmelding == null || feilmelding.source != SOURCE) {
+            return
+        }
+        log.warn("Mottok feilmelding fra AkaaS for key $key: ${feilmelding.errorMessage}, ${feilmelding.errorType}")
+        feilmeldingRepository.insert(feilmelding)
+        metricsService.incMottattFeilmelding(feilmelding.errorType)
+        log.info("Lagret feilmelding for key $key")
+    }
 }
