@@ -45,8 +45,11 @@ class AktivitetskortTest {
 			val aktivitetskortTittel = Aktivitetskort.lagTittel(it, arrangor)
 			when (it.tiltak.tiltakskode) {
 				Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> aktivitetskortTittel shouldBe "Digitalt jobbsøkerkurs hos ${arrangor.navn}"
+
 				Tiltakskode.JOBBKLUBB -> aktivitetskortTittel shouldBe "Jobbsøkerkurs hos ${arrangor.navn}"
+
 				Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
+
 				Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
 				Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
 				Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
@@ -55,6 +58,7 @@ class AktivitetskortTest {
 				Tiltakskode.FAG_OG_YRKESOPPLAERING,
 				Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
 				-> aktivitetskortTittel shouldBe it.navn
+
 				else -> aktivitetskortTittel shouldBe "${it.tiltak.navn} hos ${arrangor.navn}"
 			}
 		}

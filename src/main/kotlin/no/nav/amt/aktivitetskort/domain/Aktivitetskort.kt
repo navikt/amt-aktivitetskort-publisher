@@ -82,11 +82,14 @@ data class Aktivitetskort(
 	companion object {
 		fun lagTittel(deltakerliste: Deltakerliste, arrangor: Arrangor): String = when (deltakerliste.tiltak.tiltakskode) {
 			Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "Tilrettelagt arbeid hos ${arrangor.navn}"
+
 			Tiltakskode.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
+
 			Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
 			Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
 			Tiltakskode.HOYERE_UTDANNING,
 			-> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
+
 			Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
 			Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
 			Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
@@ -95,6 +98,7 @@ data class Aktivitetskort(
 			Tiltakskode.FAG_OG_YRKESOPPLAERING,
 			Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
 			-> deltakerliste.navn
+
 			else -> "${deltakerliste.tiltak.navn} hos ${arrangor.navn}"
 		}
 
@@ -127,15 +131,21 @@ data class Aktivitetskort(
 			fun fmtDager(antall: Float) = "fordelt på ${DecimalFormat("#.#").format(antall)} ${if (antall == 1.0f) "dag" else "dager"} i uka"
 
 			return when {
-				!harProsentStilling && !harDagerPerUke -> null
-				deltaker.prosentStilling == 100.0 || !harDagerPerUke ->
+				!harProsentStilling && !harDagerPerUke -> {
+					null
+				}
+
+				deltaker.prosentStilling == 100.0 || !harDagerPerUke -> {
 					deltaker.prosentStilling?.let { Detalj(label, fmtProsent(it)) }
+				}
 
-				!harProsentStilling ->
+				!harProsentStilling -> {
 					Detalj(label, fmtDager(deltaker.dagerPerUke))
+				}
 
-				else ->
+				else -> {
 					Detalj(label, "${fmtProsent(deltaker.prosentStilling)} ${fmtDager(deltaker.dagerPerUke)}")
+				}
 			}
 		}
 	}
