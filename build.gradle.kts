@@ -28,7 +28,7 @@ val commonVersion = "3.2026.04.08_08.37-229807cc181a"
 val tokenSupportVersion = "6.0.5"
 val unleashVersion = "12.2.0"
 val amtLibVersion = "1.2026.04.07_07.09-8e7d69a8ce1a"
-val jacksonModuleKotlinVersion = "3.1.1"
+val jacksonModuleKotlinVersion = "3.1.2"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
