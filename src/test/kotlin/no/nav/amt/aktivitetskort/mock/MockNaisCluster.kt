@@ -7,6 +7,9 @@ fun mockCluster(
     block: () -> Unit,
 ) {
     System.setProperty(NAIS_CLUSTER_NAME, cluster)
-    block()
-    System.clearProperty(NAIS_CLUSTER_NAME)
+    try {
+        block()
+    } finally {
+        System.clearProperty(NAIS_CLUSTER_NAME)
+    }
 }
