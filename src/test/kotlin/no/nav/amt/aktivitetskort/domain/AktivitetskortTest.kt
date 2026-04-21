@@ -29,6 +29,7 @@ class AktivitetskortTest {
 
                         Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "VTA"
 
+                        Tiltakskode.TILPASSET_JOBBSTOTTE -> "Tilpasset jobbstøtte"
                         Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> "Gruppe yrkesfaglig utdanning"
 
                         Tiltakskode.HOYERE_UTDANNING,
@@ -48,7 +49,9 @@ class AktivitetskortTest {
 
                 Tiltakskode.JOBBKLUBB -> aktivitetskortTittel shouldBe "Jobbsøkerkurs hos ${arrangor.navn}"
 
-                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
+                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+                Tiltakskode.TILPASSET_JOBBSTOTTE,
+                -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
 
                 Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
                 Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,

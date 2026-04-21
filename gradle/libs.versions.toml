@@ -13,7 +13,7 @@ mockk = "1.14.9"
 nav-common = "3.2026.04.08_08.37-229807cc181a"
 token-support = "6.0.5"
 unleash = "12.2.0"
-amt-lib = "1.2026.04.21_09.14-2ca2beed9bac"
+amt-lib = "1.2026.04.21_09.14-2ca2beed9bac" # TODO oppdater til ny versjon av lib etter merge av amt-deltakelser
 jackson-module-kotlin = "3.1.2"
 
 # CVE-fixes
