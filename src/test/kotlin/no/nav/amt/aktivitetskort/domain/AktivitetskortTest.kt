@@ -29,6 +29,7 @@ class AktivitetskortTest {
 
                         Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> "VTA"
 
+                        Tiltakskode.TILPASSET_JOBBSTOTTE -> "Tilpasset jobbstøtte"
                         Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> "Gruppe yrkesfaglig utdanning"
 
                         Tiltakskode.HOYERE_UTDANNING,
@@ -48,7 +49,9 @@ class AktivitetskortTest {
 
                 Tiltakskode.JOBBKLUBB -> aktivitetskortTittel shouldBe "Jobbsøkerkurs hos ${arrangor.navn}"
 
-                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
+                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+                Tiltakskode.TILPASSET_JOBBSTOTTE,
+                -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
 
                 Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
                 Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
@@ -140,6 +143,19 @@ class AktivitetskortTest {
 
         detaljer1.find { it.label == "Deltakelsesmengde" } shouldBe null
         detaljer2.find { it.label == "Deltakelsesmengde" } shouldBe null
+    }
+
+    @Test
+    fun `lagDetaljer - TILPASSET_JOBBSTOTTE - inkluderer deltakelsesmengde i detaljer`() {
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltak = Tiltak("Tilpasset jobbstøtte", Tiltakskode.TILPASSET_JOBBSTOTTE),
+        )
+        val deltaker = TestData.lagDeltaker(prosentStilling = 80.0, dagerPerUke = 4.0f, deltakerlisteId = deltakerliste.id)
+        val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
+
+        val detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor)
+
+        detaljer.find { it.label == "Deltakelsesmengde" } shouldBe Detalj("Deltakelsesmengde", "80% fordelt på 4 dager i uka")
     }
 
     @Test
