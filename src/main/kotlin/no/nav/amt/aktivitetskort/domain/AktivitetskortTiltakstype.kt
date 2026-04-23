@@ -20,6 +20,7 @@ enum class AktivitetskortTiltakstype {
     STUDIESPESIALISERING,
     FAG_OG_YRKESOPPLAERING,
     HOYERE_YRKESFAGLIG_UTDANNING,
+    TILPASSET_JOBBSTOTTE,
 }
 
 fun Tiltakskode.toAktivitetskortTiltakstype(): AktivitetskortTiltakstype = try {
