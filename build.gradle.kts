@@ -9,7 +9,10 @@ plugins {
 }
 
 repositories {
-    fun githubPackages(repoName: String, group: String) = exclusiveContent {
+    fun githubPackages(
+        repoName: String,
+        group: String,
+    ) = exclusiveContent {
         forRepository {
             maven {
                 name = "GitHubPackages-$repoName"
