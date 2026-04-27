@@ -9,6 +9,26 @@ plugins {
 }
 
 repositories {
+    fun githubPackages(
+        repoName: String,
+        group: String,
+    ) = exclusiveContent {
+        forRepository {
+            maven {
+                name = "GitHubPackages-$repoName"
+                setUrl("https://maven.pkg.github.com/navikt/$repoName")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user") as String?
+                    password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.key") as String?
+                }
+            }
+        }
+        filter { includeGroup(group) }
+    }
+
+    githubPackages("amt-deltakelser-lib", "no.nav.amt.deltakelser.lib")
+    githubPackages("common-java-modules", "no.nav.common")
+
     mavenCentral()
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
