@@ -146,16 +146,16 @@ class AktivitetskortTest {
     }
 
     @Test
-    fun `lagDetaljer - TILPASSET_JOBBSTOTTE - inkluderer deltakelsesmengde i detaljer`() {
+    fun `lagDetaljer - TILPASSET_JOBBSTOTTE - inkluderer ikke deltakelsesmengde i detaljer`() {
         val deltakerliste = TestData.lagDeltakerliste(
             tiltak = Tiltak("Tilpasset jobbstøtte", Tiltakskode.TILPASSET_JOBBSTOTTE),
         )
-        val deltaker = TestData.lagDeltaker(prosentStilling = 80.0, dagerPerUke = 4.0f, deltakerlisteId = deltakerliste.id)
+        val deltaker = TestData.lagDeltaker(deltakerlisteId = deltakerliste.id)
         val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
 
         val detaljer = Aktivitetskort.lagDetaljer(deltaker, deltakerliste, arrangor)
 
-        detaljer.find { it.label == "Deltakelsesmengde" } shouldBe Detalj("Deltakelsesmengde", "80% fordelt på 4 dager i uka")
+        detaljer.find { it.label == "Deltakelsesmengde" } shouldBe null
     }
 
     @Test

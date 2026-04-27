@@ -2,6 +2,7 @@ package no.nav.amt.aktivitetskort.domain
 
 import no.nav.amt.aktivitetskort.kafka.producer.dto.AktivitetskortDto
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype.Companion.tiltakMedDeltakelsesmengder
 import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -116,7 +117,7 @@ data class Aktivitetskort(
 
             detaljer.add(Detalj("Status for deltakelse", displayText(deltaker.status)))
 
-            if (deltakerliste.tiltak.tiltakskode.erTiltakmedDeltakelsesmengde()) {
+            if (deltakerliste.tiltak.tiltakskode in tiltakMedDeltakelsesmengder) {
                 deltakelseMengdeDetalj(deltaker)?.let { detaljer.add(it) }
             }
 
