@@ -9,28 +9,34 @@ plugins {
 }
 
 repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "GitHubPackagesAmtDeltakelserLib"
+                setUrl("https://maven.pkg.github.com/navikt/amt-deltakelser-lib")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user") as String?
+                    password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.key") as String?
+                }
+            }
+        }
+        filter { includeGroup("no.nav.amt.deltakelser.lib") }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "GitHubPackagesNavCommon"
+                setUrl("https://maven.pkg.github.com/navikt/common-java-modules")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user") as String?
+                    password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.key") as String?
+                }
+            }
+        }
+        filter { includeGroup("no.nav.common") }
+    }
     mavenCentral()
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
-    maven {
-        setUrl("https://maven.pkg.github.com/navikt/amt-deltakelser-lib")
-        credentials {
-            username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user") as String?
-            password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.key") as String?
-        }
-        content {
-            includeGroup("no.nav.amt.deltakelser.lib")
-        }
-    }
-    maven {
-        setUrl("https://maven.pkg.github.com/navikt/common-java-modules")
-        credentials {
-            username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user") as String?
-            password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.key") as String?
-        }
-        content {
-            includeGroup("no.nav.common")
-        }
-    }
 }
 
 dependencies {
