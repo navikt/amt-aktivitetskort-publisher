@@ -116,7 +116,7 @@ data class Aktivitetskort(
 
             detaljer.add(Detalj("Status for deltakelse", displayText(deltaker.status)))
 
-            if (deltakerliste.tiltak.tiltakskode.erTiltakmedDeltakelsesmengde()) {
+            if (deltakerliste.tiltak.tiltakskode in tiltakMedDeltakelsesmengder) {
                 deltakelseMengdeDetalj(deltaker)?.let { detaljer.add(it) }
             }
 
