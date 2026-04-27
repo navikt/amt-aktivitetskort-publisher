@@ -22,11 +22,13 @@ import no.nav.amt.aktivitetskort.kafka.consumer.dto.ArrangorDto
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilAktivitetStatus
 import no.nav.amt.aktivitetskort.service.StatusMapping.deltakerStatusTilEtikett
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.DeltakerStatusDto
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
 import no.nav.amt.lib.models.deltaker.Navn
 import no.nav.amt.lib.models.deltaker.Personalia
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
@@ -125,7 +127,7 @@ object TestData {
         deltakerlisteId: UUID = UUID.randomUUID(),
         status: DeltakerStatusModel =
             DeltakerStatusModel(
-                type = no.nav.amt.lib.models.deltaker.DeltakerStatus.Type.DELTAR,
+                type = DeltakerStatus.Type.DELTAR,
                 aarsak = null,
                 gyldigFra = LocalDate.now().atStartOfDay(),
             ),
@@ -182,6 +184,9 @@ object TestData {
         arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
         oppdatertTidspunkt = OffsetDateTime.now(),
         opprettetTidspunkt = OffsetDateTime.now(),
+        pameldingType = GjennomforingPameldingType.TRENGER_GODKJENNING,
+        oppstart = Oppstartstype.ENKELTPLASS,
+        prisinformasjon = null,
     )
 
     fun lagGruppeDeltakerlistePayload(
@@ -203,6 +208,7 @@ object TestData {
         arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
         oppdatertTidspunkt = OffsetDateTime.now(),
         opprettetTidspunkt = OffsetDateTime.now(),
+        pameldingType = GjennomforingPameldingType.TRENGER_GODKJENNING,
     )
 
     data class MockContext(
