@@ -86,8 +86,10 @@ data class Aktivitetskort(
             arrangor: Arrangor,
         ): String = when (deltakerliste.tiltak.tiltakskode) {
             Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-            Tiltakskode.TILPASSET_JOBBSTOTTE,
             -> "Tilrettelagt arbeid hos ${arrangor.navn}"
+
+            Tiltakskode.TILPASSET_JOBBSTOTTE,
+            -> "Tilpasset jobbstøtte hos ${arrangor.navn}"
 
             Tiltakskode.JOBBKLUBB -> "Jobbsøkerkurs hos ${arrangor.navn}"
 

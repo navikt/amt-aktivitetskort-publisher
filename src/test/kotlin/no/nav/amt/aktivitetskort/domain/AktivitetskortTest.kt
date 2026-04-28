@@ -50,8 +50,10 @@ class AktivitetskortTest {
                 Tiltakskode.JOBBKLUBB -> aktivitetskortTittel shouldBe "Jobbsøkerkurs hos ${arrangor.navn}"
 
                 Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-                Tiltakskode.TILPASSET_JOBBSTOTTE,
                 -> aktivitetskortTittel shouldBe "Tilrettelagt arbeid hos ${arrangor.navn}"
+
+                Tiltakskode.TILPASSET_JOBBSTOTTE,
+                -> aktivitetskortTittel shouldBe "Tilpasset jobbstøtte hos ${arrangor.navn}"
 
                 Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
                 Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
