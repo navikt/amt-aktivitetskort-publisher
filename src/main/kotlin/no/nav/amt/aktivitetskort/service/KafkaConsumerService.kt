@@ -48,6 +48,8 @@ class KafkaConsumerService(
     ) {
         if (deltaker == null) return handterSlettetDeltaker(id)
 
+        if (id.toString() == "8b5d175c-6d1b-4834-9029-2b6cc3846cca") return
+
         if (deltakerStatusTilAktivitetStatus(deltaker.status.type).isFailure) {
             log.info("Kan ikke lage aktivitetskort for deltaker ${deltaker.id} med status ${deltaker.status.type}")
             return
