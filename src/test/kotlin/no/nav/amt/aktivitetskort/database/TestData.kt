@@ -187,6 +187,7 @@ object TestData {
         pameldingType = GjennomforingPameldingType.TRENGER_GODKJENNING,
         oppstart = Oppstartstype.ENKELTPLASS,
         prisinformasjon = null,
+        status = GjennomforingStatusType.GJENNOMFORES,
     )
 
     fun lagGruppeDeltakerlistePayload(
