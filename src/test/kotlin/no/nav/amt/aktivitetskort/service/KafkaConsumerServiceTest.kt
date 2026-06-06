@@ -76,68 +76,113 @@ class KafkaConsumerServiceTest {
     @Nested
     inner class DeltakerHendelse {
         @Test
-        fun `deltaker modifisert - publiser melding`() {
+        fun `deltaker modifisert - aktivitetskort kan ikke opprettes - logger grunn`() {
+            // Arrange
             every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Modified(ctx.deltaker)
-            every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
+            every { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) } returns Pair(null, "Deltaker er ikke under oppfølging")
 
+            // Act
             kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
+            // Assert
             verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
-            verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
+            verify(exactly = 1) { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) }
+            verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
+        }
+
+        @Test
+        fun `deltaker modifisert - publiser melding`() {
+            // Arrange
+            every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Modified(ctx.deltaker)
+            every { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) } returns Pair(ctx.aktivitetskort, null)
+
+            // Act
+            kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
+
+            // Assert
+            verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
+            verify(exactly = 1) { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) }
             verify(exactly = 1) { aktivitetskortProducer.send(ctx.aktivitetskort) }
         }
 
         @Test
-        fun `deltaker lagd - publiser melding`() {
+        fun `deltaker lagd - aktivitetskort kan ikke opprettes - logger grunn`() {
+            // Arrange
             every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Created(ctx.deltaker)
-            every { aktivitetskortService.lagAktivitetskort(ctx.deltaker) } returns ctx.aktivitetskort
+            every { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) } returns Pair(
+                null,
+                "Deltaker er fra før nåværende oppfølgingsperiode",
+            )
 
+            // Act
             kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
+            // Assert
             verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
-            verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
+            verify(exactly = 1) { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) }
+            verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
+        }
+
+        @Test
+        fun `deltaker lagd - publiser melding`() {
+            // Arrange
+            every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Created(ctx.deltaker)
+            every { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) } returns Pair(ctx.aktivitetskort, null)
+
+            // Act
+            kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
+
+            // Assert
+            verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
+            verify(exactly = 1) { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) }
             verify(exactly = 1) { aktivitetskortProducer.send(ctx.aktivitetskort) }
         }
 
         @Test
         fun `deltaker har ingen forandring - ikke publiser melding`() {
+            // Arrange
             every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.NoChange()
 
+            // Act
             kafkaConsumerService.deltakerHendelse(ctx.deltaker.id, ctx.deltaker.toDto(), offset)
 
+            // Assert
             verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
-            verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(ctx.deltaker) }
             verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
         }
 
         @Test
         fun `deltaker finnes ikke, status feilregistrert - publiserer ikke melding`() {
+            // Arrange
             val mockDeltaker = ctx.deltaker.copy(
                 status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null, gyldigFra = LocalDateTime.now()),
             )
-
             every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.NoChange()
 
+            // Act
             kafkaConsumerService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
 
+            // Assert
             verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
-            verify(exactly = 0) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
             verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
         }
 
         @Test
         fun `deltaker finnes, status feilregistrert - publiserer melding`() {
+            // Arrange
             val mockDeltaker =
                 ctx.deltaker.copy(status = DeltakerStatusModel(DeltakerStatus.Type.FEILREGISTRERT, null, LocalDateTime.now()))
             val mockAktivitetskort = ctx.aktivitetskort.copy(aktivitetStatus = AktivitetStatus.AVBRUTT)
 
             every { deltakerRepository.upsert(mockDeltaker, offset) } returns RepositoryResult.Modified(mockDeltaker)
-            every { aktivitetskortService.lagAktivitetskort(mockDeltaker) } returns mockAktivitetskort
+            every { aktivitetskortService.tryLagAktivitetskort(mockDeltaker) } returns Pair(mockAktivitetskort, null)
 
+            // Act
             kafkaConsumerService.deltakerHendelse(mockDeltaker.id, mockDeltaker.toDto(), offset)
 
+            // Assert
             verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
-            verify(exactly = 1) { aktivitetskortService.lagAktivitetskort(mockDeltaker) }
+            verify(exactly = 1) { aktivitetskortService.tryLagAktivitetskort(mockDeltaker) }
             verify(exactly = 1) { aktivitetskortProducer.send(mockAktivitetskort) }
         }
     }
@@ -146,25 +191,30 @@ class KafkaConsumerServiceTest {
     inner class DeltakerlisteHendelse {
         @Test
         fun `mottar tombstone for deltakerliste - sletter deltakerliste`() {
+            // Arrange & Act
             kafkaConsumerService.deltakerlisteHendelse(
                 id = ctx.deltakerlisteGruppePayload.id,
                 value = null,
             )
 
+            // Assert
             verify(exactly = 1) { deltakerlisteRepository.delete(ctx.deltakerliste.id) }
         }
 
         @Test
         fun `deltakerliste modifisert - publiser melding`() {
+            // Arrange
             every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
             every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Modified(ctx.deltakerliste)
             every { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) } returns listOf(ctx.aktivitetskort)
 
+            // Act
             kafkaConsumerService.deltakerlisteHendelse(
                 id = ctx.deltakerlisteGruppePayload.id,
                 value = objectMapper.writeValueAsString(ctx.deltakerlisteGruppePayload),
             )
 
+            // Assert
             verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
             verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
             verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
@@ -172,14 +222,17 @@ class KafkaConsumerServiceTest {
 
         @Test
         fun `deltakerliste lagd - ikke publiser melding`() {
+            // Arrange
             every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
             every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
 
+            // Act
             kafkaConsumerService.deltakerlisteHendelse(
                 id = ctx.deltakerlisteGruppePayload.id,
                 value = objectMapper.writeValueAsString(ctx.deltakerlisteGruppePayload),
             )
 
+            // Assert
             verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
             verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
             verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
@@ -187,28 +240,34 @@ class KafkaConsumerServiceTest {
 
         @Test
         fun `Komet er ikke master for tiltak - ikke prosesser melding`() {
+            // Arrange
             every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
             every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.Created(ctx.deltakerliste)
             every { unleashToggle.skalLeseGjennomforing(any<String>()) } returns false
 
+            // Act
             kafkaConsumerService.deltakerlisteHendelse(
                 id = ctx.deltakerlisteGruppePayload.id,
                 value = staticObjectMapper.writeValueAsString(ctx.deltakerlisteGruppePayload),
             )
 
+            // Assert
             verify(exactly = 0) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
         }
 
         @Test
         fun `deltakerliste har ingen forandring - ikke publiser melding`() {
+            // Arrange
             every { arrangorRepository.get(ctx.arrangor.organisasjonsnummer) } returns ctx.arrangor
             every { deltakerlisteRepository.upsert(ctx.deltakerliste) } returns RepositoryResult.NoChange()
 
+            // Act
             kafkaConsumerService.deltakerlisteHendelse(
                 id = ctx.deltakerlisteGruppePayload.id,
                 value = staticObjectMapper.writeValueAsString(ctx.deltakerlisteGruppePayload),
             )
 
+            // Assert
             verify(exactly = 1) { deltakerlisteRepository.upsert(ctx.deltakerliste) }
             verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.deltakerliste) }
             verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
@@ -216,6 +275,7 @@ class KafkaConsumerServiceTest {
 
         @Test
         fun `arrangor er ikke lagret - skal hente arrangor fra amt-arrangor`() {
+            // Arrange
             val arrangorInTest = lagArrangor()
             val deltakerlisteInTest =
                 lagDeltakerliste(
@@ -239,11 +299,13 @@ class KafkaConsumerServiceTest {
                 deltakerliste = deltakerlisteInTest,
             )
 
+            // Act
             kafkaConsumerService.deltakerlisteHendelse(
                 id = deltakerlistePayload.id,
                 value = staticObjectMapper.writeValueAsString(deltakerlistePayload),
             )
 
+            // Assert
             verify(exactly = 2) { arrangorRepository.get(arrangorInTest.organisasjonsnummer) }
             verify(exactly = 1) { amtArrangorClient.hentArrangor(arrangorInTest.organisasjonsnummer) }
             verify(exactly = 1) { deltakerlisteRepository.upsert(deltakerlisteInTest) }
@@ -254,11 +316,14 @@ class KafkaConsumerServiceTest {
     inner class ArrangorHendelse {
         @Test
         fun `arrangor modifisert - publiser melding`() {
+            // Arrange
             every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Modified(ctx.arrangor)
             every { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) } returns listOf(ctx.aktivitetskort)
 
+            // Act
             kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
+            // Assert
             verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
             verify(exactly = 1) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
             verify(exactly = 1) { aktivitetskortProducer.send(listOf(ctx.aktivitetskort)) }
@@ -266,10 +331,13 @@ class KafkaConsumerServiceTest {
 
         @Test
         fun `arrangor lagd - ikke publiser melding`() {
+            // Arrange
             every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.Created(ctx.arrangor)
 
+            // Act
             kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
+            // Assert
             verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
             verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
             verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }
@@ -277,10 +345,13 @@ class KafkaConsumerServiceTest {
 
         @Test
         fun `arrangor har ingen forandring - ikke publiser melding`() {
+            // Arrange
             every { arrangorRepository.upsert(ctx.arrangor) } returns RepositoryResult.NoChange()
 
+            // Act
             kafkaConsumerService.arrangorHendelse(ctx.arrangor.id, ctx.arrangor.toDto())
 
+            // Assert
             verify(exactly = 1) { arrangorRepository.upsert(ctx.arrangor) }
             verify(exactly = 0) { aktivitetskortService.oppdaterAktivitetskort(ctx.arrangor) }
             verify(exactly = 0) { aktivitetskortProducer.send(any<List<Aktivitetskort>>()) }

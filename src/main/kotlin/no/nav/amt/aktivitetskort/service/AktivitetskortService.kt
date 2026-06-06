@@ -70,10 +70,23 @@ class AktivitetskortService(
         return opprettMelding(deltaker).aktivitetskort
     }
 
-    fun lagAktivitetskort(deltaker: Deltaker): Aktivitetskort? {
-        val melding = tryOpprettMelding(deltaker)
-
-        return melding?.aktivitetskort
+    fun tryLagAktivitetskort(deltaker: Deltaker): Pair<Aktivitetskort?, String?> {
+        try {
+            val melding = opprettMelding(deltaker)
+            return Pair(melding.aktivitetskort, null)
+        } catch (e: IngenOppfolgingsperiodeException) {
+            val reason = "Deltaker ${deltaker.id} er ikke under oppfølging"
+            log.warn(reason, e)
+            return Pair(null, reason)
+        } catch (e: HistoriskArenaDeltakerException) {
+            val reason = "Kan ikke opprette aktivitetskort for historisk arena deltaker ${deltaker.id}"
+            log.error(reason, e)
+            return Pair(null, reason)
+        } catch (e: FeilOppfolgingsperiodeException) {
+            val reason = "Deltaker ${deltaker.id} er fra før nåværende oppfølgingsperiode"
+            log.info(reason, e)
+            return Pair(null, reason)
+        }
     }
 
     fun oppdaterAktivitetskortForSlettetdeltaker(

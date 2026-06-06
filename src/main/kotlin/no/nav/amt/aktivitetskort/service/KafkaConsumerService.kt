@@ -57,9 +57,9 @@ class KafkaConsumerService(
             when (val result = deltakerRepository.upsert(deltaker.toModel(), offset)) {
                 is RepositoryResult.Modified -> {
                     log.info("Ny hendelse for deltaker ${deltaker.id}: Oppdatering")
-                    val aktivitetskort = aktivitetskortService.lagAktivitetskort(result.data)
+                    val (aktivitetskort, feilArsak) = aktivitetskortService.tryLagAktivitetskort(result.data)
                     if (aktivitetskort == null) {
-                        log.warn("aktivitetskort for deltaker ${deltaker.id} ble ikke oppdatert.")
+                        log.warn("Aktivitetskort for deltaker ${deltaker.id} ble ikke oppdatert. Årsak: $feilArsak")
                         return@executeWithoutResult
                     }
                     aktivitetskortProducer.send(aktivitetskort)
@@ -67,9 +67,9 @@ class KafkaConsumerService(
 
                 is RepositoryResult.Created -> {
                     log.info("Ny hendelse for deltaker ${deltaker.id}: Opprettelse")
-                    val aktivitetskort = aktivitetskortService.lagAktivitetskort(result.data)
+                    val (aktivitetskort, feilArsak) = aktivitetskortService.tryLagAktivitetskort(result.data)
                     if (aktivitetskort == null) {
-                        log.warn("aktivitetskort for deltaker ${deltaker.id} ble ikke opprettet")
+                        log.warn("Aktivitetskort for deltaker ${deltaker.id} ble ikke opprettet. Årsak: $feilArsak")
                         return@executeWithoutResult
                     }
                     aktivitetskortProducer.send(aktivitetskort)
