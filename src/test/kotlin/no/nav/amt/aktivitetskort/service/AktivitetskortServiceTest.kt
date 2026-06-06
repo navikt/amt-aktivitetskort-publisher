@@ -89,12 +89,12 @@ class AktivitetskortServiceTest {
         fun `kilde=ARENA - lager nytt aktivitetskort`() {
             // Arrange
             val ctx = TestData.MockContext()
-            val aktivitetskordId = UUID.randomUUID()
+            val aktivitetskortId = UUID.randomUUID()
             every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
             every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
             every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
             every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
-            every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns aktivitetskordId
+            every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns aktivitetskortId
             every { veilarboppfolgingClient.hentOppfolgingperiode(ctx.deltaker.personident) } returns nyPeriode
 
             // Act
@@ -105,7 +105,7 @@ class AktivitetskortServiceTest {
             verify(exactly = 1) { meldingRepository.upsert(any()) }
 
             assertSoftly(aktivitetskort.shouldNotBeNull()) {
-                id shouldBe aktivitetskordId
+                id shouldBe aktivitetskortId
                 personident shouldBe ctx.aktivitetskort.personident
                 tittel shouldBe ctx.aktivitetskort.tittel
                 aktivitetStatus shouldBe ctx.aktivitetskort.aktivitetStatus
@@ -268,12 +268,12 @@ class AktivitetskortServiceTest {
         fun `vellykket opprettelse - returnerer aktivitetskort og null feilArsak`() {
             // Arrange
             val ctx = TestData.MockContext()
-            val aktivitetskordId = UUID.randomUUID()
+            val aktivitetskortId = UUID.randomUUID()
             every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
             every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
             every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
             every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } returns 1L
-            every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns aktivitetskordId
+            every { aktivitetArenaAclClient.getAktivitetIdForArenaId(1L) } returns aktivitetskortId
             every { veilarboppfolgingClient.hentOppfolgingperiode(ctx.deltaker.personident) } returns nyPeriode
 
             // Act
@@ -358,12 +358,12 @@ class AktivitetskortServiceTest {
         fun `kilde=ARENA, kall til amt-arena-acl feiler - oppretting feiler`() {
             // Arrange
             val ctx = TestData.MockContext()
-            val aktivitetskordId = UUID.randomUUID()
+            val aktivitetskortId = UUID.randomUUID()
             every { meldingRepository.getByDeltakerId(ctx.deltaker.id) } returns emptyList()
             every { deltakerlisteRepository.get(ctx.deltakerliste.id) } returns ctx.deltakerliste
             every { arrangorRepository.get(ctx.arrangor.id) } returns ctx.arrangor
             every { amtArenaAclClient.getArenaIdForAmtId(ctx.deltaker.id) } throws IllegalStateException("Noe gikk galt")
-            every { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) } returns aktivitetskordId
+            every { aktivitetArenaAclClient.getAktivitetIdForArenaId(any()) } returns aktivitetskortId
             every { veilarboppfolgingClient.hentOppfolgingperiode(ctx.deltaker.personident) } returns nyPeriode
 
             // Act & Assert

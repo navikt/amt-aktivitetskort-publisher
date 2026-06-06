@@ -76,7 +76,7 @@ class KafkaConsumerServiceTest {
     @Nested
     inner class DeltakerHendelse {
         @Test
-        fun `deltaker modifisert - aktivitetskort kan ikke opprettes - logger grunn`() {
+        fun `deltaker modifisert - aktivitetskort kan ikke opprettes - publiserer ikke melding`() {
             // Arrange
             every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Modified(ctx.deltaker)
             every { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) } returns Pair(null, "Deltaker er ikke under oppfølging")
@@ -106,7 +106,7 @@ class KafkaConsumerServiceTest {
         }
 
         @Test
-        fun `deltaker lagd - aktivitetskort kan ikke opprettes - logger grunn`() {
+        fun `deltaker lagd - aktivitetskort kan ikke opprettes - publiserer ikke melding`() {
             // Arrange
             every { deltakerRepository.upsert(ctx.deltaker, offset) } returns RepositoryResult.Created(ctx.deltaker)
             every { aktivitetskortService.tryLagAktivitetskort(ctx.deltaker) } returns Pair(
@@ -148,6 +148,7 @@ class KafkaConsumerServiceTest {
 
             // Assert
             verify(exactly = 1) { deltakerRepository.upsert(ctx.deltaker, offset) }
+            verify(exactly = 0) { aktivitetskortService.tryLagAktivitetskort(any()) }
             verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
         }
 
@@ -164,6 +165,7 @@ class KafkaConsumerServiceTest {
 
             // Assert
             verify(exactly = 1) { deltakerRepository.upsert(mockDeltaker, offset) }
+            verify(exactly = 0) { aktivitetskortService.tryLagAktivitetskort(any()) }
             verify(exactly = 0) { aktivitetskortProducer.send(any<Aktivitetskort>()) }
         }
 
