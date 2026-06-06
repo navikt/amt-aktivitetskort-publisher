@@ -71,22 +71,8 @@ class AktivitetskortService(
     }
 
     fun tryLagAktivitetskort(deltaker: Deltaker): Pair<Aktivitetskort?, String?> {
-        try {
-            val melding = opprettMelding(deltaker)
-            return Pair(melding.aktivitetskort, null)
-        } catch (e: IngenOppfolgingsperiodeException) {
-            val reason = "Deltaker ${deltaker.id} er ikke under oppfølging"
-            log.warn(reason, e)
-            return Pair(null, reason)
-        } catch (e: HistoriskArenaDeltakerException) {
-            val reason = "Kan ikke opprette aktivitetskort for historisk arena deltaker ${deltaker.id}"
-            log.error(reason, e)
-            return Pair(null, reason)
-        } catch (e: FeilOppfolgingsperiodeException) {
-            val reason = "Deltaker ${deltaker.id} er fra før nåværende oppfølgingsperiode"
-            log.info(reason, e)
-            return Pair(null, reason)
-        }
+        val (melding, feilArsak) = tryOpprettMeldingMedArsak(deltaker)
+        return Pair(melding?.aktivitetskort, feilArsak)
     }
 
     fun oppdaterAktivitetskortForSlettetdeltaker(
@@ -163,17 +149,27 @@ class AktivitetskortService(
     fun tryOpprettMelding(
         deltaker: Deltaker,
         meldingId: UUID? = null,
-    ): Melding? {
+    ): Melding? = tryOpprettMeldingMedArsak(deltaker, meldingId).first
+
+    private fun tryOpprettMeldingMedArsak(
+        deltaker: Deltaker,
+        meldingId: UUID? = null,
+    ): Pair<Melding?, String?> {
         try {
-            return opprettMelding(deltaker, meldingId)
+            return Pair(opprettMelding(deltaker, meldingId), null)
         } catch (e: IngenOppfolgingsperiodeException) {
-            log.warn("Kan ikke opprette aktivitetskort for deltaker ${deltaker.id} uten oppfølgingsperiode", e)
+            val reason = "Deltaker ${deltaker.id} er ikke under oppfølging"
+            log.warn(reason, e)
+            return Pair(null, reason)
         } catch (e: HistoriskArenaDeltakerException) {
-            log.error("Kan ikke opprette aktivitetskort for historisk arena deltaker ${deltaker.id}", e)
+            val reason = "Kan ikke opprette aktivitetskort for historisk arena deltaker ${deltaker.id}"
+            log.error(reason, e)
+            return Pair(null, reason)
         } catch (e: FeilOppfolgingsperiodeException) {
-            log.info("Kan ikke opprette aktivitetskort for deltaker ${deltaker.id}", e)
+            val reason = "Deltaker ${deltaker.id} er fra før nåværende oppfølgingsperiode"
+            log.info(reason, e)
+            return Pair(null, reason)
         }
-        return null
     }
 
     fun opprettMelding(
