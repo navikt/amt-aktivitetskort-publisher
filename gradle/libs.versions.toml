@@ -13,7 +13,7 @@ mockk = "1.14.11"
 nav-common = "4.2026.05.19_05.29-4b5633c82ec0"
 token-support = "6.0.8"
 unleash = "12.2.2"
-amt-lib = "1.2026.05.28_13.29-cfb0dea3ba71"
+amt-lib = "1.2026.06.17_11.46-684c08a4652a"
 jackson-module-kotlin = "3.1.4"
 
 [plugins]
