@@ -1,20 +1,20 @@
 [versions]
-kotlin = "2.3.21"
+kotlin = "2.4.0"
 spring-boot = "4.1.0"
 spring-dependency-management = "1.1.7"
 ktlint-plugin = "14.2.0"
 ktlint-cli-version = "1.8.0"
 
 logstash-encoder = "9.0"
-okhttp = "5.3.2"
+okhttp = "5.4.0"
 kafka-clients = "4.3.0"
-kotest = "6.1.11"
+kotest = "6.2.0"
 mockk = "1.14.11"
 nav-common = "4.2026.05.19_05.29-4b5633c82ec0"
 token-support = "6.0.10"
 unleash = "12.2.2"
 amt-lib = "1.2026.06.23_08.33-9c8373831f99"
-jackson-module-kotlin = "3.1.4"
+jackson-module-kotlin = "3.2.0"
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
