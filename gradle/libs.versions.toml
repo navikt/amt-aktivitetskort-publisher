@@ -8,13 +8,13 @@ ktlint-cli-version = "1.8.0"
 logstash-encoder = "9.0"
 okhttp = "5.4.0"
 kafka-clients = "4.3.1"
-kotest = "6.2.1"
+kotest = "6.2.2"
 mockk = "1.14.11"
 nav-common = "4.2026.06.25_10.50-baa9d54e3cd8"
 token-support = "6.0.11"
 unleash = "12.2.2"
 amt-lib = "1.2026.06.23_08.33-9c8373831f99"
-jackson-module-kotlin = "3.2.0"
+jackson-module-kotlin = "3.2.1"
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
